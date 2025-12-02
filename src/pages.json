@@ -1,0 +1,260 @@
+{
+	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+		{
+			"path": "pages/tabBar/home/index",
+			"style": {
+				"enablePullDownRefresh": true,
+				"navigationBarTitleText": "首页",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/tabBar/help/index",
+			"style": {
+				"enablePullDownRefresh": true,
+				"navigationBarTitleText": "帮助"
+			}
+		},
+		{
+			"path": "pages/tabBar/message/index",
+			"style": {
+				"enablePullDownRefresh": true,
+				"navigationBarTitleText": "消息"
+			}
+		},
+		{
+			"path": "pages/tabBar/mine/index",
+			"style": {
+				"enablePullDownRefresh": true,
+				"navigationBarTitleText": "我的"
+			}
+		}
+	],
+	"subPackages": [
+		{
+			"root": "pages/login",
+			"pages": [
+				{
+					"path": "login",
+					"style": {
+						"navigationBarTitleText": "登录"
+					}
+				}
+			]
+		},
+		{
+			"root": "pages/toilet",
+			"pages": [
+				{
+					"path": "index",
+					"style": {
+						"navigationBarTitleText": "马桶"
+					}
+				},
+				{
+					"path": "toiletSetting",
+					"style": {
+						"navigationBarTitleText": "马桶设置"
+					}
+				}
+			]
+		},
+		{
+			"root": "pages/faucet",
+			"pages": [
+				{
+					"path": "index",
+					"style": {
+						"navigationBarTitleText": "水龙头"
+					}
+				}
+			]
+		},
+		{
+			"root": "pages/soapDispenser",
+			"pages": [
+				{
+					"path": "index",
+					"style": {
+						"navigationBarTitleText": "给皂器"
+					}
+				}
+			]
+		},
+		{
+			"root": "pages/handDryer",
+			"pages": [
+				{
+					"path": "index",
+					"style": {
+						"navigationBarTitleText": "干手器"
+					}
+				}
+			]
+		},
+		{
+			"root": "pages/bigPunch",
+			"pages": [
+				{
+					"path": "index",
+					"style": {
+						"navigationBarTitleText": "大冲器"
+					}
+				}
+			]
+		},
+		{
+			"root": "pages/smallPunch",
+			"pages": [
+				{
+					"path": "index",
+					"style": {
+						"navigationBarTitleText": "小冲器"
+					}
+				}
+			]
+		},
+		{
+			"root": "pages/message",
+			"pages": [
+				{
+					"path": "diagnosis",
+					"style": {
+						"navigationBarTitleText": "故障诊断"
+					}
+				}
+			]
+		},
+		{
+			"root": "pages/test",
+			"pages": [
+				{
+					"path": "index",
+					"style": {
+						"navigationBarTitleText": "测试页"
+					}
+				},
+				{
+					"path": "index2",
+					"style": {
+						"navigationBarTitleText": "测试页2"
+					}
+				}
+			]
+		},
+		{
+			"root": "pages/home",
+			"pages": [
+				{
+					"path": "toiletMap",
+					"style": {
+						"navigationBarTitleText": "位置导航"
+					}
+				},
+				{
+					"path": "addressSelect",
+					"style": {
+						"navigationBarTitleText": "选择地址",
+						"navigationBarBackgroundColor": "#fff",
+						"navigationBarTextStyle": "black"
+					}
+				}
+			]
+		},
+		{
+			"root": "pages/gateway",
+			"pages": [
+				{
+					"path": "index",
+					"style": {
+						"navigationBarTitleText": "设备详情"
+					}
+				},
+				{
+					"path": "gatewayList",
+					"style": {
+						"navigationBarTitleText": "设备列表"
+					}
+				},
+				{
+					"path": "selectGateway",
+					"style": {
+						"navigationBarTitleText": "选择设备"
+					}
+				},
+				{
+					"path": "addGateway",
+					"style": {
+						"navigationBarTitleText": "添加设备"
+					}
+				}
+			]
+		}
+	],
+	"preloadRule": {
+		"pages/tabBar/home/index": {
+			"network": "wifi",
+			"packages": [
+				"pages/login"
+			]
+		}
+	},
+	"tabBar": {
+		"color": "#7e7e7e",
+		"selectedColor": "#4e4036",
+		"borderStyle": "black",
+		"backgroundColor": "#FFFFFF",
+		"list": [
+			{
+				"pagePath": "pages/tabBar/home/index",
+				"iconPath": "static/images/home.png",
+				"selectedIconPath": "static/images/home2.png",
+				"text": "首页"
+			},
+			{
+				"pagePath": "pages/tabBar/message/index",
+				"iconPath": "static/images/message.png",
+				"selectedIconPath": "static/images/message2.png",
+				"text": "消息"
+			},
+			{
+				"pagePath": "pages/tabBar/help/index",
+				"iconPath": "static/images/help.png",
+				"selectedIconPath": "static/images/help2.png",
+				"text": "帮助"
+			},
+			{
+				"pagePath": "pages/tabBar/mine/index",
+				"iconPath": "static/images/mine.png",
+				"selectedIconPath": "static/images/mine2.png",
+				"text": "我的"
+			}
+		]
+	},
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "",
+		"navigationBarBackgroundColor": "#fff",
+		"backgroundColor": "#fff",
+		"pageOrientation": "auto" // 可选值: auto / portrait / landscape
+	},
+	"lazyCodeLoading": "requiredComponents",
+	"condition": {
+		"current": 0,
+		"list": [
+			{
+				"name": "首页",
+				"path": "pages/tabBar/home/index"
+			}
+		]
+	},
+	"easycom": {
+		"autoscan": true,
+		"custom": {
+			"^uni-(.*)": "@dcloudio/uni-ui/lib/uni-$1/uni-$1.vue",
+			"^u--(.*)": "uview-plus/components/u-$1/u-$1.vue",
+			"^up-(.*)": "uview-plus/components/u-$1/u-$1.vue",
+			"^u-([^-].*)": "uview-plus/components/u-$1/u-$1.vue"
+		}
+	}
+}

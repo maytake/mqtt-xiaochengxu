@@ -1,0 +1,156 @@
+{
+    "name" : "tck智慧厕所",
+    "appid" : "__UNI__D7AA3DF",
+    "description" : "TCK智慧厕所是一款基于物联网技术的智能厕所管理应用，旨在为用户提供更便捷、卫生的如厕体验，同时帮助管理者高效维护厕所设施。通过实时数据监测、智能导航和用户反馈功能，TCK智慧厕所让公共卫生服务更透明、更智慧。",
+    "versionName" : "1.0.0",
+    "versionCode" : "100",
+    "transformPx" : false,
+    /* 5+App特有相关 */
+    "app-plus" : {
+        "usingComponents" : true,
+        "nvueStyleCompiler" : "uni-app",
+        "compilerVersion" : 3,
+        "splashscreen" : {
+            "alwaysShowBeforeRender" : true,
+            "waiting" : true,
+            "autoclose" : true,
+            "delay" : 0
+        },
+        /* 模块配置 */
+        "modules" : {
+            "Barcode" : {},
+            "Bluetooth" : {},
+            "Camera" : {}
+        },
+        
+        /* 应用发布信息 */
+        "distribute" : {
+            /* android打包配置 */
+            "android" : {
+                "permissions" : [
+                    "<uses-permission android:name=\"android.permission.ACCESS_COARSE_LOCATION\" />",
+                    "<uses-permission android:name=\"android.permission.ACCESS_FINE_LOCATION\" />",
+                    "<uses-permission android:name=\"android.permission.BLUETOOTH_ADMIN\" />",
+                    "<uses-permission android:name=\"android.permission.BLUETOOTH\" />",
+                    "<uses-permission android:name=\"android.permission.BLUETOOTH_SCAN\" />",
+                    "<uses-permission android:name=\"android.permission.CHANGE_NETWORK_STATE\"/>",
+                    "<uses-permission android:name=\"android.permission.MOUNT_UNMOUNT_FILESYSTEMS\"/>",
+                    "<uses-permission android:name=\"android.permission.VIBRATE\"/>",
+                    "<uses-permission android:name=\"android.permission.READ_LOGS\"/>",
+                    "<uses-permission android:name=\"android.permission.ACCESS_WIFI_STATE\"/>",
+                    "<uses-feature android:name=\"android.hardware.camera.autofocus\"/>",
+                    "<uses-permission android:name=\"android.permission.ACCESS_NETWORK_STATE\"/>",
+                    "<uses-permission android:name=\"android.permission.CAMERA\"/>",
+                    "<uses-permission android:name=\"android.permission.GET_ACCOUNTS\"/>",
+                    "<uses-permission android:name=\"android.permission.READ_PHONE_STATE\"/>",
+                    "<uses-permission android:name=\"android.permission.CHANGE_WIFI_STATE\"/>",
+                    "<uses-permission android:name=\"android.permission.WAKE_LOCK\"/>",
+                    "<uses-permission android:name=\"android.permission.FLASHLIGHT\"/>",
+                    "<uses-feature android:name=\"android.hardware.camera\"/>",
+                    "<uses-permission android:name=\"android.permission.WRITE_SETTINGS\"/>"
+                ],
+                "abiFilters" : [ "armeabi-v7a", "arm64-v8a", "x86" ]
+            },
+            /* ios打包配置 */
+            "ios" : {},
+            /* SDK配置 */
+            "sdkConfigs" : {},
+            "icons" : {
+                "android" : {
+                    "hdpi" : "unpackage/res/icons/72x72.png",
+                    "xhdpi" : "unpackage/res/icons/96x96.png",
+                    "xxhdpi" : "unpackage/res/icons/144x144.png",
+                    "xxxhdpi" : "unpackage/res/icons/192x192.png"
+                },
+                "ios" : {
+                    "appstore" : "unpackage/res/icons/1024x1024.png",
+                    "ipad" : {
+                        "app" : "unpackage/res/icons/76x76.png",
+                        "app@2x" : "unpackage/res/icons/152x152.png",
+                        "notification" : "unpackage/res/icons/20x20.png",
+                        "notification@2x" : "unpackage/res/icons/40x40.png",
+                        "proapp@2x" : "unpackage/res/icons/167x167.png",
+                        "settings" : "unpackage/res/icons/29x29.png",
+                        "settings@2x" : "unpackage/res/icons/58x58.png",
+                        "spotlight" : "unpackage/res/icons/40x40.png",
+                        "spotlight@2x" : "unpackage/res/icons/80x80.png"
+                    },
+                    "iphone" : {
+                        "app@2x" : "unpackage/res/icons/120x120.png",
+                        "app@3x" : "unpackage/res/icons/180x180.png",
+                        "notification@2x" : "unpackage/res/icons/40x40.png",
+                        "notification@3x" : "unpackage/res/icons/60x60.png",
+                        "settings@2x" : "unpackage/res/icons/58x58.png",
+                        "settings@3x" : "unpackage/res/icons/87x87.png",
+                        "spotlight@2x" : "unpackage/res/icons/80x80.png",
+                        "spotlight@3x" : "unpackage/res/icons/120x120.png"
+                    }
+                }
+            }
+        }
+    },
+    /* 快应用特有相关 */
+    "quickapp" : {},
+    /* 小程序特有相关 */
+    "mp-weixin" : {
+        "appid" : "wxa223447eddb3531e",
+        "setting" : {
+            "urlCheck" : false
+        },
+        "usingComponents" : true,
+        "mergeVirtualHostAttributes" : true,
+        "lazyCodeLoading" : "requiredComponents"
+    },
+    "mp-alipay" : {
+        "usingComponents" : true
+    },
+    "mp-baidu" : {
+        "usingComponents" : true
+    },
+    "mp-toutiao" : {
+        "usingComponents" : true
+    },
+    "uniStatistics" : {
+        "enable" : false
+    },
+    "vueVersion" : "3",
+    "locale" : "zh-Hans",
+    "mp-harmony" : {
+        "distribute" : {
+            "bundleName" : "com.tck.myapplication"
+        }
+    },
+    "app-harmony" : {
+        "distribute" : {
+            "bundleName" : "com.tck.myapplication",
+            "icons" : {
+                "foreground" : "D:/Personal/桌面/logo.png",
+                "background" : "D:/Personal/桌面/logo.png"
+            },
+            "splashScreens" : {
+                "startWindowIcon" : "D:/Personal/桌面/logo.png"
+            },
+            "modules" : {},
+            "signingConfigs" : {
+                "default" : {
+                    "certpath" : "c:\\Users\\Administrator\\AppData\\Roaming\\HBuilder X\\extensions\\launcher\\agc-certs\\1755330496097.cer",
+                    "keyAlias" : "debugKey",
+                    "keyPassword" : "0000001BE6D383F45CE581AA69FB1F9D410B18ACE544158123EBC54E512F9992E4E5C576AC1B932E1C6FEE",
+                    "profile" : "c:\\Users\\Administrator\\AppData\\Roaming\\HBuilder X\\extensions\\launcher\\agc-certs\\1755330496097.p7b",
+                    "signAlg" : "SHA256withECDSA",
+                    "storeFile" : "c:\\Users\\Administrator\\AppData\\Roaming\\HBuilder X\\extensions\\launcher\\agc-certs\\1755330496097.p12",
+                    "storePassword" : "0000001BE6D383F45CE581AA69FB1F9D410B18ACE544158123EBC54E512F9992E4E5C576AC1B932E1C6FEE"
+                },
+                "release" : {
+                    "certpath" : "E:/work/huawei-密钥/test_ certificate.cer",
+                    "keyAlias" : "releaseKey",
+                    "keyPassword" : "0000001923AEBB5980F844ED25B45B293B056CBAADEE15B6138D90928552A093C8440BE0C88078A2D7",
+                    "profile" : "E:/work/huawei-密钥/testRelease.p7b",
+                    "signAlg" : "SHA256withECDSA",
+                    "storeFile" : "E:/work/huawei-密钥/test.p12",
+                    "storePassword" : "00000019562BF2A01000F6FCB5C2A487BE59131D1BFEE98F7DBBFE5CA93AB7D53879FA97141C3FA0CA"
+                }
+            }
+        }
+    }
+}

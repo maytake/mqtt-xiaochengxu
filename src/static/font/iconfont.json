@@ -1,0 +1,408 @@
+{
+  "id": "4960450",
+  "name": "tck",
+  "font_family": "font_family",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "45886554",
+      "name": "资源 71",
+      "font_class": "a-ziyuan71",
+      "unicode": "e632",
+      "unicode_decimal": 58930
+    },
+    {
+      "icon_id": "45886555",
+      "name": "资源 72",
+      "font_class": "a-ziyuan72",
+      "unicode": "e635",
+      "unicode_decimal": 58933
+    },
+    {
+      "icon_id": "45886556",
+      "name": "资源 73",
+      "font_class": "a-ziyuan73",
+      "unicode": "e638",
+      "unicode_decimal": 58936
+    },
+    {
+      "icon_id": "9974757",
+      "name": "感叹号",
+      "font_class": "gantanhao",
+      "unicode": "e710",
+      "unicode_decimal": 59152
+    },
+    {
+      "icon_id": "45886484",
+      "name": "资源 68",
+      "font_class": "a-ziyuan68",
+      "unicode": "e634",
+      "unicode_decimal": 58932
+    },
+    {
+      "icon_id": "45886368",
+      "name": "资源 62",
+      "font_class": "a-ziyuan62",
+      "unicode": "e631",
+      "unicode_decimal": 58929
+    },
+    {
+      "icon_id": "45886370",
+      "name": "资源 63",
+      "font_class": "a-ziyuan63",
+      "unicode": "e633",
+      "unicode_decimal": 58931
+    },
+    {
+      "icon_id": "45886373",
+      "name": "资源 64",
+      "font_class": "a-ziyuan64",
+      "unicode": "e636",
+      "unicode_decimal": 58934
+    },
+    {
+      "icon_id": "45886374",
+      "name": "资源 61",
+      "font_class": "a-ziyuan61",
+      "unicode": "e637",
+      "unicode_decimal": 58935
+    },
+    {
+      "icon_id": "45768641",
+      "name": "kaiguan",
+      "font_class": "kaiguan",
+      "unicode": "e62f",
+      "unicode_decimal": 58927
+    },
+    {
+      "icon_id": "45768640",
+      "name": "zuoquan",
+      "font_class": "zuoquan",
+      "unicode": "e630",
+      "unicode_decimal": 58928
+    },
+    {
+      "icon_id": "45684220",
+      "name": "battery",
+      "font_class": "battery",
+      "unicode": "e62a",
+      "unicode_decimal": 58922
+    },
+    {
+      "icon_id": "45684221",
+      "name": "batteryFull",
+      "font_class": "batteryFull",
+      "unicode": "e62b",
+      "unicode_decimal": 58923
+    },
+    {
+      "icon_id": "45684223",
+      "name": "warning",
+      "font_class": "warning",
+      "unicode": "e62d",
+      "unicode_decimal": 58925
+    },
+    {
+      "icon_id": "45684224",
+      "name": "screen",
+      "font_class": "screen",
+      "unicode": "e62e",
+      "unicode_decimal": 58926
+    },
+    {
+      "icon_id": "45636699",
+      "name": "资源 45",
+      "font_class": "a-ziyuan45",
+      "unicode": "e629",
+      "unicode_decimal": 58921
+    },
+    {
+      "icon_id": "45635170",
+      "name": "airDrying",
+      "font_class": "a-ziyuan25",
+      "unicode": "e616",
+      "unicode_decimal": 58902
+    },
+    {
+      "icon_id": "45635171",
+      "name": "cell",
+      "font_class": "a-ziyuan28",
+      "unicode": "e617",
+      "unicode_decimal": 58903
+    },
+    {
+      "icon_id": "45635172",
+      "name": "waterVolume",
+      "font_class": "a-ziyuan27",
+      "unicode": "e618",
+      "unicode_decimal": 58904
+    },
+    {
+      "icon_id": "45635173",
+      "name": "suspend",
+      "font_class": "a-ziyuan31",
+      "unicode": "e619",
+      "unicode_decimal": 58905
+    },
+    {
+      "icon_id": "45635174",
+      "name": "hipWash",
+      "font_class": "a-ziyuan32",
+      "unicode": "e61a",
+      "unicode_decimal": 58906
+    },
+    {
+      "icon_id": "45635175",
+      "name": "signal",
+      "font_class": "a-ziyuan30",
+      "unicode": "e61b",
+      "unicode_decimal": 58907
+    },
+    {
+      "icon_id": "45635176",
+      "name": "seatTemperature",
+      "font_class": "a-ziyuan37",
+      "unicode": "e61c",
+      "unicode_decimal": 58908
+    },
+    {
+      "icon_id": "45635177",
+      "name": "renovate",
+      "font_class": "a-ziyuan33",
+      "unicode": "e61d",
+      "unicode_decimal": 58909
+    },
+    {
+      "icon_id": "45635178",
+      "name": "nightLight",
+      "font_class": "a-ziyuan36",
+      "unicode": "e61e",
+      "unicode_decimal": 58910
+    },
+    {
+      "icon_id": "45635179",
+      "name": "smallFlushing",
+      "font_class": "a-ziyuan34",
+      "unicode": "e61f",
+      "unicode_decimal": 58911
+    },
+    {
+      "icon_id": "45635180",
+      "name": "soap",
+      "font_class": "a-ziyuan29",
+      "unicode": "e620",
+      "unicode_decimal": 58912
+    },
+    {
+      "icon_id": "45635181",
+      "name": "womanWashing",
+      "font_class": "a-ziyuan26",
+      "unicode": "e621",
+      "unicode_decimal": 58913
+    },
+    {
+      "icon_id": "45635182",
+      "name": "waterTemperature",
+      "font_class": "a-ziyuan39",
+      "unicode": "e622",
+      "unicode_decimal": 58914
+    },
+    {
+      "icon_id": "45635183",
+      "name": "waterOutput",
+      "font_class": "a-ziyuan40",
+      "unicode": "e623",
+      "unicode_decimal": 58915
+    },
+    {
+      "icon_id": "45635184",
+      "name": "positionControl",
+      "font_class": "a-ziyuan41",
+      "unicode": "e624",
+      "unicode_decimal": 58916
+    },
+    {
+      "icon_id": "45635185",
+      "name": "windTemperature",
+      "font_class": "a-ziyuan38",
+      "unicode": "e625",
+      "unicode_decimal": 58917
+    },
+    {
+      "icon_id": "45635186",
+      "name": "manualCleaning",
+      "font_class": "a-ziyuan42",
+      "unicode": "e626",
+      "unicode_decimal": 58918
+    },
+    {
+      "icon_id": "45635187",
+      "name": "largeFlushing",
+      "font_class": "a-ziyuan35",
+      "unicode": "e627",
+      "unicode_decimal": 58919
+    },
+    {
+      "icon_id": "45635188",
+      "name": "wash",
+      "font_class": "a-ziyuan43",
+      "unicode": "e628",
+      "unicode_decimal": 58920
+    },
+    {
+      "icon_id": "5076943",
+      "name": "女厕所",
+      "font_class": "nvcesuo",
+      "unicode": "e756",
+      "unicode_decimal": 59222
+    },
+    {
+      "icon_id": "2678614",
+      "name": "警告",
+      "font_class": "jinggao",
+      "unicode": "e651",
+      "unicode_decimal": 58961
+    },
+    {
+      "icon_id": "10319581",
+      "name": "客流量信息",
+      "font_class": "keliuliangxinxi",
+      "unicode": "e615",
+      "unicode_decimal": 58901
+    },
+    {
+      "icon_id": "13261327",
+      "name": "异味",
+      "font_class": "yiwei",
+      "unicode": "e724",
+      "unicode_decimal": 59172
+    },
+    {
+      "icon_id": "35126253",
+      "name": "剩余量",
+      "font_class": "shengyuliang",
+      "unicode": "e6a7",
+      "unicode_decimal": 59047
+    },
+    {
+      "icon_id": "4236632",
+      "name": "用水",
+      "font_class": "shidu",
+      "unicode": "e614",
+      "unicode_decimal": 58900
+    },
+    {
+      "icon_id": "13638743",
+      "name": "温度",
+      "font_class": "wendu",
+      "unicode": "e660",
+      "unicode_decimal": 58976
+    },
+    {
+      "icon_id": "43475900",
+      "name": "用电量小",
+      "font_class": "yongdianliangxiao",
+      "unicode": "e613",
+      "unicode_decimal": 58899
+    },
+    {
+      "icon_id": "41821269",
+      "name": "用水量",
+      "font_class": "yongshuiliang",
+      "unicode": "e6ca",
+      "unicode_decimal": 59082
+    },
+    {
+      "icon_id": "31850949",
+      "name": "icon-person-nan",
+      "font_class": "icon-person-nan",
+      "unicode": "e612",
+      "unicode_decimal": 58898
+    },
+    {
+      "icon_id": "44740456",
+      "name": "lock",
+      "font_class": "lock",
+      "unicode": "e60a",
+      "unicode_decimal": 58890
+    },
+    {
+      "icon_id": "44740455",
+      "name": "message",
+      "font_class": "message",
+      "unicode": "e60b",
+      "unicode_decimal": 58891
+    },
+    {
+      "icon_id": "44740454",
+      "name": "position",
+      "font_class": "position",
+      "unicode": "e60c",
+      "unicode_decimal": 58892
+    },
+    {
+      "icon_id": "44740452",
+      "name": "right",
+      "font_class": "right",
+      "unicode": "e60d",
+      "unicode_decimal": 58893
+    },
+    {
+      "icon_id": "44740451",
+      "name": "left",
+      "font_class": "left",
+      "unicode": "e60e",
+      "unicode_decimal": 58894
+    },
+    {
+      "icon_id": "44740450",
+      "name": "home",
+      "font_class": "home",
+      "unicode": "e60f",
+      "unicode_decimal": 58895
+    },
+    {
+      "icon_id": "44740449",
+      "name": "down_1",
+      "font_class": "down_1",
+      "unicode": "e610",
+      "unicode_decimal": 58896
+    },
+    {
+      "icon_id": "44740448",
+      "name": "add",
+      "font_class": "add",
+      "unicode": "e611",
+      "unicode_decimal": 58897
+    },
+    {
+      "icon_id": "44740459",
+      "name": "wash",
+      "font_class": "wash",
+      "unicode": "e607",
+      "unicode_decimal": 58887
+    },
+    {
+      "icon_id": "44740457",
+      "name": "scan",
+      "font_class": "scan",
+      "unicode": "e606",
+      "unicode_decimal": 58886
+    },
+    {
+      "icon_id": "44740458",
+      "name": "resource",
+      "font_class": "resource",
+      "unicode": "e608",
+      "unicode_decimal": 58888
+    },
+    {
+      "icon_id": "44740453",
+      "name": "mine",
+      "font_class": "mine",
+      "unicode": "e609",
+      "unicode_decimal": 58889
+    }
+  ]
+}
