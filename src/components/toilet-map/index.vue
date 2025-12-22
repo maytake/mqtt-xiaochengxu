@@ -1,7 +1,12 @@
 <template>
   <view class="bathroom-layout" ref="mapElementRef">
     <view class="bathroom-wrap" v-if="imageUrl">
-      <image class="m-pic" lazy-load :src="imageUrl" mode="widthFix" ref="mImage" @load="onImageLoad" />
+      <u-lazy-load
+        class="m-pic"
+        :image="imageUrl"
+        :loading-img="loadingImg"
+        :error-img="errorImg"
+        :img-mode="isFullscreen ? 'heightFix' : 'widthFix'" />
       <view
         v-for="device in devices"
         :key="device.pointId"
@@ -30,10 +35,14 @@
 
 <script setup>
 import { ref, computed, nextTick, onMounted, getCurrentInstance } from 'vue';
+import { updateDid } from '@/api/home';
+const loadingImg = ref('/static/images/placeholder.jpg');
+const errorImg = ref('/static/images/error.jpg');
 const props = defineProps({
   imageUrl: { type: String, default: '' },
   devicesList: { type: Array, default: () => [] },
   locationToilet: { type: String, default: '' },
+  notAllowJump: { type: Boolean, default: false },
 });
 
 const devices = computed(() => props.devicesList) || [
@@ -45,6 +54,7 @@ const devices = computed(() => props.devicesList) || [
   },
 ];
 const locationToilet = computed(() => props.locationToilet);
+const notAllowJump = computed(() => props.notAllowJump);
 const selectedDevice = ref(null);
 
 // 图片相关状态
@@ -104,31 +114,48 @@ const productModelRouteMap = {
 };
 
 const selectDevice = (device) => {
+  // 如果禁止跳转，则不进行跳转
+  if (notAllowJump.value) return;
+
+  // 如果设备不是网关，则进行扫码
+  if (device.productModel !== 'WG0001') {
+    // 如果没有did，则进行扫码
+    if (!device.did) {
+      uni.showModal({
+        title: '提示',
+        content: '设备未绑定，请先扫码绑定',
+        success: (res) => {
+          if (res.confirm) {
+            scan(device.pointId);
+          }
+        },
+      });
+
+      return;
+    }
+    // 如果没有dirDid，则弹窗确认
+    if (!device.dirDid) {
+      uni.showModal({
+        title: '提示',
+        content: '设备未组网，请从网关进入进行组网',
+        success: (res) => {
+          if (res.confirm) {
+            // uni.navigateTo({
+            //   url: '/pages/gateway/selectGateway?device=' + encodeURIComponent(JSON.stringify(device)),
+            // });
+          }
+        },
+      });
+      return;
+    }
+  }
+
   const newDevice = {
     ...device,
     locationToilet: locationToilet.value,
   };
   console.log('newDevice', newDevice);
-  // 如果没有did，则进行扫码
-  if (newDevice.did) {
-    scan();
-    return;
-  }
-  // 如果没有dirDid，则弹窗确认
-  if (newDevice.dirDid) {
-    uni.showModal({
-      title: '提示',
-      content: '请确认是否进行扫码',
-      success: (res) => {
-        if (res.confirm) {
-          uni.navigateTo({
-            url: '/pages/gateway/selectGateway?device=' + encodeURIComponent(JSON.stringify(newDevice)),
-          });
-        }
-      },
-    });
-    return;
-  }
+
   selectedDevice.value = newDevice;
   const targetPath = productModelRouteMap[newDevice.productModel];
   if (targetPath) {
@@ -138,12 +165,33 @@ const selectDevice = (device) => {
   }
 };
 
-const scan = () => {
+const scan = (pointId) => {
   uni.scanCode({
-    success: (res) => {
-      this.result = res.result;
-      // 刷新首页厕所地图
-      uni.$emit('refresh-map');
+    success: async (res) => {
+      const x = res.result || '';
+      let newResult = x.slice(1, -1);
+      try {
+        newResult = JSON.parse(newResult);
+      } catch (error) {
+        newResult = {};
+      }
+      const { did, productModel } = newResult || {};
+
+      const params = {
+        did,
+        pointId: pointId,
+        productModel,
+      };
+      const r = await updateDid(params);
+      if (r.code === 0) {
+        uni.showToast({
+          title: '绑定成功',
+          icon: 'success',
+          duration: 2000,
+        });
+        // 刷新首页厕所地图
+        uni.$emit('refresh-map');
+      }
     },
     fail: (err) => {
       // 需要注意的是小程序扫码不需要申请相机权限
@@ -171,7 +219,7 @@ const scan = () => {
   justify-content: center;
   align-items: center;
 }
-.m-pic {
+.m-pic ::v-deep .u-lazy-item {
   width: 100%;
   min-height: 240rpx;
 }

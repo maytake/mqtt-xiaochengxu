@@ -48,16 +48,17 @@
 
 <script setup>
 import { ref } from 'vue';
-import { onLoad, onUnload } from '@dcloudio/uni-app';
-
+import { onLoad, onUnload, onPullDownRefresh } from '@dcloudio/uni-app';
+import { storeToRefs } from 'pinia';
 import toiletMap from '@/components/toilet-map/index.vue';
 import LkTree from '@/components/lk-tree/index.vue';
 import { treeProjec, getToiletiemDetails } from '@/api/home';
 import { projectList } from '@/api/home';
-import  useProjectTreeStore  from '@/stores/projectTree';
+import useProjectTreeStore from '@/stores/projectTree';
 const buildingTreeStore = useProjectTreeStore();
+import { useStore } from '@/stores/index';
+const mainStore = useStore();
 const selectedAddress = ref({});
-
 const locationToilet = ref('');
 const imageUrl = ref('');
 const devicesList = ref([]);
@@ -69,18 +70,9 @@ const defaultProps = ref({
 });
 
 onLoad(async () => {
-  // 获取第一个默认地址
-  const res = await getAddressList();
-  if (res.code === 0) {
-    const data = res.data || [];
-    selectedAddress.value = data[0];
-  }
-
-  getTreeProject();
+  initData();
   uni.$on('selected-address', (data) => {
-    selectedAddress.value = data;
-    selectedValue.value = '';
-    getTreeProject();
+    getFloorTreeByProjectId(data);
   });
   // 刷新首页厕所地图
   uni.$on('refresh-map', () => {
@@ -93,6 +85,35 @@ onUnload(() => {
   uni.$off('selected-address');
   uni.$off('refresh-map');
 });
+
+// 下拉刷新首页厕所地图
+// 下拉刷新后请求完成主动收起下拉动画
+onPullDownRefresh(async () => {
+  try {
+    await getToiletFn(selectedValue.value);
+  } finally {
+    console.log('下拉刷新完成');
+    uni.stopPullDownRefresh();
+  }
+});
+
+async function initData() {
+  // 获取第一个默认地址
+  const res = await getAddressList();
+  if (res.code === 0) {
+    const data = res.data || [];
+    const itemAddress = data[0];
+    getFloorTreeByProjectId(itemAddress);
+  }
+}
+
+// 根据选中的选项，重新获取楼栋楼层树
+function getFloorTreeByProjectId(itemAddress) {
+  selectedAddress.value = itemAddress; // 选中项目地址
+  mainStore.setProjectItem(itemAddress); // 设置项目地址
+  selectedValue.value = ''; // 清空楼层选择
+  getTreeProject(); // 重新获取楼层树
+}
 
 // 获取地址列表
 async function getAddressList() {

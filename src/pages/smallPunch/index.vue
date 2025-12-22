@@ -30,7 +30,7 @@
             <text class="font_family m-arrow icon">&#xe618;</text>
             <text>
               总用水量：
-              <text class="status-amount">4000L</text>
+              <text class="status-amount">{{ productModelDetails.waterTotal }}L</text>
             </text>
           </view>
         </view>
@@ -149,7 +149,12 @@
       </up-popup>
 
       <!-- 感应冲洗时间弹窗 -->
-      <up-popup :show="showSenseFlushPopup" :round="10" mode="bottom" :closeOnClickOverlay="false" @close="closeSenseFlushPopup">
+      <up-popup
+        :show="showSenseFlushPopup"
+        :round="10"
+        mode="bottom"
+        :closeOnClickOverlay="false"
+        @close="closeSenseFlushPopup">
         <view class="popup-content sense-popup">
           <view class="title-row">
             <view class="action-btn action-cancel" @click="closeSenseFlushPopup">取消</view>
@@ -183,7 +188,7 @@
             <view class="sense-section">
               <view class="section-title">第二段冲洗时间，设置范围 1-10S</view>
               <view class="number-row sense-row">
-                  <up-number-box v-model="tempSenseStageTwo" :min="1" :max="10" :step="1">
+                <up-number-box v-model="tempSenseStageTwo" :min="1" :max="10" :step="1">
                   <template #minus>
                     <view class="circle-btn">
                       <up-icon name="minus" size="14" color="#909399"></up-icon>
@@ -312,7 +317,7 @@ const clientId = mqttUserInfo?.clientId || '';
 const extractNumber = (str) => {
   if (str == null) return '';
   const match = String(str).match(/\d+/);
-  return match ? match[0] : '';
+  return match ? Number(match[0]) : '';
 };
 
 // 设备相关
@@ -406,9 +411,17 @@ const handlePidTip = (type) => {
 
 // 清洁模式
 const cleaningMode = ref(DEFAULT_SETTINGS.cleaningMode);
-const updateCleaningMode = () => {
-  writeDevicePidValue([{ pid: PID_CONFIG.CLEANING_MODE, val: cleaningMode.value ? 1 : 0 }]);
+const updateCleaningMode = async () => {
+  const params = createControlParams({
+    did: DEVICE_CONFIG.did,
+    sid: 0,
+    fid: 4098,
+    val: cleaningMode.value ? 1 : 0,
+  });
+  const res = await ctrlDevice(params);
+  feedbackResult(res);
 };
+
 
 // 清洁模式时间
 const cleanMinutes = ref(DEFAULT_SETTINGS.cleanMinutes);
@@ -507,23 +520,27 @@ const confirmSenseFlushTime = () => {
 };
 
 // ==================== 设备控制 ====================
+
+// 创建控制功能请求参数
+const createControlParams = (params) => ({
+  dst: DEVICE_CONFIG.dst,
+  seq: generateRandomSeq(),
+  src: clientId,
+  ver: 'V1.0',
+  params: params,
+});
+
 const toggleWater = async () => {
   waterOn.value = true;
   setTimeout(() => {
     waterOn.value = false;
   }, 1000);
-  const params = {
-    src: clientId,
-    dst: DEVICE_CONFIG.dst,
-    ver: 'V1.0',
-    seq: generateRandomSeq(),
-    params: {
-      did: DEVICE_CONFIG.did,
-      sid: 0,
-      fid: 4097,
-      val: 1,
-    },
-  };
+  const params = createControlParams({
+    did: DEVICE_CONFIG.did,
+    sid: 0,
+    fid: 4097,
+    val: 1,
+  });
   const res = await ctrlDevice(params);
   feedbackResult(res);
 };
@@ -570,6 +587,8 @@ onLoad(async (options) => {
     status.value = data.deviceStatus;
     statusName.value = DEVICE_STATUS[status.value];
     DEVICE_CONFIG.did = data.did;
+    DEVICE_CONFIG.dst = data.dirDid;
+    DEVICE_CONFIG.dirDid = data.dirDid;
   }
   reportTopic = `olt/report/pid/${DEVICE_CONFIG.did}`;
   // 阶段2：订阅并仅监听一次设备报告主题

@@ -5,74 +5,47 @@
       <view class="card product-card">
         <view class="product-header">
           <view>
-            <view class="productName">水龙头</view>
+            <view class="productName">{{ device.pointName }}</view>
             <view class="productModel">
               型号：
-              <text>U101</text>
+              <text>{{ device.productModel }}</text>
             </view>
           </view>
         </view>
         <view class="product-hero">
-          <toilet-map :imageUrl="imageUrl" :devicesList="devicesList" :locationToilet="locationToilet" />
+          <toilet-map :imageUrl="imageUrl" :devicesList="devicesList" :notAllowJump="true" />
         </view>
         <view class="product-footer">
           <view class="status-item">
             <text class="font_family m-arrow icon">&#xe60c;</text>
-            <text>7号楼二层男士厕所</text>
+            <text>{{ device.projectName }}</text>
           </view>
         </view>
       </view>
 
       <!-- 状态列表卡片 -->
       <view class="card status-card">
-        <view class="list">
-          <view class="list-item">
-            <view class="label">电源输入</view>
-            <view class="extra">
-              <view :class="['circle', powerOk ? 'ok' : 'bad']">
-                <text class="font_family circle-text">{{ powerOk ? '&#xe634;' : '&#xe632;' }}</text>
+        <view class="list" v-if="faultDeviceList.length > 0">
+          <view v-for="(item, index) in faultDeviceList" :key="item.faultCode">
+            <view class="list-item">
+              <view class="label">{{ item.faultDesc }}</view>
+              <view class="extra">
+                <view :class="['circle', !item.isFault ? 'ok' : 'bad']">
+                  <text class="font_family circle-text">{{ !item.isFault ? '&#xe634;' : '&#xe632;' }}</text>
+                </view>
               </view>
             </view>
-          </view>
-          <view class="divider"></view>
-
-          <view class="list-item">
-            <view class="label">电池容量</view>
-            <view class="extra value">
-              <text :class="batteryTextClass">{{ battery }}%</text>
-            </view>
-          </view>
-          <view class="divider"></view>
-
-          <view class="list-item">
-            <view class="label">感应器</view>
-            <view class="extra">
-              <view :class="['circle', sensorOk ? 'ok' : 'bad']">
-                <text class="font_family circle-text">{{ sensorOk ? '&#xe634;' : '&#xe632;' }}</text>
-              </view>
-            </view>
-          </view>
-          <view class="divider"></view>
-
-          <view class="list-item">
-            <view class="label">电磁阀</view>
-            <view class="extra">
-              <view :class="['circle', valveOk ? 'ok' : 'bad']">
-                <text class="font_family circle-text">{{ valveOk ? '&#xe634;' : '&#xe632;' }}</text>
-              </view>
-            </view>
-          </view>
-          <view class="divider"></view>
-
-          <view class="list-item">
-            <view class="label">连接信号</view>
-            <view class="extra">
-              <view :class="['circle', signalOk ? 'ok' : 'bad']">
-                <text class="font_family circle-text">{{ signalOk ? '&#xe634;' : '&#xe632;' }}</text>
-              </view>
-            </view>
+            <view class="divider" v-if="index !== faultDeviceList.length - 1"></view>
           </view>
         </view>
+        <up-empty
+          v-else
+          iconSize="80rpx"
+          textColor="#999"
+          textSize="28rpx"
+          height="300rpx"
+          text="暂无数据"
+          style="padding: 30rpx 0"></up-empty>
       </view>
 
       <!-- 操作按钮 -->
@@ -85,38 +58,77 @@
 
 <script setup>
 import { computed, ref } from 'vue';
+import { onLoad } from '@dcloudio/uni-app';
 import toiletMap from '@/components/toilet-map/index.vue';
+import { updateDiagnose, getMessageDetail } from '@/api/message';
+import { generateRandomSeq } from '@/utils/common';
+const mqttUserInfo = uni.getStorageSync('mqttUserInfo');
+const clientId = mqttUserInfo?.clientId || '';
 // 厕所施工图
 const imageUrl = ref('https://smart.tck.com.cn/itemDevice-api/images_project/20251118_103501_a972ada3.png'); // 厕所施工图图片
-const devicesList = ref([
-  {
-    id: 'shower',
-    pointName: '马桶01',
-    coordinateJson: { left: 50, top: 320 },
-    status: 0,
-  },
-]); // 厕所施工图设备列表
-const locationToilet = ref(''); // 厕所施工图位置
-
+const devicesList = ref([]); // 厕所施工图设备列表
+const device = ref({});
 // 初始状态（根据截图）
-const powerOk = ref(false);
-const battery = ref(20);
-const sensorOk = ref(false);
-const valveOk = ref(true);
-const signalOk = ref(true);
 
-const batteryTextClass = computed(() => (battery.value < 50 ? 'text-warning' : 'text-normal'));
+const faultDeviceList = ref([]);
 
-const handleResolved = () => {
-  powerOk.value = true;
-  sensorOk.value = true;
-  battery.value = 100;
-  // 操作成功弹窗
-  uni.showToast({
-    title: '操作成功',
-    icon: 'success',
-    duration: 2000,
-  });
+onLoad((options) => {
+  const { device: deviceStr } = options;
+  const item = JSON.parse(decodeURIComponent(deviceStr));
+  const { coordinateJson, pointName, imagePath } = item;
+  device.value = item;
+  devicesList.value = [
+    {
+      id: 'shower',
+      pointName: pointName,
+      coordinateJson: coordinateJson,
+      deviceStatus: 0,
+    },
+  ];
+  imageUrl.value = imagePath;
+  getList(item);
+});
+
+async function getList(item) {
+  const { dirDid, did } = item;
+  const params = {
+    dirDid: dirDid || '011025092402001D',
+    did: did || '011225092403004F',
+  };
+  const res = await getMessageDetail(params);
+  const { code, data } = res || {};
+  if (code === 0) {
+    faultDeviceList.value = data || [];
+  }
+}
+
+const handleResolved = async () => {
+  const { dirDid, did } = device.value;
+
+  const params = {
+    src: clientId,
+    dst: dirDid,
+    ver: 'V1.0',
+    seq: generateRandomSeq(),
+    params: {
+      did,
+    },
+  };
+
+  const res = await updateDiagnose(params);
+  if (res.code === 0) {
+    faultDeviceList.value.forEach((item) => {
+      item.isFault = false;
+    });
+    devicesList.value.forEach((item) => {
+      item.deviceStatus = 1;
+    });
+    uni.showToast({
+      title: '操作成功',
+      icon: 'success',
+      duration: 2000,
+    });
+  }
 };
 </script>
 

@@ -43,7 +43,7 @@
 <script setup>
 import { onLoad, onUnload } from '@dcloudio/uni-app';
 import { ref, computed } from 'vue';
-
+import { updateDid } from '@/api/home';
 // 状态管理
 const isFullscreen = ref(false);
 const selectedDevice = ref(null);
@@ -163,6 +163,39 @@ const productModelRouteMap = {
 };
 
 const selectDevice = (device) => {
+  // 如果设备不是网关，则进行扫码
+  if (device.productModel !== 'WG0001') {
+    // 如果没有did，则进行扫码
+    if (!device.did) {
+      uni.showModal({
+        title: '提示',
+        content: '设备未绑定，请先扫码绑定',
+        success: (res) => {
+          if (res.confirm) {
+            scan(device.pointId);
+          }
+        },
+      });
+
+      return;
+    }
+    // 如果没有dirDid，则弹窗确认
+    if (!device.dirDid) {
+      uni.showModal({
+        title: '提示',
+        content: '设备未组网，请从网关进入进行组网',
+        success: (res) => {
+          if (res.confirm) {
+            // uni.navigateTo({
+            //   url: '/pages/gateway/selectGateway?device=' + encodeURIComponent(JSON.stringify(device)),
+            // });
+          }
+        },
+      });
+      return;
+    }
+  }
+
   const newDevice = {
     ...device,
     locationToilet: locationToilet.value,
@@ -180,6 +213,32 @@ const selectDevice = (device) => {
 // 切换横竖屏显示
 const toggleFullScreen = () => {
   isFullscreen.value = !isFullscreen.value;
+};
+
+const scan = (pointId) => {
+  uni.scanCode({
+    success: async (res) => {
+      const { did, productModel } = res.result;
+      const params = {
+        did,
+        pointId: pointId,
+        productModel,
+      };
+      const r = await updateDid(params);
+      if (r.code === 0) {
+        uni.showToast({
+          title: '绑定成功',
+          icon: 'success',
+          duration: 2000,
+        });
+        // 刷新首页厕所地图
+        uni.$emit('refresh-map');
+      }
+    },
+    fail: (err) => {
+      // 需要注意的是小程序扫码不需要申请相机权限
+    },
+  });
 };
 </script>
 

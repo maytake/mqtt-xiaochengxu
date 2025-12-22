@@ -5,6 +5,7 @@ export const useStore = defineStore('main', {
   state: () => ({
     userInfo: null,
     token: '',
+    projectItem: {},
   }),
   // 计算派生数据，有缓存，自动响应式
   getters: {
@@ -17,6 +18,9 @@ export const useStore = defineStore('main', {
     },
     setToken(token) {
       this.token = token;
+    },
+    setProjectItem(projectItem) {
+      this.projectItem = projectItem;
     },
   },
 });

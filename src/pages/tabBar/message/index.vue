@@ -26,13 +26,13 @@
       <view class="legend">
         <view class="legend-item normal">
           <view class="legend-circle"><text class="font_family data-icon">&#xe638;</text></view>
-          <text class="legend-text">正常工作（175）</text>
-          <text class="legend-value">{{ percent }}%</text>
+          <text class="legend-text">正常工作（{{ normalCount }}）</text>
+          <text class="legend-value">{{ normalPercent }}%</text>
         </view>
         <view class="legend-item warn">
           <view class="legend-circle"><text class="font_family data-icon">&#xe638;</text></view>
-          <text class="legend-text">故障警报（8）</text>
-          <text class="legend-value">{{ 100 - percent }}%</text>
+          <text class="legend-text">故障警报（{{ faultCount }}）</text>
+          <text class="legend-value">{{ faultPercent }}%</text>
         </view>
       </view>
     </view>
@@ -44,11 +44,11 @@
         <view :class="['tab', activeTab === 'pending' ? 'active' : '']" @click="activeTab = 'pending'">待处理</view>
         <view :class="['tab', activeTab === 'done' ? 'active' : '']" @click="activeTab = 'done'">已处理</view>
       </view>
-      <view v-for="item in currentList" :key="item.id" class="card">
+      <view v-for="item in currentList" :key="item.id" class="card" v-if="currentList.length > 0">
         <view class="card-header">
           <view class="title-row">
-            <view class="status-text">当前状态：{{ item.statusText }}</view>
-            <view class="model-text">日期：{{ item.date }}</view>
+            <view class="model-text">故障产生日期：{{ item.createTime }}</view>
+            <view class="model-text" v-if="activeTab === 'done'">故障处理日期：{{ item.updateTime }}</view>
           </view>
         </view>
         <view class="device-wrap">
@@ -60,18 +60,19 @@
             :placeholder="'/static/images/placeholder.jpg'" />
         </view>
         <view class="desc">
-          <view class="place">{{ item.place }}</view>
-          <view class="sn">型号：{{ item.model }}</view>
+          <view class="place">{{ item.projectName }}</view>
+          <view class="sn">型号：{{ item.productModel }}</view>
         </view>
 
         <view class="bottom-row">
           <view class="battery">
             <text class="font_family battery-icon">&#xe62d;</text>
-            <text>电量: {{ item.battery }}%</text>
+            <text>{{ item.faultDesc }}</text>
           </view>
-          <view class="btn-view" @click="seeDetail(item)">查看</view>
+          <view v-if="activeTab === 'pending'" class="btn-view" @click="seeDetail(item)">查看</view>
         </view>
       </view>
+
       <!-- 列表底部加载更多 -->
       <uni-load-more :status="currentLoadStatus" iconType="circle" />
     </view>
@@ -80,9 +81,16 @@
 
 <script setup>
 import { ref, computed, getCurrentInstance, watch, onMounted } from 'vue';
-import { onReachBottom, onShow } from '@dcloudio/uni-app';
-
+import { storeToRefs } from 'pinia';
+import { onReachBottom, onShow, onLoad } from '@dcloudio/uni-app';
+import { getProjectMessage, getDeviceCount } from '@/api/message';
 import cmdProgress from '@/components/cmd-progress/cmd-progress.vue';
+
+import { useStore } from '@/stores/index';
+const { projectItem } = storeToRefs(useStore());
+
+// 使用 computed 创建响应式的 projectId
+const projectId = computed(() => projectItem.value?.projectId);
 const { proxy } = getCurrentInstance();
 const activeTab = ref('pending');
 // 独立的加载状态
@@ -107,7 +115,24 @@ const isLoading = computed(() =>
   activeTab.value === 'pending' ? pendingLoadStatus.value === 'loading' : doneLoadStatus.value === 'loading'
 );
 
+const faultCount = ref(0);
+const normalCount = ref(0);
+
+const normalPercent = computed(() => {
+  const getPercent = (normalCount.value / (normalCount.value + faultCount.value)) * 100 || 0;
+  percent.value = Math.round(getPercent);
+  return Math.round(getPercent); // 保留2位小数
+});
+const faultPercent = computed(() => {
+  const getPercent = (faultCount.value / (normalCount.value + faultCount.value)) * 100 || 0;
+  return Math.round(getPercent); // 保留2位小数
+});
+onLoad(() => {
+  getDeviceCountFn(); // 获取故障设备数量
+});
+
 onShow(() => {
+  console.log('projectItem', projectItem.value.projectId);
   const url = proxy.$getCurrentRoute();
   const isLogin = proxy.$checkLogin(url);
   if (isLogin) {
@@ -119,56 +144,40 @@ onReachBottom(() => {
   loadMore();
 });
 
-// 图片数组
-const imageList = [
-  '/static/images/xiaobianqi.png',
-  '/static/images/shuilongtou.png',
-  '/static/images/ganshouqi.png',
-];
-
-// 随机获取图片
-function getRandomImage() {
-  const randomIndex = Math.floor(Math.random() * imageList.length);
-  return imageList[randomIndex];
+// 获取故障设备数量
+async function getDeviceCountFn() {
+  if (!projectId.value) return; // 如果 projectId 不存在，直接返回
+  const res2 = await getDeviceCount({ projectId: projectId.value });
+  if (res2.code === 0) {
+    const { normalCount: normalCountData, faultCount: faultCountData } = res2.data || {};
+    faultCount.value = faultCountData || 0;
+    normalCount.value = normalCountData || 0;
+  }
 }
 
-// 模拟请求
-function mockFetch(tab, page, size) {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const totalPages = tab === 'pending' ? 3 : 2; // 模拟总页数
-      if (page > totalPages) {
-        resolve({ list: [], hasMore: false });
-        return;
-      }
-      const baseId = (tab === 'pending' ? 0 : 1000) + (page - 1) * size;
-      const list = Array.from({ length: size }).map((_, idx) => {
-        const id = baseId + idx + 1;
-        if (tab === 'pending') {
-          const battery = Math.max(0, 90 - ((page - 1) * size + idx) * 7) % 100;
-          return {
-            id,
-            statusText: battery <= 10 ? '器材即将损毁' : '电池即将耗尽',
-            model: 'HF1011',
-            date: '2025-09-25 10:00:00',
-            img: getRandomImage(),
-            place: '7号楼一楼 男卫生间',
-            battery,
-          };
-        }
-        return {
-          id,
-          statusText: '已更换电池',
-          model: 'HF1011',
-          date: '2025-09-25 10:00:00',
-          img: getRandomImage(),
-          place: '7号楼一楼 男卫生间',
-          battery: 100,
-        };
-      });
-      resolve({ list, hasMore: page < totalPages });
-    }, 600);
-  });
+async function getList(status = 0, page = 1) {
+  if (!projectId.value) return { list: [], hasMore: false }; // 如果 projectId 不存在，直接返回
+  const params = {
+    current: page,
+    size: pageSize,
+    projectId: projectId.value, // 项目id
+    dealStatus: status, // 处理情况,0未处理，1已处理
+  };
+  try {
+    const res = await getProjectMessage(params);
+    if (res.code === 0) {
+      const { records = [], total = 0, pages = 0 } = res.data || {};
+      return {
+        list: records,
+        hasMore: pages < total,
+      };
+    }
+  } catch (error) {}
+
+  return {
+    list: [],
+    hasMore: false,
+  };
 }
 
 async function loadMore() {
@@ -181,9 +190,9 @@ async function loadMore() {
 
   // 计算下一页
   const nextPage = tab === 'pending' ? pendingPage.value + 1 : donePage.value + 1;
-  // 模拟请求
-  const { list, hasMore } = await mockFetch(tab, nextPage, pageSize);
-
+  // 调用 getList 获取数据，0未处理，1已处理
+  const status = tab === 'pending' ? 0 : 1;
+  const { list, hasMore } = await getList(status, nextPage);
   // 更新列表
   if (tab === 'pending') {
     pendingList.value = pendingList.value.concat(list);
@@ -209,9 +218,32 @@ watch(activeTab, (val) => {
   }
 });
 
+// 监听 projectId 变化，重新加载数据
+watch(
+  projectId,
+  (newProjectId, oldProjectId) => {
+    // 当 projectId 变化且新值存在时，重新加载数据
+    if (newProjectId && newProjectId !== oldProjectId) {
+      // 重置列表和分页
+      pendingList.value = [];
+      doneList.value = [];
+      pendingPage.value = 0;
+      donePage.value = 0;
+      pendingHasMore.value = true;
+      doneHasMore.value = true;
+      pendingLoadStatus.value = 'more';
+      doneLoadStatus.value = 'more';
+      // 重新获取数据
+      getDeviceCountFn();
+      loadMore();
+    }
+  },
+  { immediate: false }
+);
+
 // 查看详情
 const seeDetail = (item) => {
-  uni.navigateTo({ url: '/pages/message/diagnosis' });
+  uni.navigateTo({ url: '/pages/message/diagnosis?device=' + encodeURIComponent(JSON.stringify(item)) });
 };
 </script>
 
@@ -281,7 +313,7 @@ $color-primary: #4e4036;
 }
 
 .circle-text-value {
-  font-size: 80rpx;
+  font-size: 70rpx;
   color: $color-title;
   font-weight: bold;
   line-height: 1;
@@ -306,7 +338,7 @@ $color-primary: #4e4036;
 .legend-item {
   display: flex;
   align-items: center;
-  gap: 12rpx;
+  gap: 5rpx;
   color: $color-label;
   font-size: 24rpx;
 }
@@ -382,7 +414,9 @@ $color-primary: #4e4036;
   font-size: 28rpx;
   margin-bottom: 8rpx;
 }
-
+.model-text {
+  margin-bottom: 8rpx;
+}
 .device-wrap {
   width: 500rpx;
   margin: 50rpx auto 20rpx;

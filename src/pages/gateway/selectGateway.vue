@@ -75,34 +75,44 @@ const mqttUserInfo = uni.getStorageSync('mqttUserInfo');
 const clientId = mqttUserInfo?.clientId || '';
 
 const treeData = ref([]);
-const selectedValue = ref('');
+
 const device = ref(null);
+const selectedDid = ref('');
 const defaultProps = ref({
   children: 'children',
   label: 'name',
 });
 // 设备列表数据（假数据，实际应从接口获取）
 const deviceList = ref([]);
-
+const selectedValue = ref('');
 onLoad(async (options) => {
   const deviceData = options.device;
   if (deviceData) {
     const data = JSON.parse(decodeURIComponent(deviceData));
     console.log(data);
     device.value = data;
-    const { parentCode } = device.value;
-    getDeviceList(parentCode);
+    const { parentCode, did } = device.value;
+
+    getDeviceList(parentCode, did);
   }
+
+  // 获取树的数据，默认选中的值
   treeData.value = buildingTreeStore.buildingTree;
   selectedValue.value = buildingTreeStore.selectedId;
   console.log(buildingTreeStore.value);
 });
 
 // 获取设备列表
-async function getDeviceList(parentCode) {
+async function getDeviceList(parentCode, did) {
   const res = await getSubDeviceInfo({ parentCode });
   if (res.code === 0) {
     deviceList.value = res.data || [];
+    console.log(did);
+    // 如果did存在，则默认选中该设备
+    if (did) {
+      selectedDevices.value.push(did);
+      selectedDevicesItem.value.push(deviceList.value.find((item) => item.did === did));
+    }
   }
 }
 

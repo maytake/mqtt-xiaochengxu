@@ -28,7 +28,7 @@
             <text class="font_family m-arrow icon">&#xe618;</text>
             <text>
               总用水量：
-              <text class="status-amount">4000L</text>
+              <text class="status-amount">{{ productModelDetails.waterTotal }}L</text>
             </text>
           </view>
         </view>
@@ -313,7 +313,7 @@ const clientId = mqttUserInfo?.clientId || '';
 const extractNumber = (str) => {
   if (str == null) return '';
   const match = String(str).match(/\d+/);
-  return match ? match[0] : '';
+  return match ? Number(match[0]) : '';
 };
 
 // PID 值处理映射
@@ -356,6 +356,8 @@ const initDeviceData = (options) => {
     status.value = data.deviceStatus;
     statusName.value = DEVICE_STATUS[status.value];
     DEVICE_CONFIG.did = data.did;
+    DEVICE_CONFIG.dst = data.dirDid;
+    DEVICE_CONFIG.dirDid = data.dirDid;
   }
   reportTopic = `olt/report/pid/${DEVICE_CONFIG.did}`;
   // 阶段2：订阅并仅监听一次设备报告主题
@@ -495,30 +497,40 @@ const onPickerConfirm = (e) => {
 
 // ==================== 设备控制 ====================
 
+// 创建控制功能请求参数
+const createControlParams = (params) => ({
+  dst: DEVICE_CONFIG.dst,
+  seq: generateRandomSeq(),
+  src: clientId,
+  ver: 'V1.0',
+  params: params,
+});
+
 const toggleWater = async () => {
   waterOn.value = true;
   setTimeout(() => {
     waterOn.value = false;
   }, 1000);
-  const params = {
-    src: clientId,
-    dst: DEVICE_CONFIG.dst,
-    ver: 'V1.0',
-    seq: generateRandomSeq(),
-    params: {
-      did: DEVICE_CONFIG.did,
-      sid: 0,
-      fid: 4097,
-      val: 1,
-    },
-  };
+  const params = createControlParams({
+    did: DEVICE_CONFIG.did,
+    sid: 0,
+    fid: 4097,
+    val: 1,
+  });
   const res = await ctrlDevice(params);
   feedbackResult(res);
 };
 
 // 设备设置更新
-const updateCleaningMode = () => {
-  writeDevicePidValue([{ pid: PID_CONFIG.CLEANING_MODE, val: cleaningMode.value ? 1 : 0 }]);
+const updateCleaningMode = async () => {
+  const params = createControlParams({
+    did: DEVICE_CONFIG.did,
+    sid: 0,
+    fid: 4098,
+    val: cleaningMode.value ? 1 : 0,
+  });
+  const res = await ctrlDevice(params);
+  feedbackResult(res);
 };
 
 const confirmCleanTime = () => {

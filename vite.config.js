@@ -13,7 +13,7 @@ export default defineConfig(({ mode, command }) => {
     resolve: {
       alias: {
         '~': path.resolve(__dirname, './'),
-        '@': path.resolve(__dirname, './src'),
+        '@': path.resolve(__dirname, './src')
       }
     },
     // vite 相关配置

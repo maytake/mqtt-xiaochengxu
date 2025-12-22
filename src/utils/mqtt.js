@@ -213,8 +213,18 @@ const mqttService = {
         }
       }
     });
+    let messageHandler = null;
 
-    client.on('message', (topic, message) => {
+    // 若已存在旧回调，先解绑以避免重复绑定
+    if (messageHandler) {
+      try {
+        if (typeof client.off === 'function') {
+          client.off('message', messageHandler);
+        }
+      } catch (e) {}
+    }
+    // 定义并绑定新的回调
+    messageHandler = (topic, message) => {
       let messageData;
       try {
         messageData = JSON.parse(message);
@@ -240,7 +250,8 @@ const mqttService = {
           }
           break;
       }
-    });
+    };
+    client.on('message', messageHandler);
 
     client.on('connect', () => {
       isConnected = true;
@@ -277,10 +288,6 @@ const mqttService = {
       if (reconnectTimer) return; // 避免重复触发
       if (softReconnectAttempts >= MAX_SOFT_RECONNECT_ATTEMPTS) {
         console.warn(`MQTT 软重连超过 ${MAX_SOFT_RECONNECT_ATTEMPTS} 次，停止重试`);
-        uni.showToast({
-          icon: 'none',
-          title: '网络异常，请稍后重试',
-        });
         return;
       }
       reconnectTimer = setTimeout(() => {

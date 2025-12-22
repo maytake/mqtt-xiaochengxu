@@ -246,13 +246,15 @@ const returnToGatewayDetail = () => {
     const delta = pages.length - 1 - targetIndex;
     if (delta > 0) {
       uni.navigateBack({ delta });
+      // 刷新首页厕所地图
+      uni.$emit('refresh-map');
     }
     return;
   }
 
-  uni.redirectTo({
-    url: '/pages/gateway/gatewayList?device=' + encodeURIComponent(JSON.stringify(device.value)),
-  });
+  uni.navigateBack();
+  // 刷新首页厕所地图
+  uni.$emit('refresh-map');
 };
 
 // 完成返回设备列表页面，跳转不留历史记录

@@ -31,10 +31,6 @@ export default {
       // 网络从断开恢复到连接时，立即触发MQTT重连
       if (res.isConnected) {
         console.log('🌐 网络已恢复，立即重连MQTT');
-        uni.showToast({
-          title: '网络已恢复，立即重连MQTT',
-          icon: 'none',
-        });
         // 网络恢复时，延迟500ms后重连，确保网络稳定
         this.checkAndConnectMqtt({ delay: 500 });
       }

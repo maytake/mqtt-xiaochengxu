@@ -19,3 +19,10 @@ export function getToiletiemDetails(projectId) {
     method: 'get',
   });
 }
+export function updateDid(data) {
+  return request({
+    url: '/itemDevice-api/project/updateDid',
+    method: 'post',
+    data: data
+  })
+}
