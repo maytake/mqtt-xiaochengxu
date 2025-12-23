@@ -24,7 +24,7 @@ import { ref } from 'vue';
 
 // 图表配置项，可根据需要继续扩展
 const opts = {
-  color: ['#3c9cff'],
+  color: ['#574b43'],
   padding: [15, 10, 0, 15],
   enableScroll: true,
   // 关闭动画，减少切换时的闪烁
@@ -140,8 +140,8 @@ const switchRange = (range) => {
 }
 
 .range-btn.active {
-  border-color: #3c9cff;
-  background-color: #3c9cff;
+  border-color: #574b43;
+  background-color: #574b43;
   color: #ffffff;
 }
 </style>

@@ -42,6 +42,12 @@
           <!-- 厕所地图-end -->
         </view>
       </view>
+
+      <!-- 统计表格 -->
+      <view class="statistical-table-container">
+        <statistical-table @changeRange="handleChangeRange" :data="statisticalData" />
+      </view>
+      <!-- 统计表格-end -->
     </view>
   </view>
 </template>
@@ -52,7 +58,9 @@ import { onLoad, onUnload, onPullDownRefresh } from '@dcloudio/uni-app';
 import { storeToRefs } from 'pinia';
 import toiletMap from '@/components/toilet-map/index.vue';
 import LkTree from '@/components/lk-tree/index.vue';
+import StatisticalTable from '@/components/statistical-table/index.vue';
 import { treeProjec, getToiletiemDetails } from '@/api/home';
+import { queryHomeStatisticGroup } from '@/api/uEchartsApi';
 import { projectList } from '@/api/home';
 import useProjectTreeStore from '@/stores/projectTree';
 const buildingTreeStore = useProjectTreeStore();
@@ -68,7 +76,7 @@ const defaultProps = ref({
   children: 'children',
   label: 'name',
 });
-
+const statisticalData = ref({});
 onLoad(async () => {
   initData();
   uni.$on('selected-address', (data) => {
@@ -78,6 +86,7 @@ onLoad(async () => {
   uni.$on('refresh-map', () => {
     getToiletFn(selectedValue.value);
   });
+
 });
 
 onUnload(() => {
@@ -90,7 +99,8 @@ onUnload(() => {
 // 下拉刷新后请求完成主动收起下拉动画
 onPullDownRefresh(async () => {
   try {
-    await getToiletFn(selectedValue.value);
+    getToiletFn(selectedValue.value);
+    getStatisticalData(selectedValue.value);
   } finally {
     console.log('下拉刷新完成');
     uni.stopPullDownRefresh();
@@ -143,6 +153,7 @@ const handleNodeClick = (node) => {
   clearToiletData();
   if (node.level == 3) {
     getToiletFn(node.projectId);
+    getStatisticalData(node.projectId);
   }
 };
 // 遍历树节点，找出第一个级最底层的节点并获取projectId的值
@@ -171,6 +182,7 @@ const getTreeProject = async () => {
       buildingTreeStore.setSelectedId(projectId);
       locationToilet.value = nameSr;
       getToiletFn(projectId);
+      getStatisticalData(projectId);
     }
   }
 };
@@ -199,6 +211,24 @@ const handldeGo = () => {
     url: `/pages/home/toiletMap?data=${query}`,
   });
 };
+
+const handleChangeRange = (range) => {
+  console.log('range', range);
+  getStatisticalData(selectedValue.value);
+};
+
+async function getStatisticalData(homeId) {
+  const params = {
+    homeId: 291,
+    dataType: 2,
+    infoType: 2,
+  };
+  const res = await queryHomeStatisticGroup(params);
+  const { code, data } = res || {};
+  if (code === 0) {
+    statisticalData.value = data;
+  }
+}
 </script>
 
 <style lang="scss" scoped>
@@ -298,5 +328,8 @@ const handldeGo = () => {
   margin-right: 8rpx;
   font-size: 24rpx;
   color: #574b43;
+}
+.statistical-table-container {
+  margin: 60rpx 0 200rpx;
 }
 </style>

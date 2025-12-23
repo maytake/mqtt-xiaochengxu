@@ -383,9 +383,17 @@ const onBackgroundError = () => {
   backgroundLoaded.value = false;
 };
 
-const openUserAgreement = () => {};
+const openUserAgreement = () => {
+  uni.navigateTo({
+    url: '/pages/login/userAgreement',
+  });
+};
 
-const openPrivacyPolicy = () => {};
+const openPrivacyPolicy = () => {
+  uni.navigateTo({
+    url: '/pages/login/privacyPolicy',
+  });
+};
 
 // 生命周期
 onLoad((options) => {

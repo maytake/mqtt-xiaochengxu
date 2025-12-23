@@ -123,6 +123,12 @@
 					"style": {
 						"navigationBarTitleText": "小冲器"
 					}
+				},
+				{
+					"path": "attributeControls",
+					"style": {
+						"navigationBarTitleText": "小冲器设置"
+					}
 				}
 			]
 		},

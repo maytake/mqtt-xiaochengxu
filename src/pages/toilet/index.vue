@@ -1013,21 +1013,6 @@ const goToSetting = () => {
   padding: 30rpx;
 }
 
-.settings-btn {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 20rpx;
-}
-
-.settings-text {
-  background: linear-gradient(-90deg, #efefef 0%, #fff 100%);
-  border-radius: 30rpx;
-  padding: 8rpx 24rpx;
-  font-size: 28rpx;
-  color: #333;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
-  border: 1rpx solid #e0e0e0;
-}
 .card {
   background: linear-gradient(-90deg, #efefef 0%, #fff 100%);
   border-radius: 28rpx;
