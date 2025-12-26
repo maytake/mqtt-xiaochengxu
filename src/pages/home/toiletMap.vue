@@ -44,7 +44,8 @@
 import { onLoad, onUnload } from '@dcloudio/uni-app';
 import { ref, computed } from 'vue';
 import { updateDid } from '@/api/home';
-// 状态管理
+
+// 状态管理 - 确保所有响应式变量在使用前已定义
 const isFullscreen = ref(false);
 const selectedDevice = ref(null);
 const imageUrl = ref('');

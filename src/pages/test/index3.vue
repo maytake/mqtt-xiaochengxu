@@ -1,6 +1,6 @@
 <template>
   <view class="test-page">
-    <view class="title">{{ currentRange === 'month' ? '月度示例数据柱状图' : '每日示例数据柱状图' }}</view>
+    <view class="title">{{ currentRange === 'month' ? '月度用水量柱状图' : '2025-12-10 至 2025-12-24用水量' }}</view>
     <view class="charts-container">
       <!-- 使用两个图表实例，通过显示/隐藏切换，避免重绘闪烁 -->
       <view class="chart-wrapper" :class="{ hidden: currentRange !== 'month' }">
@@ -63,7 +63,7 @@ const monthChartData = {
   categories: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
   series: [
     {
-      name: '示例数据',
+      name: '用水量',
       data: [30, 40, 35, 50, 60, 55, 70, 65, 58, 72, 68, 75],
     },
   ],
@@ -74,7 +74,7 @@ const dayChartData = {
   categories: ['1日', '2日', '3日', '4日', '5日', '6日', '7日'],
   series: [
     {
-      name: '示例数据',
+      name: '用水量',
       data: [10, 20, 15, 25, 30, 28, 35],
     },
   ],

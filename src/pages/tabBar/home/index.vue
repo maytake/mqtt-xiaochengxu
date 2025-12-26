@@ -45,7 +45,14 @@
 
       <!-- 统计表格 -->
       <view class="statistical-table-container">
-        <statistical-table @changeRange="handleChangeRange" :data="statisticalData" />
+        <statistical-table
+          @changeRange="handleChangeRange"
+          :data="statisticalData"
+          :ready="statisticalReady"
+          :buttonTab="[
+            { label: '按月', value: 'month' },
+            { label: '按天', value: 'day' },
+          ]" />
       </view>
       <!-- 统计表格-end -->
     </view>
@@ -53,9 +60,10 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, getCurrentInstance } from 'vue';
 import { onLoad, onUnload, onPullDownRefresh } from '@dcloudio/uni-app';
 import { storeToRefs } from 'pinia';
+const { proxy } = getCurrentInstance();
 import toiletMap from '@/components/toilet-map/index.vue';
 import LkTree from '@/components/lk-tree/index.vue';
 import StatisticalTable from '@/components/statistical-table/index.vue';
@@ -66,6 +74,7 @@ import useProjectTreeStore from '@/stores/projectTree';
 const buildingTreeStore = useProjectTreeStore();
 import { useStore } from '@/stores/index';
 const mainStore = useStore();
+import { formatDate } from '@/utils/common';
 const selectedAddress = ref({});
 const locationToilet = ref('');
 const imageUrl = ref('');
@@ -77,8 +86,32 @@ const defaultProps = ref({
   label: 'name',
 });
 const statisticalData = ref({});
+const statisticalReady = ref(false);
+
+// 公用：构造“按月，往前推12个月”的统计参数
+const buildLast12MonthParams = () => {
+  const now = new Date();
+  const endDate = formatDate(now, 'yyyy-MM');
+  // 往前推12个月
+  const startDateObj = new Date(now);
+  startDateObj.setMonth(now.getMonth() - 11);
+  const statrDate = formatDate(startDateObj, 'yyyy-MM');
+
+  return {
+    dataType: 1,
+    statrDate,
+    endDate,
+  };
+};
+
 onLoad(async () => {
-  initData();
+  const url = proxy.$getCurrentRoute();
+  const isLogin = proxy.$checkLogin(url);
+  if (isLogin) {
+    // 加载数据
+    initData();
+  }
+
   uni.$on('selected-address', (data) => {
     getFloorTreeByProjectId(data);
   });
@@ -86,7 +119,6 @@ onLoad(async () => {
   uni.$on('refresh-map', () => {
     getToiletFn(selectedValue.value);
   });
-
 });
 
 onUnload(() => {
@@ -99,8 +131,10 @@ onUnload(() => {
 // 下拉刷新后请求完成主动收起下拉动画
 onPullDownRefresh(async () => {
   try {
+    statisticalReady.value = false;
     getToiletFn(selectedValue.value);
-    getStatisticalData(selectedValue.value);
+    const params = buildLast12MonthParams();
+    getStatisticalData(params);
   } finally {
     console.log('下拉刷新完成');
     uni.stopPullDownRefresh();
@@ -152,8 +186,10 @@ const handleNodeClick = (node) => {
   buildingTreeStore.setSelectedId(node.projectId);
   clearToiletData();
   if (node.level == 3) {
+    statisticalReady.value = false;
     getToiletFn(node.projectId);
-    getStatisticalData(node.projectId);
+    const params = buildLast12MonthParams();
+    getStatisticalData(params);
   }
 };
 // 遍历树节点，找出第一个级最底层的节点并获取projectId的值
@@ -181,8 +217,10 @@ const getTreeProject = async () => {
       selectedValue.value = projectId;
       buildingTreeStore.setSelectedId(projectId);
       locationToilet.value = nameSr;
+      statisticalReady.value = false;
       getToiletFn(projectId);
-      getStatisticalData(projectId);
+      const params = buildLast12MonthParams();
+      getStatisticalData(params);
     }
   }
 };
@@ -213,21 +251,47 @@ const handldeGo = () => {
 };
 
 const handleChangeRange = (range) => {
-  console.log('range', range);
-  getStatisticalData(selectedValue.value);
+  let params = {};
+  if (range === 'month') {
+    // 按月endDate为当前月，statrDate为往前推12个月：yyyy-MM
+    params = buildLast12MonthParams();
+  } else {
+    // 按天endDate为当前天，statrDate为往前15天：yyyy-MM-dd
+    const now = new Date();
+    const endDate = formatDate(now, 'yyyy-MM-dd');
+    // 往前推15天
+    const startDateObj = new Date(now);
+    startDateObj.setDate(now.getDate() - 14);
+    const statrDate = formatDate(startDateObj, 'yyyy-MM-dd');
+    params = {
+      dataType: 2,
+      statrDate,
+      endDate,
+    };
+  }
+
+  statisticalReady.value = false;
+  getStatisticalData(params);
 };
 
-async function getStatisticalData(homeId) {
+async function getStatisticalData(objParams) {
+  const { dataType, statrDate, endDate } = objParams || {};
   const params = {
-    homeId: 291,
-    dataType: 2,
+    homeId: selectedValue.value,
+    dataType,
     infoType: 2,
+    statrDate,
+    endDate,
   };
   const res = await queryHomeStatisticGroup(params);
   const { code, data } = res || {};
   if (code === 0) {
-    statisticalData.value = data;
+    statisticalData.value = data || {};
+  } else {
+    // 接口失败时也置空，避免子组件卡 loading
+    statisticalData.value = {};
   }
+  statisticalReady.value = true;
 }
 </script>
 

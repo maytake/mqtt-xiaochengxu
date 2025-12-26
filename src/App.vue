@@ -13,6 +13,7 @@ export default {
         const path = args.url.split('?')[0];
         if (urls.includes(path)) {
           const token = uni.getStorageSync('token');
+          console.log('token', token);
           if (!token) {
             uni.navigateTo({
               url: '/pages/login/login?redirect=' + encodeURIComponent(args.url),

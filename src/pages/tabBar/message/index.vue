@@ -132,7 +132,6 @@ onLoad(() => {
 });
 
 onShow(() => {
-  console.log('projectItem', projectItem.value.projectId);
   const url = proxy.$getCurrentRoute();
   const isLogin = proxy.$checkLogin(url);
   if (isLogin) {

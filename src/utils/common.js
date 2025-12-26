@@ -71,3 +71,42 @@ export function decryptPassword(encryptedBase64, key = '39dc0125d2489439') {
   return decrypted.toString(CryptoJS.enc.Utf8);
 }
 
+/**
+ * 格式化日期
+ * @param {Date|string|number} date - 日期对象、日期字符串或时间戳
+ * @param {string} format - 格式化模板，如 'yyyy-MM-dd'、'yyyy-MM' 或 'yyyy-MM-dd HH:mm:ss'
+ * @returns {string} 格式化后的日期字符串
+ * @description 
+ * 支持的格式：
+ * - yyyy: 年份（4位）
+ * - MM: 月份（2位，01-12）
+ * - dd: 日期（2位，01-31）
+ * - HH: 小时（24小时制，2位，00-23）
+ * - hh: 小时（12小时制，2位，01-12）
+ * - mm: 分钟（2位，00-59）
+ * - ss: 秒（2位，00-59）
+ */
+export function formatDate(date, format = 'yyyy-MM-dd') {
+  if (!date) return '';
+  
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return '';
+  
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  const hours24 = String(d.getHours()).padStart(2, '0');
+  const hours12 = String(d.getHours() % 12 || 12).padStart(2, '0');
+  const minutes = String(d.getMinutes()).padStart(2, '0');
+  const seconds = String(d.getSeconds()).padStart(2, '0');
+  
+  // 按顺序替换，先替换长的格式，避免短格式被误替换
+  return format
+    .replace('yyyy', year)
+    .replace('MM', month)      // 月份，必须在 mm 之前
+    .replace('dd', day)
+    .replace('HH', hours24)    // 24小时制，必须在 hh 之前
+    .replace('hh', hours12)    // 12小时制
+    .replace('mm', minutes)    // 分钟
+    .replace('ss', seconds);   // 秒
+}

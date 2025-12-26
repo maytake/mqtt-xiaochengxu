@@ -279,7 +279,7 @@
         </view>
         <view class="position-content">
           <view class="position-display">
-            <text class="position-value">{{ LEVEL_LABELS[positionLevel] }}</text>
+            <text class="position-value">{{ LEVEL_LABELSB[positionLevel] }}</text>
           </view>
           <view class="position-controls">
             <view class="position-btn" @click="decreasePosition">
@@ -299,7 +299,7 @@
         </view>
         <view class="position-content">
           <view class="position-display">
-            <text class="position-value">{{ LEVEL_LABELS[waterAmountLevel] }}</text>
+            <text class="position-value">{{ LEVEL_LABELSB[waterAmountLevel] }}</text>
           </view>
           <view class="position-controls">
             <view class="position-btn" @click="decreaseWaterAmount">
@@ -391,7 +391,8 @@ const showSeatTempModule = ref(false);
 const showWaterAmountModule = ref(false);
 
 // 档位通用显示（1档 ~ 5档）
-const LEVEL_LABELS = ['1档', '2档', '3档', '4档', '5档'];
+const LEVEL_LABELS = ['1档', '2档', '3档', '4档', '5档', '6档'];
+const LEVEL_LABELSB = ['1档', '2档', '3档', '4档', '5档'];
 
 // 位置调节
 const positionLevel = ref(1);
@@ -922,7 +923,7 @@ const setFeminineWashMode = (mode) => {
 
 // 水温调节（1~5档）
 const increaseTemp = () => {
-  if (waterTemp.value < 4) {
+  if (waterTemp.value < 5) {
     waterTemp.value++;
     ctrFn(4105, waterTemp.value);
   }
@@ -937,7 +938,7 @@ const decreaseTemp = () => {
 
 // 风温调节（1~5档）
 const increaseWindTemp = () => {
-  if (windTemp.value < 4) {
+  if (windTemp.value < 5) {
     windTemp.value++;
     ctrFn(4106, windTemp.value);
   }
@@ -952,7 +953,7 @@ const decreaseWindTemp = () => {
 
 // 坐温调节（1~5档）
 const increaseSeatTemp = () => {
-  if (seatTemp.value < 4) {
+  if (seatTemp.value < 5) {
     seatTemp.value++;
     ctrFn(4107, seatTemp.value);
   }
