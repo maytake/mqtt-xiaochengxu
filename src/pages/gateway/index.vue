@@ -62,7 +62,7 @@ import { getBindDeviceTotal } from '@/api/gateway';
 // 设备信息
 const deviceName = ref('五号楼一层厕所01');
 const deviceModel = ref('U101');
-const deviceImage = ref('/static/images/wangguan.png'); // 默认图片，可根据实际情况调整
+const deviceImage = ref(''); // 默认图片，可根据实际情况调整
 const deviceStatus = ref('online'); // online | offline
 const statusName = ref('在线');
 const deviceCount = ref(0);
