@@ -76,7 +76,7 @@ const opts = {
     disableGrid: true,
     scrollShow: true,
     itemCount: 5,
-    scrollAlign: 'left',
+    scrollAlign: 'right',
   },
   yAxis: {
     data: [

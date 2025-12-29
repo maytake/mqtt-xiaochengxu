@@ -35,7 +35,7 @@
             <text class="font_family m-arrow icon">&#xe618;</text>
             <text>
               今日使用次数：
-              <text class="status-amount">{{ productModelDetails.waterTotal }}次</text>
+              <text class="status-amount">{{ todayCount }}次</text>
             </text>
           </view>
         </view>
@@ -63,6 +63,7 @@ import { onLoad } from '@dcloudio/uni-app';
 import { getProductModelDetails } from '@/api/mqttCommon';
 import { queryDeviceStatisticGroup } from '@/api/uEchartsApi';
 import StatisticalTable from '@/components/statistical-table/index.vue';
+const mqttClient = getApp().globalData.mqttService;
 import { formatDate } from '@/utils/common';
 // 设备相关
 const device = ref('');
@@ -79,7 +80,8 @@ const DEVICE_CONFIG = {
   did: '0111250924030004',
   dirDid: '011025092402001D',
 };
-
+let reportTopic = '';
+let todayCount = ref(0); // 今日统计次数
 // ==================== 设备控制 ====================
 // 公用：构造“按天，往前推15天”的统计参数
 const buildLast15DaysParams = () => {
@@ -111,6 +113,8 @@ const buildLast24HoursParams = () => {
   };
 };
 
+// 页面级主题消息处理函数
+let handleReportTopicResponse = null;
 onLoad(async (options) => {
   const deviceData = options.device;
   if (deviceData) {
@@ -122,10 +126,27 @@ onLoad(async (options) => {
     DEVICE_CONFIG.dst = data.dirDid;
     DEVICE_CONFIG.dirDid = data.dirDid;
   }
+  reportTopic = `olt/report/eid/${DEVICE_CONFIG.did}/8212`;
+  // 阶段2：订阅并仅监听一次设备报告主题
+  mqttClient.registerPageTopicHandler(reportTopic, handleReportTopicResponse);
+
   await Promise.all([loadProductModelDetails()]);
   const params = buildLast15DaysParams();
   getStatisticalData(params);
 });
+
+// 页面级主题消息处理变量
+handleReportTopicResponse = (messageData, topic) => {
+  console.log('pageMessage', messageData);
+  if (messageData?.topic === reportTopic) {
+    const params = messageData?.params;
+    if (params) {
+      todayCount.value++;
+    }
+  }
+};
+
+handleReportTopicResponse();
 
 // ==================== 产品信息 ====================
 const loadProductModelDetails = async () => {
@@ -135,6 +156,7 @@ const loadProductModelDetails = async () => {
     const { code, data } = res || {};
     if (code === 0) {
       productModelDetails.value = data;
+      todayCount.value = data.waterTotal;
     }
   } catch (error) {
     console.error('获取产品模型详情失败:', error);
