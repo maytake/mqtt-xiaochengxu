@@ -258,6 +258,7 @@ const handleChangeRange = (range) => {
   } else {
     // 按天endDate为当前天，statrDate为往前15天：yyyy-MM-dd
     const now = new Date();
+    now.setDate(now.getDate() - 1); // 减去一天
     const endDate = formatDate(now, 'yyyy-MM-dd');
     // 往前推15天
     const startDateObj = new Date(now);
