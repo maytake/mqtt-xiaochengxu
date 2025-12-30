@@ -161,9 +161,12 @@
 				{
 					"path": "index3",
 					"style": {
-						"navigationBarTitleText": "测试页2",
+						"navigationBarTitleText": "测试页3",
 						"componentPlaceholder": {
-							"qiun-data-charts": "view"
+							"qiun-data-charts": "view",
+							"ly-charts-bar": "view",
+							"ly-charts-line": "view",
+							"charts-bar": "view"
 						}
 					}
 				}
@@ -282,7 +285,8 @@
 			"^u--(.*)": "uview-plus/components/u-$1/u-$1.vue",
 			"^up-(.*)": "uview-plus/components/u-$1/u-$1.vue",
 			"^u-([^-].*)": "uview-plus/components/u-$1/u-$1.vue",
-			"^qiun-(.*)": "@/uni_modules/qiun-data-charts/components/$1/$1.vue"
+			"^qiun-(.*)": "@/uni_modules/qiun-data-charts/components/$1/$1.vue",
+			"^ly-(.*)": "@/uni_modules/ly-charts/components/ly-$1/ly-$1.vue"
 		}
 	}
 }

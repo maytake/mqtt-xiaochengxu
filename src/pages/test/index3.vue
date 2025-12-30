@@ -1,147 +1,103 @@
 <template>
   <view class="test-page">
-    <view class="title">{{ currentRange === 'month' ? '月度用水量柱状图' : '2025-12-10 至 2025-12-24用水量' }}</view>
-    <view class="charts-container">
-      <!-- 使用两个图表实例，通过显示/隐藏切换，避免重绘闪烁 -->
-      <view class="chart-wrapper" :class="{ hidden: currentRange !== 'month' }">
-        <qiun-data-charts type="column" :chartData="monthChartData" :opts="opts" :ontouch="true" />
-      </view>
-      <view class="chart-wrapper" :class="{ hidden: currentRange !== 'day' }">
-        <qiun-data-charts type="column" :chartData="dayChartData" :opts="opts" :ontouch="true" />
-      </view>
-    </view>
-    <view class="btn-group">
-      <button class="range-btn" :class="{ active: currentRange === 'month' }" @click="switchRange('month')">
-        按月
-      </button>
-      <button class="range-btn" :class="{ active: currentRange === 'day' }" @click="switchRange('day')">按天</button>
-    </view>
+    <charts-bar
+      @changeRange="handleChangeRange"
+      :data="chartData"
+      :ready="chartReady"
+      :buttonTab="[
+        { label: '按月', value: 'month' },
+        { label: '按天', value: 'day' },
+      ]" />
   </view>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import ChartsBar from '@/components/charts-bar/index.vue';
+import { queryHomeStatisticGroup } from '@/api/uEchartsApi';
+import { formatDate } from '@/utils/common';
 
-// 图表配置项，可根据需要继续扩展
-const opts = {
-  color: ['#574b43'],
-  padding: [15, 10, 0, 15],
-  enableScroll: true,
-  // 关闭动画，减少切换时的闪烁
-  animation: false,
-  legend: {
-    show: true,
-  },
-  xAxis: {
-    disableGrid: true,
-    scrollShow: true,
-    itemCount: 5,
-    scrollAlign: 'left',
-  },
-  yAxis: {
-    data: [
-      {
-        min: 0,
-      },
-    ],
-  },
-  extra: {
-    // 关闭额外动画，进一步避免重绘抖动
-    animation: false,
-    column: {
-      type: 'group',
-      width: 20,
-    },
-  },
+const chartData = ref({});
+const chartReady = ref(false);
+const selectedValue = ref(355); // 默认选中的项目ID，可以根据实际需求修改
+
+// 公用：构造"按月，往前推12个月"的统计参数
+const buildLast12MonthParams = () => {
+  const now = new Date();
+  const endDate = formatDate(now, 'yyyy-MM');
+  // 往前推12个月
+  const startDateObj = new Date(now);
+  startDateObj.setMonth(now.getMonth() - 11);
+  const statrDate = formatDate(startDateObj, 'yyyy-MM');
+
+  return {
+    dataType: 1,
+    statrDate,
+    endDate,
+  };
 };
 
-// 当前时间维度：month | day
-const currentRange = ref('month');
+// 切换时间维度
+const handleChangeRange = (range) => {
+  let params = {};
+  if (range === 'month') {
+    // 按月endDate为当前月，statrDate为往前推12个月：yyyy-MM
+    params = buildLast12MonthParams();
+  } else {
+    // 按天endDate为当前天，statrDate为往前15天：yyyy-MM-dd
+    const now = new Date();
+    now.setDate(now.getDate() - 1); // 减去一天
+    const endDate = formatDate(now, 'yyyy-MM-dd');
+    // 往前推15天
+    const startDateObj = new Date(now);
+    startDateObj.setDate(now.getDate() - 14);
+    const statrDate = formatDate(startDateObj, 'yyyy-MM-dd');
+    params = {
+      dataType: 2,
+      statrDate,
+      endDate,
+    };
+  }
 
-// 按月数据（12个月）
-const monthChartData = {
-  categories: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
-  series: [
-    {
-      name: '用水量',
-      data: [30, 40, 35, 50, 60, 55, 70, 65, 58, 72, 68, 75],
-    },
-  ],
+  chartReady.value = false;
+  getChartData(params);
 };
 
-// 按天数据（30天）
-const dayChartData = {
-  categories: ['1日', '2日', '3日', '4日', '5日', '6日', '7日'],
-  series: [
-    {
-      name: '用水量',
-      data: [10, 20, 15, 25, 30, 28, 35],
-    },
-  ],
-};
+// 获取图表数据
+async function getChartData(objParams) {
+  const { dataType, statrDate, endDate } = objParams || {};
+  const params = {
+    homeId: selectedValue.value,
+    dataType,
+    infoType: 2,
+    statrDate,
+    endDate,
+  };
+  console.log('请求图表数据，params:', params);
+  const res = await queryHomeStatisticGroup(params);
+  const { code, data } = res || {};
+  console.log('图表数据响应:', { code, data });
+  if (code === 0) {
+    chartData.value = data || {};
+    console.log('设置图表数据:', chartData.value);
+  } else {
+    // 接口失败时也置空，避免子组件卡 loading
+    chartData.value = {};
+    console.warn('图表数据接口失败，code:', code);
+  }
+  chartReady.value = true;
+  console.log('图表数据就绪状态:', chartReady.value);
+}
 
-// 切换时间维度（仅切换显示状态，图表实例已预先渲染）
-const switchRange = (range) => {
-  if (range === currentRange.value) return;
-  currentRange.value = range;
-};
+// 初始化：默认加载"按月"数据
+onMounted(() => {
+  const params = buildLast12MonthParams();
+  getChartData(params);
+});
 </script>
 
 <style lang="scss" scoped>
 .test-page {
   padding: 16rpx;
-}
-
-.title {
-  font-size: 32rpx;
-  font-weight: 600;
-  margin-bottom: 24rpx;
-  text-align: center;
-}
-
-.charts-container {
-  width: 100%;
-  height: 500rpx;
-  position: relative;
-}
-
-.chart-wrapper {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 1;
-  visibility: visible;
-  transition: opacity 0.2s ease;
-}
-
-.chart-wrapper.hidden {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-}
-
-.btn-group {
-  margin-top: 24rpx;
-  display: flex;
-  gap: 24rpx;
-}
-
-.range-btn {
-  flex: 1;
-  height: 72rpx;
-  line-height: 72rpx;
-  font-size: 26rpx;
-  border-radius: 12rpx;
-  border: 1rpx solid #dddddd;
-  background-color: #ffffff;
-  color: #333333;
-}
-
-.range-btn.active {
-  border-color: #574b43;
-  background-color: #574b43;
-  color: #ffffff;
 }
 </style>

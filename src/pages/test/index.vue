@@ -24,8 +24,7 @@
         <button @tap="testExpand" class="btn test-btn">测试展开功能</button>
         <button @tap="testPlatform" class="btn test-btn">测试平台信息</button>
       </view>
-      
-
+    
     </view>
   </view>
 </template>

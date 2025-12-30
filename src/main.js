@@ -3,6 +3,7 @@ import App from './App.vue';
 import { createPinia } from 'pinia';
 import 'uview-plus/index.scss';
 import { checkLogin, getCurrentRoute } from '@/utils/common';
+import lyCharts from '@/uni_modules/ly-charts'
 // #ifndef VUE3
 import Vue from 'vue';
 Vue.prototype.$checkLogin = checkLogin;
@@ -19,6 +20,7 @@ export function createApp() {
   const app = createSSRApp(App);
   const pinia = createPinia();
   app.use(pinia);
+  app.use(lyCharts);
   app.config.globalProperties.$checkLogin = checkLogin;
   app.config.globalProperties.$getCurrentRoute = getCurrentRoute;
 
