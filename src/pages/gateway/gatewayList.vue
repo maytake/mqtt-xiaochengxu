@@ -62,7 +62,7 @@ const handleDeleteDevice = async (item, index) => {
       title: '删除成功',
       icon: 'success',
     });
-    deviceList.value = deviceList.value.filter((item) => item.did !== item.did);
+    deviceList.value = deviceList.value.filter((i) => i.did !== item.did);
   }
 };
 
@@ -159,7 +159,8 @@ const initDeviceData = async (options) => {
     };
     const res = (await readDeviceInfo(params)) || {};
     if (res.code === 0) {
-      getDidFromMqtt(seq);
+      // getDidFromMqtt(seq);
+      getDeviceList();
     }
   } catch (error) {
     console.log(error);

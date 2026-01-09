@@ -109,9 +109,11 @@ async function getDeviceList(parentCode, did) {
     deviceList.value = res.data || [];
     console.log(did);
     // 如果did存在，则默认选中该设备
-    if (did) {
+    if (!did) return;
+    const item = deviceList.value.find((item) => item.did === did);
+    if (item) {
       selectedDevices.value.push(did);
-      selectedDevicesItem.value.push(deviceList.value.find((item) => item.did === did));
+      selectedDevicesItem.value.push(item);
     }
   }
 }

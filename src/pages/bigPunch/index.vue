@@ -311,12 +311,12 @@ const DEFAULT_SETTINGS = {
 };
 
 // 自动冲洗时间:'14'
-// 一段冲洗时间:'17'
+// 一段冲洗时间:'18'
 // 清洁模式时间:'35'
 // 清洁模式:'53'
 const PID_CONFIG = {
   AUTO_FLUSH: '14',
-  SENSE_STAGE_ONE: '17',
+  SENSE_STAGE_ONE: '18',
   CLEANING_MODE_TIME: '35',
   CLEANING_MODE: '53',
 };
@@ -688,7 +688,7 @@ const startDistanceCalibration = async () => {
       params: {
         did: DEVICE_CONFIG.did,
         sid: 0,
-        fid: 4097,
+        fid: 4096,
         val: 1,
       },
     };

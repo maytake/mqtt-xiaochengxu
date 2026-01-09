@@ -622,7 +622,7 @@ const startDistanceCalibration = async () => {
       params: {
         did: DEVICE_CONFIG.did,
         sid: 0,
-        fid: 4097,
+        fid: 4096,
         val: 1,
       },
     };

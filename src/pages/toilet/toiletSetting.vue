@@ -63,15 +63,6 @@
               <up-switch v-model="autoFlushSeat" size="20" activeColor="#5a4a3f" @change="updateAutoFlushSeat" />
             </view>
           </view>
-          <view class="divider"></view>
-          <view class="list-item">
-            <view :class="['label', { dot: autoMaleFlushWarn }]" @click="handlePidTip('autoMaleFlush')">
-              自动男士小便冲
-            </view>
-            <view class="extra">
-              <up-switch v-model="autoMaleFlush" size="20" activeColor="#5a4a3f" @change="updateAutoMaleFlush" />
-            </view>
-          </view>
         </view>
       </view>
 
@@ -267,11 +258,9 @@ const PID_CONFIG = {
   ENERGY_SAVING: '23',
   SEASON_MODE: '24',
   SILENT: '25',
-
-  UVC_STERILIZATION: '27',
   PRE_WET: '29',
   AUTO_FLUSH_SEAT: '30',
-  AUTO_MALE_FLUSH: '31',
+
   TEMP_UNIT: '36',
   FLUSH_VOLUME: '37',
   AUTO_LID: '32',
@@ -301,9 +290,7 @@ const pidHandlers = {
   [PID_CONFIG.AUTO_FLUSH_SEAT]: (val) => {
     autoFlushSeat.value = Number(val) === 1;
   },
-  [PID_CONFIG.AUTO_MALE_FLUSH]: (val) => {
-    autoMaleFlush.value = Number(val) === 1;
-  },
+
   [PID_CONFIG.TEMP_UNIT]: (val) => {
     tempUnit.value = val === 0 ? '℃' : '℉';
   },
@@ -340,7 +327,7 @@ const seasonModeWarn = computed(() => isPidWarn(PID_CONFIG.SEASON_MODE));
 const silentModeWarn = computed(() => isPidWarn(PID_CONFIG.SILENT));
 const preWetWarn = computed(() => isPidWarn(PID_CONFIG.PRE_WET));
 const autoFlushSeatWarn = computed(() => isPidWarn(PID_CONFIG.AUTO_FLUSH_SEAT));
-const autoMaleFlushWarn = computed(() => isPidWarn(PID_CONFIG.AUTO_MALE_FLUSH));
+
 const tempUnitWarn = computed(() => isPidWarn(PID_CONFIG.TEMP_UNIT));
 const flushVolumeWarn = computed(() => isPidWarn(PID_CONFIG.FLUSH_VOLUME));
 const autoLidWarn = computed(() => isPidWarn(PID_CONFIG.AUTO_LID));
@@ -356,7 +343,7 @@ const handlePidTip = (type) => {
     silentMode: silentModeWarn,
     preWet: preWetWarn,
     autoFlushSeat: autoFlushSeatWarn,
-    autoMaleFlush: autoMaleFlushWarn,
+
     tempUnit: tempUnitWarn,
     flushVolume: flushVolumeWarn,
     autoLid: autoLidWarn,
@@ -419,11 +406,6 @@ const updateAutoFlushSeat = async () => {
   const val = autoFlushSeat.value ? 1 : 0;
   writeDevicePidValue([{ pid: PID_CONFIG.AUTO_FLUSH_SEAT, val: val }]); // 写入设备PID值
 };
-// 自动男士小便冲
-const updateAutoMaleFlush = async () => {
-  const val = autoMaleFlush.value ? 1 : 0;
-  writeDevicePidValue([{ pid: PID_CONFIG.AUTO_MALE_FLUSH, val: val }]); // 写入设备PID值
-};
 
 // 自动翻盖
 const updateAutoLid = async () => {
@@ -472,10 +454,10 @@ const readDevicePidValues = async () => {
         { pid: PID_CONFIG.SEASON_MODE, sid: 0 },
         { pid: PID_CONFIG.SILENT, sid: 0 },
 
-        { pid: PID_CONFIG.UVC_STERILIZATION, sid: 0 },
+ 
         { pid: PID_CONFIG.PRE_WET, sid: 0 },
         { pid: PID_CONFIG.AUTO_FLUSH_SEAT, sid: 0 },
-        { pid: PID_CONFIG.AUTO_MALE_FLUSH, sid: 0 },
+
         { pid: PID_CONFIG.TEMP_UNIT, sid: 0 },
         { pid: PID_CONFIG.FLUSH_VOLUME, sid: 0 },
         { pid: PID_CONFIG.AUTO_LID, sid: 0 },
@@ -536,6 +518,14 @@ const flushVolumeOptions = [
   {
     label: '三挡',
     id: 2,
+  },
+  {
+    label: '四挡',
+    id: 3,
+  },
+  {
+    label: '五挡',
+    id: 4,
   },
 ];
 const confirmFlushVolume = () => {
@@ -650,10 +640,10 @@ const applyDefaultSettings = async () => {
       { pid: PID_CONFIG.SEASON_MODE, sid: 0 },
       { pid: PID_CONFIG.SILENT, sid: 0 },
 
-      { pid: PID_CONFIG.UVC_STERILIZATION, sid: 0 },
+
       { pid: PID_CONFIG.PRE_WET, sid: 0 },
       { pid: PID_CONFIG.AUTO_FLUSH_SEAT, sid: 0 },
-      { pid: PID_CONFIG.AUTO_MALE_FLUSH, sid: 0 },
+
       { pid: PID_CONFIG.TEMP_UNIT, sid: 0 },
       { pid: PID_CONFIG.FLUSH_VOLUME, sid: 0 },
       { pid: PID_CONFIG.AUTO_LID, sid: 0 },

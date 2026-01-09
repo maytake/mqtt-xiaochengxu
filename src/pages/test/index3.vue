@@ -27,7 +27,7 @@ const buildLast12MonthParams = () => {
   const endDate = formatDate(now, 'yyyy-MM');
   // 往前推12个月
   const startDateObj = new Date(now);
-  startDateObj.setMonth(now.getMonth() - 11);
+  startDateObj.setMonth(now.getMonth() - 5);
   const statrDate = formatDate(startDateObj, 'yyyy-MM');
 
   return {
@@ -50,7 +50,7 @@ const handleChangeRange = (range) => {
     const endDate = formatDate(now, 'yyyy-MM-dd');
     // 往前推15天
     const startDateObj = new Date(now);
-    startDateObj.setDate(now.getDate() - 14);
+    startDateObj.setDate(now.getDate() - 6);
     const statrDate = formatDate(startDateObj, 'yyyy-MM-dd');
     params = {
       dataType: 2,

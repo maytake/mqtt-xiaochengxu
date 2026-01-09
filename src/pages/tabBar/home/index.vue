@@ -45,10 +45,13 @@
 
       <!-- 统计表格 -->
       <view class="statistical-table-container">
-        <statistical-table
+        <charts-bar
           @changeRange="handleChangeRange"
+          @changeDate="handleChangeDate"
           :data="statisticalData"
           :ready="statisticalReady"
+          :defaultRange="currentRange"
+          ref="chartsBarRef"
           :buttonTab="[
             { label: '按月', value: 'month' },
             { label: '按天', value: 'day' },
@@ -66,7 +69,8 @@ import { storeToRefs } from 'pinia';
 const { proxy } = getCurrentInstance();
 import toiletMap from '@/components/toilet-map/index.vue';
 import LkTree from '@/components/lk-tree/index.vue';
-import StatisticalTable from '@/components/statistical-table/index.vue';
+import ChartsBar from '@/components/charts-bar/index.vue';
+
 import { treeProjec, getToiletiemDetails } from '@/api/home';
 import { queryHomeStatisticGroup } from '@/api/uEchartsApi';
 import { projectList } from '@/api/home';
@@ -85,22 +89,111 @@ const defaultProps = ref({
   children: 'children',
   label: 'name',
 });
+
+const chartsBarRef = ref(null);
 const statisticalData = ref({});
 const statisticalReady = ref(false);
+// 当前选中的统计范围（month/day）
+const currentRange = ref('month');
+// 当前已展示的按月区间
+const currentMonthRange = ref({
+  statDateMonth: '',
+  endDateMonth: '',
+});
+// 当前已展示的按天区间
+const currentDayRange = ref({
+  statrDate: '',
+  endDate: '',
+});
 
 // 公用：构造“按月，往前推12个月”的统计参数
-const buildLast12MonthParams = () => {
+const buildLastMonthParams = () => {
   const now = new Date();
   const endDate = formatDate(now, 'yyyy-MM');
   // 往前推12个月
   const startDateObj = new Date(now);
-  startDateObj.setMonth(now.getMonth() - 11);
+  startDateObj.setMonth(now.getMonth() - 6);
   const statrDate = formatDate(startDateObj, 'yyyy-MM');
 
   return {
     dataType: 1,
+    statDateMonth: statrDate,
+    endDateMonth: endDate,
+  };
+};
+
+// 公用：构造“按天，往前推6天”的统计参数
+const buildLastDayParams = () => {
+  const now = new Date();
+  now.setDate(now.getDate() - 1);
+  const endDate = formatDate(now, 'yyyy-MM-dd');
+  const startDateObj = new Date(now);
+  startDateObj.setDate(now.getDate() - 6);
+  const statrDate = formatDate(startDateObj, 'yyyy-MM-dd');
+  return {
+    dataType: 2,
     statrDate,
     endDate,
+  };
+};
+
+// 公用：构造“按月，整体往前/往后推6个月”的统计参数（基于当前已展示区间）
+const buildMove6MonthParams = (type, currentRange) => {
+  const { statDateMonth, endDateMonth } = currentRange || {};
+  // 如果当前没有区间，就退回到默认最近区间
+  if (!statDateMonth || !endDateMonth) {
+    return buildLastMonthParams();
+  }
+
+  const parseMonth = (str) => {
+    const [year, month] = (str || '').split('-').map(Number);
+    return new Date(year || 1970, (month || 1) - 1, 1);
+  };
+
+  const addMonths = (date, n) => {
+    const d = new Date(date);
+    d.setMonth(d.getMonth() + n);
+    return d;
+  };
+
+  const startDate = parseMonth(statDateMonth);
+  const endDate = parseMonth(endDateMonth);
+  const step = type === 'prev' ? -6 : 6;
+  const newStart = addMonths(startDate, step);
+  const newEnd = addMonths(endDate, step);
+
+  return {
+    dataType: 1,
+    statDateMonth: formatDate(newStart, 'yyyy-MM'),
+    endDateMonth: formatDate(newEnd, 'yyyy-MM'),
+  };
+};
+
+// 公用：构造“按天，整体往前/往后推7天”的统计参数（基于当前已展示区间）
+const buildMove7DayParams = (type, currentRange) => {
+  const { statrDate, endDate } = currentRange || {};
+  // 如果当前没有区间，就退回到默认最近区间
+  if (!statrDate || !endDate) {
+    return buildLastDayParams();
+  }
+
+  const parseDay = (str) => new Date((str || '').replace(/-/g, '/'));
+  const addDays = (date, n) => {
+    const d = new Date(date);
+    d.setDate(d.getDate() + n);
+    return d;
+  };
+
+  const startDate = parseDay(statrDate);
+  const endDateDate = parseDay(endDate);
+  const step = type === 'prev' ? -7 : 7;
+  const newStart = addDays(startDate, step);
+  const newEnd = addDays(endDateDate, step);
+
+  return {
+    dataType: 2,
+    statrDate: formatDate(newStart, 'yyyy-MM-dd'),
+    endDate: formatDate(newEnd, 'yyyy-MM-dd'),
   };
 };
 
@@ -119,6 +212,9 @@ onLoad(async () => {
   uni.$on('refresh-map', () => {
     getToiletFn(selectedValue.value);
   });
+
+   
+
 });
 
 onUnload(() => {
@@ -131,9 +227,12 @@ onUnload(() => {
 // 下拉刷新后请求完成主动收起下拉动画
 onPullDownRefresh(async () => {
   try {
-    statisticalReady.value = false;
     getToiletFn(selectedValue.value);
-    const params = buildLast12MonthParams();
+    const params = buildLastMonthParams();
+    currentMonthRange.value = {
+      statDateMonth: params.statDateMonth,
+      endDateMonth: params.endDateMonth,
+    };
     getStatisticalData(params);
   } finally {
     console.log('下拉刷新完成');
@@ -186,9 +285,15 @@ const handleNodeClick = (node) => {
   buildingTreeStore.setSelectedId(node.projectId);
   clearToiletData();
   if (node.level == 3) {
-    statisticalReady.value = false;
+    // 如果当前选中的是'按天'，重置为默认的'按月'
+    currentRange.value = 'month';
+
     getToiletFn(node.projectId);
-    const params = buildLast12MonthParams();
+    const params = buildLastMonthParams();
+    currentMonthRange.value = {
+      statDateMonth: params.statDateMonth,
+      endDateMonth: params.endDateMonth,
+    };
     getStatisticalData(params);
   }
 };
@@ -217,10 +322,17 @@ const getTreeProject = async () => {
       selectedValue.value = projectId;
       buildingTreeStore.setSelectedId(projectId);
       locationToilet.value = nameSr;
-      statisticalReady.value = false;
+
       getToiletFn(projectId);
-      const params = buildLast12MonthParams();
-      getStatisticalData(params);
+      currentRange.value = 'month';
+      const params = buildLastMonthParams();
+      currentMonthRange.value = {
+        statDateMonth: params.statDateMonth,
+        endDateMonth: params.endDateMonth,
+      };
+      setTimeout(() => {
+        getStatisticalData(params);
+      }, 200);
     }
   }
 };
@@ -251,48 +363,93 @@ const handldeGo = () => {
 };
 
 const handleChangeRange = (range) => {
+  // 更新当前选中的范围
+  currentRange.value = range;
   let params = {};
   if (range === 'month') {
-    // 按月endDate为当前月，statrDate为往前推12个月：yyyy-MM
-    params = buildLast12MonthParams();
+    params = buildLastMonthParams();
+    currentMonthRange.value = {
+      statDateMonth: params.statDateMonth,
+      endDateMonth: params.endDateMonth,
+    };
   } else {
-    // 按天endDate为当前天，statrDate为往前15天：yyyy-MM-dd
-    const now = new Date();
-    now.setDate(now.getDate() - 1); // 减去一天
-    const endDate = formatDate(now, 'yyyy-MM-dd');
-    // 往前推15天
-    const startDateObj = new Date(now);
-    startDateObj.setDate(now.getDate() - 14);
-    const statrDate = formatDate(startDateObj, 'yyyy-MM-dd');
-    params = {
-      dataType: 2,
-      statrDate,
-      endDate,
+    params = buildLastDayParams();
+    currentDayRange.value = {
+      statrDate: params.statrDate,
+      endDate: params.endDate,
     };
   }
 
-  statisticalReady.value = false;
+  getStatisticalData(params);
+};
+
+const handleChangeDate = (type, range = 'month') => {
+  let params = {};
+  if (range === 'month') {
+    if (type === 'prev') {
+      // 往前推6个月
+      params = buildMove6MonthParams('prev', currentMonthRange.value);
+    } else {
+      // 往后推6个月
+      params = buildMove6MonthParams('next', currentMonthRange.value);
+      // 校验：开始时间必须小于当前时间
+      const now = new Date();
+      const currentMonth = formatDate(now, 'yyyy-MM');
+      if (params.statDateMonth >= currentMonth) {
+        uni.showToast({
+          title: '开始时间不能大于等于当前时间',
+          icon: 'none',
+          duration: 2000,
+        });
+        return;
+      }
+    }
+    currentMonthRange.value = {
+      statDateMonth: params.statDateMonth,
+      endDateMonth: params.endDateMonth,
+    };
+  } else {
+    if (type === 'prev') {
+      // 往前推7天
+      params = buildMove7DayParams('prev', currentDayRange.value);
+    } else {
+      // 往后推7天
+      params = buildMove7DayParams('next', currentDayRange.value);
+      // 校验：开始时间必须小于当前时间
+      const now = new Date();
+      const today = formatDate(now, 'yyyy-MM-dd');
+      if (params.statrDate >= today) {
+        uni.showToast({
+          title: '开始时间不能大于等于当前时间',
+          icon: 'none',
+          duration: 2000,
+        });
+        return;
+      }
+    }
+    currentDayRange.value = {
+      statrDate: params.statrDate,
+      endDate: params.endDate,
+    };
+  }
+
   getStatisticalData(params);
 };
 
 async function getStatisticalData(objParams) {
-  const { dataType, statrDate, endDate } = objParams || {};
-  const params = {
-    homeId: selectedValue.value,
-    dataType,
-    infoType: 2,
-    statrDate,
-    endDate,
-  };
-  const res = await queryHomeStatisticGroup(params);
-  const { code, data } = res || {};
-  if (code === 0) {
-    statisticalData.value = data || {};
-  } else {
-    // 接口失败时也置空，避免子组件卡 loading
-    statisticalData.value = {};
+  const params = { homeId: selectedValue.value, infoType: 2, ...objParams };
+  try {
+    statisticalReady.value = false;
+    const res = await queryHomeStatisticGroup(params);
+    const { code, data } = res || {};
+    if (code === 0) {
+      const { y = {} } = data || {};
+      y.data = y.data.map((item) => Math.round(item / 1000));
+      statisticalData.value = data || {};
+    }
+  } finally {
+    statisticalReady.value = true;
   }
-  statisticalReady.value = true;
 }
 </script>
 
@@ -310,7 +467,7 @@ async function getStatisticalData(objParams) {
 }
 
 .location-selector {
-  display: flex;
+  display: inline-flex;
   align-items: center;
 
   padding: 24rpx 0;

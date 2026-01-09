@@ -79,6 +79,12 @@
 					"style": {
 						"navigationBarTitleText": "水龙头"
 					}
+				},
+				{
+					"path": "setting",
+					"style": {
+						"navigationBarTitleText": "水龙头设置"
+					}
 				}
 			]
 		},
@@ -125,7 +131,7 @@
 					}
 				},
 				{
-					"path": "attributeControls",
+					"path": "setting",
 					"style": {
 						"navigationBarTitleText": "小冲器设置"
 					}

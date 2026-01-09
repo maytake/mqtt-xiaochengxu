@@ -43,9 +43,10 @@
 
       <!-- 统计表格 -->
       <view class="statistical-table-container">
-        <statistical-table
+        <charts-bar
           @changeRange="handleChangeRange"
           :data="statisticalData"
+          @changeDate="handleChangeDate"
           :ready="statisticalReady"
           :buttonTab="[
             { label: '按天', value: 'day' },
@@ -62,7 +63,8 @@ import { ref } from 'vue';
 import { onLoad } from '@dcloudio/uni-app';
 import { getProductModelDetails } from '@/api/mqttCommon';
 import { queryDeviceStatisticGroup } from '@/api/uEchartsApi';
-import StatisticalTable from '@/components/statistical-table/index.vue';
+import ChartsBar from '@/components/charts-bar/index.vue';
+
 const mqttClient = getApp().globalData.mqttService;
 import { formatDate } from '@/utils/common';
 // 设备相关
@@ -82,14 +84,24 @@ const DEVICE_CONFIG = {
 };
 let reportTopic = '';
 let todayCount = ref(0); // 今日统计次数
+// 当前已展示的按天区间
+const currentDayRange = ref({
+  statrDate: '',
+  endDate: '',
+});
+// 当前已展示的按小时区间
+const currentHourRange = ref({
+  statDateHour: '',
+  endDateHour: '',
+});
 // ==================== 设备控制 ====================
-// 公用：构造“按天，往前推15天”的统计参数
-const buildLast15DaysParams = () => {
+// 公用：构造“按天，往前推6天”的统计参数
+const buildLastDayParams = () => {
   const now = new Date();
   const endDate = formatDate(now, 'yyyy-MM-dd');
-  // 往前推15天
+  // 往前推6天
   const startDateObj = new Date(now);
-  startDateObj.setDate(now.getDate() - 14);
+  startDateObj.setDate(now.getDate() - 6);
   const statrDate = formatDate(startDateObj, 'yyyy-MM-dd');
 
   return {
@@ -99,17 +111,73 @@ const buildLast15DaysParams = () => {
   };
 };
 
-const buildLast24HoursParams = () => {
+const buildLastHoursParams = () => {
   const now = new Date();
   const endDate = formatDate(now, 'yyyy-MM-dd HH') + ':00:00';
-  // 往前推24小时
+  // 往前推7小时
   const startDateObj = new Date(now);
-  startDateObj.setHours(now.getHours() - 23);
+  startDateObj.setHours(now.getHours() - 6);
   const statrDate = formatDate(startDateObj, 'yyyy-MM-dd HH') + ':00:00';
   return {
     dataType: 3,
-    statrDate,
-    endDate,
+    statDateHour: statrDate,
+    endDateHour: endDate,
+  };
+};
+
+// 公用：构造“按天，整体往前/往后推7天”的统计参数（基于当前已展示区间）
+const buildMove7DayParams = (type, currentRange) => {
+  const { statrDate, endDate } = currentRange || {};
+  // 如果当前没有区间，就退回到默认最近区间
+  if (!statrDate || !endDate) {
+    return buildLastDayParams();
+  }
+
+  const parseDay = (str) => new Date((str || '').replace(/-/g, '/'));
+  const addDays = (date, n) => {
+    const d = new Date(date);
+    d.setDate(d.getDate() + n);
+    return d;
+  };
+
+  const startDate = parseDay(statrDate);
+  const endDateDate = parseDay(endDate);
+  const step = type === 'prev' ? -7 : 7;
+  const newStart = addDays(startDate, step);
+  const newEnd = addDays(endDateDate, step);
+
+  return {
+    dataType: 2,
+    statrDate: formatDate(newStart, 'yyyy-MM-dd'),
+    endDate: formatDate(newEnd, 'yyyy-MM-dd'),
+  };
+};
+
+// 公用：构造“按小时，整体往前/往后推7小时”的统计参数（基于当前已展示区间）
+const buildMove7HourParams = (type, currentRange) => {
+  const { statDateHour, endDateHour } = currentRange || {};
+  // 如果当前没有区间，就退回到默认最近区间
+  if (!statDateHour || !endDateHour) {
+    return buildLastHoursParams();
+  }
+
+  const parseHour = (str) => new Date((str || '').replace(/-/g, '/'));
+  const addHours = (date, n) => {
+    const d = new Date(date);
+    d.setHours(d.getHours() + n);
+    return d;
+  };
+
+  const startDate = parseHour(statDateHour);
+  const endDateDate = parseHour(endDateHour);
+  const step = type === 'prev' ? -7 : 7;
+  const newStart = addHours(startDate, step);
+  const newEnd = addHours(endDateDate, step);
+
+  return {
+    dataType: 3,
+    statDateHour: formatDate(newStart, 'yyyy-MM-dd HH') + ':00:00',
+    endDateHour: formatDate(newEnd, 'yyyy-MM-dd HH') + ':00:00',
   };
 };
 
@@ -131,7 +199,7 @@ onLoad(async (options) => {
   mqttClient.registerPageTopicHandler(reportTopic, handleReportTopicResponse);
 
   await Promise.all([loadProductModelDetails()]);
-  const params = buildLast15DaysParams();
+  const params = buildLastDayParams();
   getStatisticalData(params);
 });
 
@@ -165,7 +233,7 @@ const loadProductModelDetails = async () => {
 
 const goToSetting = () => {
   uni.navigateTo({
-    url: '/pages/smallPunch/attributeControls?device=' + encodeURIComponent(JSON.stringify(device.value)),
+    url: '/pages/smallPunch/setting?device=' + encodeURIComponent(JSON.stringify(device.value)),
   });
 };
 
@@ -173,32 +241,95 @@ const handleChangeRange = (range) => {
   console.log('range', range);
   let params = {};
   if (range === 'day') {
-    params = buildLast15DaysParams();
+    params = buildLastDayParams();
+    currentDayRange.value = {
+      statrDate: params.statrDate,
+      endDate: params.endDate,
+    };
   } else {
-    params = buildLast24HoursParams();
+    params = buildLastHoursParams();
+    currentHourRange.value = {
+      statDateHour: params.statDateHour,
+      endDateHour: params.endDateHour,
+    };
+  }
+
+  getStatisticalData(params);
+};
+
+const handleChangeDate = (type, range = 'month') => {
+  let params = {};
+  if (range === 'day') {
+    if (type === 'prev') {
+      // 往前推7天
+      params = buildMove7DayParams('prev', currentDayRange.value);
+    } else {
+      // 往后推7天
+      params = buildMove7DayParams('next', currentDayRange.value);
+      // 校验：开始时间必须小于当前时间
+      const now = new Date();
+      const today = formatDate(now, 'yyyy-MM-dd');
+      if (params.statrDate >= today) {
+        uni.showToast({
+          title: '开始时间不能大于等于当前时间',
+          icon: 'none',
+          duration: 2000,
+        });
+        return;
+      }
+    }
+    currentDayRange.value = {
+      statrDate: params.statrDate,
+      endDate: params.endDate,
+    };
+  } else {
+    if (type === 'prev') {
+      // 往前推7小时
+      params = buildMove7HourParams('prev', currentHourRange.value);
+    } else {
+      // 往后推7小时
+      params = buildMove7HourParams('next', currentHourRange.value);
+      // 校验：开始时间必须小于当前时间
+      const now = new Date();
+      const today = formatDate(now, 'yyyy-MM-dd HH');
+      if (params.statDateHour >= today) {
+        uni.showToast({
+          title: '开始时间不能大于等于当前时间',
+          icon: 'none',
+          duration: 2000,
+        });
+        return;
+      }
+    }
+    currentHourRange.value = {
+      statDateHour: params.statDateHour,
+      endDateHour: params.endDateHour,
+    };
   }
 
   getStatisticalData(params);
 };
 
 async function getStatisticalData(objParams) {
-  const { dataType, statrDate, endDate } = objParams || {};
   const params = {
     did: DEVICE_CONFIG.did,
-    dataType,
     infoType: 2,
-    statrDate,
-    endDate,
+    ...objParams,
   };
-  statisticalReady.value = false;
-  const res = await queryDeviceStatisticGroup(params);
-  const { code, data } = res || {};
-  if (code === 0) {
-    statisticalData.value = data;
-  } else {
-    statisticalData.value = {};
+  try {
+    statisticalReady.value = false;
+    const res = await queryDeviceStatisticGroup(params);
+    const { code, data } = res || {};
+    if (code === 0) {
+      const { y = {} } = data || {};
+      y.data = y.data.map((item) => Math.round(item / 1000));
+      statisticalData.value = data;
+    } else {
+      statisticalData.value = {};
+    }
+  } finally {
+    statisticalReady.value = true;
   }
-  statisticalReady.value = true;
 }
 </script>
 

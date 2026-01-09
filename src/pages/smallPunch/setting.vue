@@ -119,7 +119,8 @@
         :round="10"
         mode="bottom"
         :closeOnClickOverlay="false"
-        @close="closeSenseFlushPopup">
+        @close="closeSenseFlushPopup"
+        v-if="isTwoSegmentConfig">
         <view class="popup-content sense-popup">
           <view class="title-row">
             <view class="action-btn action-cancel" @click="closeSenseFlushPopup">取消</view>
@@ -148,31 +149,72 @@
             </view>
             <view class="unit sense-unit">S</view>
           </view>
-          <view v-if="isTwoSegmentConfig">
-            <view class="sense-divider"></view>
-            <view class="sense-section">
-              <view class="section-title">第二段冲洗时间，设置范围 1-10S</view>
-              <view class="number-row sense-row">
-                <up-number-box v-model="tempSenseStageTwo" :min="1" :max="10" :step="1">
-                  <template #minus>
-                    <view class="circle-btn">
-                      <up-icon name="minus" size="14" color="#909399"></up-icon>
-                    </view>
-                  </template>
-                  <template #input>
-                    <text class="value-text sense-value">{{ tempSenseStageTwo }}</text>
-                  </template>
-                  <template #plus>
-                    <view class="circle-btn">
-                      <up-icon name="plus" size="14" color="#909399"></up-icon>
-                    </view>
-                  </template>
-                </up-number-box>
-              </view>
-              <view class="unit sense-unit">S</view>
+
+          <view class="sense-divider"></view>
+          <view class="sense-section">
+            <view class="section-title">第二段冲洗时间，设置范围 1-10S</view>
+            <view class="number-row sense-row">
+              <up-number-box v-model="tempSenseStageTwo" :min="1" :max="10" :step="1">
+                <template #minus>
+                  <view class="circle-btn">
+                    <up-icon name="minus" size="14" color="#909399"></up-icon>
+                  </view>
+                </template>
+                <template #input>
+                  <text class="value-text sense-value">{{ tempSenseStageTwo }}</text>
+                </template>
+                <template #plus>
+                  <view class="circle-btn">
+                    <up-icon name="plus" size="14" color="#909399"></up-icon>
+                  </view>
+                </template>
+              </up-number-box>
             </view>
+            <view class="unit sense-unit">S</view>
           </view>
+
           <view class="sense-note">感应冲洗默认两段，可结合现场需求微调时长。</view>
+        </view>
+      </up-popup>
+
+      <!-- 感应冲洗时间弹窗 -->
+      <up-popup
+        :show="showSenseFlushPopup"
+        :round="10"
+        mode="bottom"
+        :closeOnClickOverlay="false"
+        @close="closeSenseFlushPopup"
+        v-else>
+        <view class="popup-content sense-popup">
+          <view class="title-row">
+            <view class="action-btn action-cancel" @click="closeSenseFlushPopup">取消</view>
+            <view class="title">感应冲洗时间</view>
+            <view class="action-btn action-confirm" @click="confirmSenseFlushTimeOne">确定</view>
+          </view>
+
+          <view class="sense-section">
+            <view class="section-title">第一段冲洗时间，设置范围 1-10S</view>
+            <view class="number-row sense-row">
+              <up-number-box v-model="tempSenseStageTwo" :min="1" :max="10" :step="1">
+                <template #minus>
+                  <view class="circle-btn">
+                    <up-icon name="minus" size="14" color="#909399"></up-icon>
+                  </view>
+                </template>
+                <template #input>
+                  <text class="value-text sense-value">{{ tempSenseStageTwo }}</text>
+                </template>
+                <template #plus>
+                  <view class="circle-btn">
+                    <up-icon name="plus" size="14" color="#909399"></up-icon>
+                  </view>
+                </template>
+              </up-number-box>
+            </view>
+            <view class="unit sense-unit">S</view>
+          </view>
+
+          <view class="sense-note">感应冲洗可结合现场需求微调时长。</view>
         </view>
       </up-popup>
 
@@ -314,6 +356,7 @@ const PID_CONFIG = {
   CLEANING_MODE: '53',
   WATER_SEGMENT_CONFIG: '54',
 };
+
 // PID 值处理映射
 const pidHandlers = {
   [PID_CONFIG.CLEANING_MODE]: (val) => {
@@ -434,7 +477,17 @@ const confirmWaterSegmentConfig = ({ value }) => {
     waterSegmentConfig.value = value[0];
   }
   const val = waterSegmentConfig.value === '1段冲' ? 0 : 1;
+
   writeDevicePidValue([{ pid: PID_CONFIG.WATER_SEGMENT_CONFIG, val: val }]); // 写入设备PID值
+
+  if (waterSegmentConfig.value === '2段冲') {
+    writeDevicePidValue([
+      { pid: PID_CONFIG.SENSE_STAGE_ONE, val: senseStageOne.value },
+      { pid: PID_CONFIG.SENSE_STAGE_TWO, val: senseStageTwo.value },
+    ]);
+  } else {
+    writeDevicePidValue([{ pid: PID_CONFIG.SENSE_STAGE_TWO, val: senseStageTwo.value }]);
+  }
   showWaterSegmentConfigPicker.value = false;
 };
 const isTwoSegmentConfig = computed(() => waterSegmentConfig.value === '2段冲');
@@ -447,7 +500,7 @@ const tempSenseStageTwo = ref(DEFAULT_SETTINGS.senseStageTwo);
 
 // 列表展示文案：根据当前是否为“2段冲”动态拼接
 const senseFlushText = computed(() => {
-  return isTwoSegmentConfig.value ? `${senseStageOne.value}S / ${senseStageTwo.value}S` : `${senseStageOne.value}S`;
+  return isTwoSegmentConfig.value ? `${senseStageOne.value}S / ${senseStageTwo.value}S` : `${senseStageTwo.value}S`;
 });
 
 // 感应冲洗时间弹窗
@@ -466,10 +519,26 @@ const confirmSenseFlushTime = () => {
   senseStageOne.value = tempSenseStageOne.value;
   senseStageTwo.value = tempSenseStageTwo.value;
   showSenseFlushPopup.value = false;
-  writeDevicePidValue([
-    { pid: PID_CONFIG.SENSE_STAGE_ONE, val: senseStageOne.value },
-    { pid: PID_CONFIG.SENSE_STAGE_TWO, val: senseStageTwo.value },
-  ]);
+  // 如果为2段冲，则下发两段冲洗时间
+  if (isTwoSegmentConfig.value) {
+    writeDevicePidValue([
+      { pid: PID_CONFIG.SENSE_STAGE_ONE, val: senseStageOne.value },
+      { pid: PID_CONFIG.SENSE_STAGE_TWO, val: senseStageTwo.value },
+    ]);
+  } else {
+    // 如果是1段冲，则用2段冲Pid下发第一段冲洗时间
+    writeDevicePidValue([{ pid: PID_CONFIG.SENSE_STAGE_TWO, val: senseStageOne.value }]);
+  }
+};
+// 感应冲洗时间（第一段 ）
+const confirmSenseFlushTimeOne = () => {
+  // 点击确定时才将临时值写回实际值，并下发到设备
+  senseStageOne.value = tempSenseStageOne.value;
+  senseStageTwo.value = tempSenseStageTwo.value;
+  showSenseFlushPopup.value = false;
+
+  // 如果是1段冲，则用2段冲Pid下发第一段冲洗时间
+  writeDevicePidValue([{ pid: PID_CONFIG.SENSE_STAGE_TWO, val: senseStageTwo.value }]);
 };
 
 // ==================== 设备控制 ====================
@@ -713,7 +782,7 @@ const startDistanceCalibration = async () => {
       params: {
         did: DEVICE_CONFIG.did,
         sid: 0,
-        fid: 4097,
+        fid: 4096,
         val: 1,
       },
     };

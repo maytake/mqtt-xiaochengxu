@@ -86,7 +86,7 @@
             class="mode-btn"
             :class="{ active: seatRingMode.includes('seatCover') }"
             @click="setSeatRingMode('seatCover')">
-            <text>打开座盖</text>
+            <text>开关座盖</text>
           </view>
           <view class="mode-btn disabled">
             <text></text>
@@ -95,7 +95,7 @@
             class="mode-btn"
             :class="{ active: seatRingMode.includes('seatRing') }"
             @click="setSeatRingMode('seatRing')">
-            <text>打开座圈</text>
+            <text>开关座圈</text>
           </view>
         </view>
       </view>
@@ -611,22 +611,25 @@ function feedbackResult(res) {
 
 // 处理设备PID响应
 function handleDevicePidResponse(pids) {
-  seatRingMode.value = [];
   pids.forEach((item) => {
     const pidKey = String(item.pid);
     if (pidKey === PID_CONFIG.SEAT_COVER) {
       if (item.val == 1) {
-        // 打开座圈
-        seatRingMode.value.push('seatCover');
+        // 如果没有包含'seatCover'，则添加
+        if (!seatRingMode.value.includes('seatCover')) {
+          seatRingMode.value.push('seatCover');
+        }
       } else {
-        // 关闭座圈
+        // 关闭座盖
         seatRingMode.value = seatRingMode.value.filter((m) => m !== 'seatCover');
       }
     }
     if (pidKey === PID_CONFIG.SEAT_RING) {
       if (item.val == 1) {
-        // 打开座圈
-        seatRingMode.value.push('seatRing');
+        // 如果没有包含'seatRing'，则添加
+        if (!seatRingMode.value.includes('seatRing')) {
+          seatRingMode.value.push('seatRing'); // 打开座圈
+        }
       } else {
         // 关闭座圈
         seatRingMode.value = seatRingMode.value.filter((m) => m !== 'seatRing');
