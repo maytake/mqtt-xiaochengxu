@@ -10,13 +10,10 @@
         <text class="font_family icon-arrow">&#xe60d;</text>
       </view>
     </view> -->
-
     <view v-if="!ready" class="charts-placeholder">数据加载中/失败，请稍后重试</view>
     <view class="charts-container" v-else>
       <!-- 动态生成图表实例，使用 v-if 确保图表在显示时才初始化 -->
-    
       <view class="chart-wrapper">
-      
         <scroll-view
           class="chart-scroll"
           scroll-x="true"
@@ -83,6 +80,8 @@ const uChartsBarMap = ref({});
 // 容器宽度（用于控制图表宽度不超过外层 wrapper-page 的宽度）
 const instance = getCurrentInstance();
 const wrapperWidth = ref(0);
+// 标志位：容器宽度是否已测量完成
+const isWrapperMeasured = ref(false);
 
 const measureWrapperWidth = () => {
   if (!instance) return;
@@ -95,6 +94,9 @@ const measureWrapperWidth = () => {
       .boundingClientRect((rect) => {
         if (rect && rect.width) {
           wrapperWidth.value = rect.width;
+          isWrapperMeasured.value = true;
+          // 容器宽度测量完成后，重新计算图表宽度
+          calculateChartWidth();
         }
       })
       .exec();
@@ -196,6 +198,31 @@ const chartWidth = ref('100%'); // 设置默认宽度，避免初始为 0
 // 控制 scroll-view 默认滚动位置，初始为最左侧
 const scrollLeft = ref(0);
 
+// 提取计算图表宽度的逻辑为独立函数
+const calculateChartWidth = () => {
+  // 如果容器宽度还未测量完成，且 wrapperWidth 为 0，则使用默认值
+  if (!isWrapperMeasured.value && wrapperWidth.value === 0) {
+    chartWidth.value = '100%';
+    return;
+  }
+
+  const categories = Array.isArray(chartOption.value.xAxis?.data) 
+    ? chartOption.value.xAxis.data 
+    : [];
+  
+  // 简单按数量调整宽度，防止标签挤在一起
+  const minCategoryWidth = barWidth * 1 + 10 + 10; // 单系列：柱宽 + 间距
+  const count = categories.length || 1;
+  const baseChartWidth = count * minCategoryWidth + 10;
+
+  // 如果图表按数据计算的宽度大于容器宽度，则使用图表宽度；否则占满容器宽度（等价于 100%）
+  chartWidth.value = baseChartWidth > wrapperWidth.value ? baseChartWidth : '100%';
+
+  // 默认将滚动条滚动到最右侧（最后一个月份）
+  // 这里直接使用总宽度，使 scroll-view 显示末尾区域
+  scrollLeft.value = typeof chartWidth.value === 'number' ? chartWidth.value : 0;
+};
+
 // 根据父组件传入的 props.data 动态更新 x 轴和数据
 // 约定数据结构：{ x: { name, data: [] }, y: { name, data: [] } }
 watch(
@@ -229,17 +256,8 @@ watch(
     chartTitle.value = yName || '统计图表';
     subTitle.value = xName || '';
 
-    // 简单按数量调整宽度，防止标签挤在一起
-    const minCategoryWidth = barWidth * 1 + 10 + 10; // 单系列：柱宽 + 间距
-    const count = categories.length || 1;
-    const baseChartWidth = count * minCategoryWidth + 10;
-
-    // 如果图表按数据计算的宽度大于容器宽度，则使用图表宽度；否则占满容器宽度（等价于 100%）
-    chartWidth.value = baseChartWidth > wrapperWidth.value ? baseChartWidth : '100%';
-
-    // 默认将滚动条滚动到最右侧（最后一个月份）
-    // 这里直接使用总宽度，使 scroll-view 显示末尾区域
-    scrollLeft.value = chartWidth.value;
+    // 计算图表宽度（如果容器宽度已测量完成，则立即计算；否则等待测量完成后再计算）
+    calculateChartWidth();
   },
   { immediate: true, deep: false }
 );

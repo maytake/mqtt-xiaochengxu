@@ -259,6 +259,7 @@ const returnToGatewayDetail = () => {
 
 // 完成返回设备列表页面，跳转不留历史记录
 const handleComplete = () => {
+  handleStop();
   returnToGatewayDetail();
 };
 

@@ -53,7 +53,7 @@
         </view>
         <view class="device-wrap">
           <image
-            :src="item.img"
+            :src="item.imageUrl"
             mode="widthFix"
             class="device-img"
             lazy-load

@@ -156,6 +156,7 @@ const getDeviceStyle = (device) => {
 const productModelRouteMap = {
   '1LT0151-000-001': '/pages/faucet/index',
   ZN2201: '/pages/toilet/index',
+  H111: '/pages/toiletH111/index',
   WG0001: '/pages/gateway/index',
   '1GZ0042-000-001': '/pages/soapDispenser/index',
   '1BM0095-000-001': '/pages/smallPunch/index',

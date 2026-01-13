@@ -6,6 +6,7 @@
       <view :class="['arrow', { open: dropdownOpen }]" />
     </view>
     <!-- 树形结构 -->
+     
     <view v-if="isInner || dropdownOpen || !dropdown" class="tree-panel">
       <view
         v-for="(node, index) in flattenedNodes"

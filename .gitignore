@@ -12,7 +12,8 @@ unpackage
 .DS_Store
 dist
 *.local
-
+*.git
+.cursor
 # Editor directories and files
 .idea
 *.suo

@@ -72,6 +72,23 @@
 			]
 		},
 		{
+			"root": "pages/toiletH111",
+			"pages": [
+				{
+					"path": "index",
+					"style": {
+						"navigationBarTitleText": "马桶"
+					}
+				},
+				{
+					"path": "toiletSetting",
+					"style": {
+						"navigationBarTitleText": "马桶设置"
+					}
+				}
+			]
+		},
+		{
 			"root": "pages/faucet",
 			"pages": [
 				{
@@ -96,6 +113,12 @@
 					"style": {
 						"navigationBarTitleText": "给皂器"
 					}
+				},
+				{
+					"path": "setting",
+					"style": {
+						"navigationBarTitleText": "给皂器设置"
+					}
 				}
 			]
 		},
@@ -107,6 +130,12 @@
 					"style": {
 						"navigationBarTitleText": "干手器"
 					}
+				},
+				{
+					"path": "setting",
+					"style": {
+						"navigationBarTitleText": "干手器设置"
+					}
 				}
 			]
 		},
@@ -117,6 +146,12 @@
 					"path": "index",
 					"style": {
 						"navigationBarTitleText": "大冲器"
+					}
+				},
+				{
+					"path": "setting",
+					"style": {
+						"navigationBarTitleText": "大冲器设置"
 					}
 				}
 			]

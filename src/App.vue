@@ -161,7 +161,7 @@ export default {
 .settings-btn {
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 20rpx;
+  margin: 10rpx 0 20rpx;
 }
 
 .settings-text {
