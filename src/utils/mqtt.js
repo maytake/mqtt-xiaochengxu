@@ -3,9 +3,9 @@ import { useStore } from '@/stores/globalMqttInfo';
 // ==================== 常量配置 ====================
 const MQTT_CONFIG = {
   url: 'wxs://iot.tck.com.cn:8084/mqtt',
-  keepalive: 60,
+  keepalive: 30,
   connectTimeout: 9 * 1000,
-  reconnectPeriod: 3000,
+  reconnectPeriod: 1000,
   defaultUsername: 'XCX0001:0101000000000002',
   defaultPassword: '39dc0125d2489439:679836',
   passwordPrefix: '39dc0125d2489439:',
