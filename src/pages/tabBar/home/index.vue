@@ -2,7 +2,7 @@
   <view class="page" @tap="handlePageTap">
     <view class="page-content">
       <!-- 顶部地址选择 -->
-      <view class="header-section">
+      <!-- <view class="header-section">
         <view class="location-selector" @click="selectAddress">
           <view class="location-icon">
             <text class="font_family location-icon-text">&#xe60c;</text>
@@ -12,10 +12,10 @@
             <u-icon name="arrow-down" size="16" color="#666"></u-icon>
           </view>
         </view>
-      </view>
+      </view> -->
 
       <!-- 楼层选择 -->
-      <view class="floor-selector">
+      <view class="floor-selector mt60">
         <lk-tree
           style="width: 100%"
           v-model="selectedValue"
@@ -63,8 +63,8 @@
 </template>
 
 <script setup>
-import { ref, getCurrentInstance } from 'vue';
-import { onLoad, onUnload, onPullDownRefresh } from '@dcloudio/uni-app';
+import { ref, getCurrentInstance, nextTick } from 'vue';
+import { onLoad, onUnload, onPullDownRefresh, onShow } from '@dcloudio/uni-app';
 import { storeToRefs } from 'pinia';
 const { proxy } = getCurrentInstance();
 import toiletMap from '@/components/toilet-map/index.vue';
@@ -105,6 +105,12 @@ const currentDayRange = ref({
   statrDate: '',
   endDate: '',
 });
+
+// 首页地址与楼层本地缓存 key
+const STORAGE_KEYS = {
+  address: 'HOME_SELECTED_ADDRESS',
+  floor: 'HOME_SELECTED_FLOOR',
+};
 
 // 公用：构造“按月，往前推12个月”的统计参数
 const buildLastMonthParams = () => {
@@ -197,13 +203,36 @@ const buildMove7DayParams = (type, currentRange) => {
   };
 };
 
-onLoad(async () => {
+onShow(() => {
   const url = proxy.$getCurrentRoute();
   const isLogin = proxy.$checkLogin(url);
   if (isLogin) {
-    // 加载数据
-    initData();
+    // 优先尝试从本地缓存恢复上次选择的地址与楼层
+    const cacheAddress = uni.getStorageSync(STORAGE_KEYS.address);
+    const cacheFloor = uni.getStorageSync(STORAGE_KEYS.floor);
+    if (cacheAddress && cacheAddress.parentCode) {
+      restoreFromCache(cacheAddress, cacheFloor);
+    } else {
+      // 加载数据
+      initData();
+    }
   }
+});
+
+onLoad(async () => {
+  // const url = proxy.$getCurrentRoute();
+  // const isLogin = proxy.$checkLogin(url);
+  // if (isLogin) {
+  //   // 优先尝试从本地缓存恢复上次选择的地址与楼层
+  //   const cacheAddress = uni.getStorageSync(STORAGE_KEYS.address);
+  //   const cacheFloor = uni.getStorageSync(STORAGE_KEYS.floor);
+  //   if (cacheAddress && cacheAddress.parentCode) {
+  //     restoreFromCache(cacheAddress, cacheFloor);
+  //   } else {
+  //     // 加载数据
+  //     initData();
+  //   }
+  // }
 
   uni.$on('selected-address', (data) => {
     getFloorTreeByProjectId(data);
@@ -212,9 +241,6 @@ onLoad(async () => {
   uni.$on('refresh-map', () => {
     getToiletFn(selectedValue.value);
   });
-
-   
-
 });
 
 onUnload(() => {
@@ -240,9 +266,17 @@ onPullDownRefresh(async () => {
   }
 });
 
+// 根据本地缓存恢复首页地址与楼层选择
+const restoreFromCache = (cacheAddress, cacheFloor) => {
+  selectedAddress.value = cacheAddress;
+  mainStore.setProjectItem(cacheAddress);
+  // 先根据地址加载楼层树，待树加载完成后再根据 projectId 选中对应楼层
+  getTreeProject(cacheFloor);
+};
+
 async function initData() {
   // 获取第一个默认地址
-  const res = await getAddressList();
+  const res = await projectList();
   if (res.code === 0) {
     const data = res.data || [];
     const itemAddress = data[0];
@@ -254,14 +288,12 @@ async function initData() {
 function getFloorTreeByProjectId(itemAddress) {
   selectedAddress.value = itemAddress; // 选中项目地址
   mainStore.setProjectItem(itemAddress); // 设置项目地址
+  // 记录选中的项目地址到本地缓存
+  uni.setStorageSync(STORAGE_KEYS.address, itemAddress);
   selectedValue.value = ''; // 清空楼层选择
+  // 地址切换时，清空已缓存的楼层选择，等待用户重新选择
+  uni.removeStorageSync(STORAGE_KEYS.floor);
   getTreeProject(); // 重新获取楼层树
-}
-
-// 获取地址列表
-async function getAddressList() {
-  const res = await projectList();
-  return res;
 }
 
 // 处理页面点击事件，用于小程序环境下的点击外部检测
@@ -285,6 +317,8 @@ const handleNodeClick = (node) => {
   buildingTreeStore.setSelectedId(node.projectId);
   clearToiletData();
   if (node.level == 3) {
+    // 记录选中的楼层到本地缓存
+    uni.setStorageSync(STORAGE_KEYS.floor, node.projectId);
     // 如果当前选中的是'按天'，重置为默认的'按月'
     currentRange.value = 'month';
 
@@ -307,7 +341,23 @@ const getFirstLeafNode = (node) => {
   }
 };
 
-const getTreeProject = async () => {
+// 根据 projectId 在树结构中查找对应节点
+const findNodeByProjectId = (nodes, projectId) => {
+  if (!Array.isArray(nodes) || !projectId) return null;
+  for (let i = 0; i < nodes.length; i++) {
+    const item = nodes[i];
+    if (item.projectId === projectId) {
+      return item;
+    }
+    if (item.children && item.children.length > 0) {
+      const found = findNodeByProjectId(item.children, projectId);
+      if (found) return found;
+    }
+  }
+  return null;
+};
+
+const getTreeProject = async (preSelectedProjectId) => {
   const { parentCode } = selectedAddress.value;
   if (!parentCode) return;
   const res = await treeProjec(parentCode);
@@ -315,10 +365,18 @@ const getTreeProject = async () => {
   if (code === 0) {
     treeData.value = data;
     buildingTreeStore.setTreeData(data);
-    // 获取第一个级最底层的节点并获取projectId的值，请求厕所施工图
-    const { projectId, level, nameSr } = getFirstLeafNode(data) || {};
     clearToiletData();
-    if (level == 3) {
+    // 优先根据传入的 projectId 在树中查找对应节点；找不到时退回第一个最底层节点
+    let targetNode = null;
+    if (preSelectedProjectId) {
+      targetNode = findNodeByProjectId(data, preSelectedProjectId);
+    }
+    if (!targetNode) {
+      // 获取第一个级最底层的节点并获取projectId的值，请求厕所施工图
+      targetNode = getFirstLeafNode(data);
+    }
+    const { projectId, level, nameSr } = targetNode || {};
+    if (level == 3 && projectId) {
       selectedValue.value = projectId;
       buildingTreeStore.setSelectedId(projectId);
       locationToilet.value = nameSr;
@@ -500,7 +558,9 @@ async function getStatisticalData(objParams) {
   margin-top: 10rpx;
   position: relative;
 }
-
+.mt60 {
+  margin-top: 60rpx;
+}
 .toilet-map-container {
   flex: 1;
   display: flex;

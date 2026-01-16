@@ -6,6 +6,19 @@
       <view class="user-info">
         <image class="avatar" src="/static/images/avatar.jpg" mode="aspectFill"></image>
         <text class="username">娜威森林</text>
+        <!-- 顶部地址选择 -->
+        <view class="location-section">
+          <view class="location-selector" @click="selectAddress">
+            <view class="location-icon">
+              <text class="font_family location-icon-text">&#xe60c;</text>
+            </view>
+            <view class="location-text">{{ selectedAddress?.name || 'TCK产业园' }}</view>
+            <view class="location-arrow">
+              <u-icon name="arrow-down" size="16" color="#666"></u-icon>
+            </view>
+          </view>
+        </view>
+        <!-- 顶部地址选择 end-->
       </view>
     </view>
 
@@ -42,9 +55,27 @@
 </template>
 
 <script setup>
-import { getCurrentInstance } from 'vue';
-import { onShow } from '@dcloudio/uni-app';
-
+import { ref, getCurrentInstance } from 'vue';
+const { proxy } = getCurrentInstance();
+import { onLoad, onUnload } from '@dcloudio/uni-app';
+import { useStore } from '@/stores/index';
+import { projectList } from '@/api/home';
+const mainStore = useStore();
+const selectedAddress = ref({});
+onLoad(async () => {
+  const url = proxy.$getCurrentRoute();
+  const isLogin = proxy.$checkLogin(url);
+  if (isLogin) {
+    // 优先尝试从本地缓存恢复上次选择的地址与楼层
+    const cacheAddress = uni.getStorageSync('HOME_SELECTED_ADDRESS');
+    if (cacheAddress && cacheAddress.parentCode) {
+      uni.$emit('selected-address', cacheAddress);
+    } else {
+      // 加载数据
+      initData();
+    }
+  }
+});
 // 处理菜单点击
 function handleMenuClick(type) {
   switch (type) {
@@ -99,6 +130,35 @@ function loginOut() {
     },
   });
 }
+
+async function initData() {
+  // 获取第一个默认地址
+  const res = await projectList();
+  if (res.code === 0) {
+    const data = res.data || [];
+    const itemAddress = data[0];
+    selectedAddress.value = itemAddress; // 选中项目地址
+    mainStore.setProjectItem(itemAddress); // 设置项目地址
+    uni.setStorageSync('HOME_SELECTED_ADDRESS', itemAddress);
+  }
+}
+
+uni.$on('selected-address', (itemAddress) => {
+  selectedAddress.value = itemAddress; // 选中项目地址
+  mainStore.setProjectItem(itemAddress); // 设置项目地址
+});
+
+const selectAddress = () => {
+  const query = encodeURIComponent(JSON.stringify(selectedAddress.value));
+  uni.navigateTo({
+    url: `/pages/home/addressSelect?selectedAddress=${query}`,
+  });
+};
+
+onUnload(() => {
+  // 页面卸载时再移除监听，防止重复注册
+  uni.$off('selected-address');
+});
 </script>
 
 <style lang="scss" scoped>
@@ -217,5 +277,32 @@ function loginOut() {
 uni-button:after,
 wx-button:after {
   border: none;
+}
+
+.location-section {
+  margin-top: 30rpx;
+
+  .location-selector {
+    display: inline-flex;
+    align-items: center;
+    // padding: 24rpx 0;
+    border-radius: 16rpx;
+
+    .location-icon {
+      margin-right: 12rpx;
+    }
+    .location-icon-text {
+      font-size: 26rpx;
+      color: #333;
+    }
+    .location-text {
+      font-size: 30rpx;
+      color: #333;
+    }
+
+    .location-arrow {
+      margin-left: 16rpx;
+    }
+  }
 }
 </style>

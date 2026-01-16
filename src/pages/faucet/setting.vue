@@ -160,7 +160,7 @@
             <view class="distance-sub" v-if="distanceState === 'sending'">请稍候，不要关闭页面</view>
 
             <view class="distance-title" v-if="distanceState === 'waiting'">请在设备闪烁中进入调试</view>
-            <view class="distance-sub" v-if="distanceState === 'waiting'">直到设备闪烁五下</view>
+            <view class="distance-sub" v-if="distanceState === 'waiting'">直到设备由快闪转为常亮</view>
 
             <view class="distance-title success" v-if="distanceState === 'success'">
               设置完成，红外距离已更新，请自行感受距离是否合适？

@@ -64,6 +64,12 @@
 					}
 				},
 				{
+					"path": "control",
+					"style": {
+						"navigationBarTitleText": "功能"
+					}
+				},
+				{
 					"path": "toiletSetting",
 					"style": {
 						"navigationBarTitleText": "马桶设置"
@@ -78,6 +84,12 @@
 					"path": "index",
 					"style": {
 						"navigationBarTitleText": "马桶"
+					}
+				},
+				{
+					"path": "control",
+					"style": {
+						"navigationBarTitleText": "功能"
 					}
 				},
 				{

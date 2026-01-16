@@ -1,6 +1,35 @@
 <template>
   <view class="page">
     <view class="page-bg">
+      <!-- 设备信息卡片（静态示例数据，仅做展示） -->
+      <view class="card product-card">
+        <view class="product-header">
+          <view>
+            <view class="productName">{{ device.locationToilet }}</view>
+            <view class="productModel">
+              型号：
+              <text>{{ productModelDetails.model }}</text>
+            </view>
+          </view>
+        </view>
+        <view class="product-hero">
+          <!-- 这里可以按需替换为真实图片 -->
+          <image class="product-img" :src="productModelDetails.image" mode="aspectFit" lazy-load />
+        </view>
+        <view class="product-footer">
+          <view class="status-item">
+            <text class="font_family m-arrow icon">&#xe61b;</text>
+            <text>
+              状态：
+              <text :class="status === 1 ? 'status-online' : 'status-offline'">
+                {{ statusName }}
+              </text>
+            </text>
+          </view>
+
+        </view>
+      </view>
+
       <!-- 小冲器设置属性区（样式沿用 faucet） -->
       <view class="card settings-card">
         <!-- 主操作按钮：冲洗开关（前端模拟） -->
@@ -265,7 +294,7 @@
             <view class="distance-sub" v-if="distanceState === 'sending'">请稍候，不要关闭页面</view>
 
             <view class="distance-title" v-if="distanceState === 'waiting'">请在设备闪烁中进入调试</view>
-            <view class="distance-sub" v-if="distanceState === 'waiting'">直到设备闪烁五下</view>
+            <view class="distance-sub" v-if="distanceState === 'waiting'">直到设备由快闪转为常亮</view>
 
             <view class="distance-title success" v-if="distanceState === 'success'">
               设置完成，红外距离已更新，请自行感受距离是否合适？
@@ -310,6 +339,13 @@ import { useStore } from '@/stores/globalMqttInfo';
 import { ctrlDevice, resetDevicePid, readDevicePidVal, writeDevicePid, setSensingDistance } from '@/api/mqttCommon';
 import { generateRandomSeq } from '@/utils/common';
 const mqttClient = getApp().globalData.mqttService;
+import { getProductModelDetails } from '@/api/mqttCommon';
+
+// 设备相关
+const status = ref('0');
+const statusName = ref('离线');
+const productModelDetails = ref({});
+const DEVICE_STATUS = ['离线', '在线', '故障'];
 // ==================== 工具函数 ====================
 const mqttUserInfo = uni.getStorageSync('mqttUserInfo');
 const clientId = mqttUserInfo?.clientId || '';
@@ -379,6 +415,21 @@ const pidHandlers = {
     senseStageTwo.value = val;
   },
 };
+
+// ==================== 产品信息 ====================
+const loadProductModelDetails = async () => {
+  try {
+    const pointId = device.value.pointId;
+    const res = await getProductModelDetails(pointId);
+    const { code, data } = res || {};
+    if (code === 0) {
+      productModelDetails.value = data;
+    }
+  } catch (error) {
+    console.error('获取产品模型详情失败:', error);
+  }
+};
+
 
 // 根据返回的状态，红点提示'命令已下发，设备处于休眠状态。'
 const pidStatusMap = reactive({});
@@ -609,11 +660,13 @@ onLoad(async (options) => {
     DEVICE_CONFIG.did = data.did;
     DEVICE_CONFIG.dst = data.dirDid;
     DEVICE_CONFIG.dirDid = data.dirDid;
+    status.value = data.deviceStatus;
+    statusName.value = DEVICE_STATUS[status.value];
   }
   reportTopic = `olt/report/pid/${DEVICE_CONFIG.did}`;
   // 阶段2：订阅并仅监听一次设备报告主题
   mqttClient.registerPageTopicHandler(reportTopic, handleReportTopicResponse);
-  await Promise.all([readDevicePidValues()]);
+  await Promise.all([readDevicePidValues(), loadProductModelDetails()]);
 });
 
 // 创建设备请求参数
@@ -1131,4 +1184,68 @@ const clearDistanceTimer = () => {
   border-color: #c0c4cc !important;
   color: #fff !important;
 }
+
+
+
+.product-card {
+  padding: 30rpx 40rpx;
+}
+
+.product-header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.productName {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1f1f1f;
+}
+
+.productModel {
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  color: #9aa0a6;
+}
+
+.product-hero {
+  min-height: 360rpx;
+  margin-top: 32rpx;
+  display: flex;
+  justify-content: center;
+}
+
+.product-img {
+  height: 360rpx;
+}
+
+.product-footer {
+  margin-top: 32rpx;
+  display: flex;
+  gap: 30rpx;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  font-size: 26rpx;
+  color: #a09f9f;
+}
+
+.status-online {
+  color: #00a20f;
+}
+.status-offline {
+  color: #fa3534;
+}
+
+.status-amount {
+  color: #6a4f40;
+}
+
+.icon {
+  font-size: 28rpx;
+}
+
 </style>

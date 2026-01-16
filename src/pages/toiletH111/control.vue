@@ -3,7 +3,7 @@
     <view class="page-bg">
       <!-- 设置按钮 -->
       <view class="settings-btn">
-        <text class="settings-text" @click="goToSetting">功能</text>
+        <text class="settings-text" @click="goToSetting">设置</text>
       </view>
 
       <!-- 设备信息卡片 -->
@@ -361,7 +361,6 @@
           </view> -->
         </view>
       </view>
-
       <!-- 高级控制宫格 -->
       <view class="card advanced-controls">
         <view class="control-grid">
@@ -373,6 +372,23 @@
             @click="handleAdvancedControl(item, index)">
             <text class="font_family control-icon" :class="item.icon"></text>
             <text class="control-text">{{ item.name }}</text>
+          </view>
+        </view>
+      </view>
+      <!-- 不常用两个控制控制 -->
+      <view class="card water-tank-controls bottom200">
+        <view class="water-tank-container">
+          <view
+            class="water-tank-button"
+            :class="{ active: waterTankControls.includes('水箱排空') }"
+            @click="handleWaterTankControl('水箱排空')">
+            <text class="water-text">水箱排空</text>
+          </view>
+          <view
+            class="water-tank-button"
+            :class="{ active: waterTankControls.includes('水箱除垢') }"
+            @click="handleWaterTankControl('水箱除垢')">
+            <text class="water-text">水箱除垢</text>
           </view>
         </view>
       </view>
@@ -428,6 +444,9 @@ const advancedControls = ref([
   { name: '位置调节', active: false, icon: 'icon-a-ziyuan41' },
   { name: '水量调节', active: false, icon: 'icon-a-ziyuan40' },
 ]);
+
+// 不常用两个控制控制
+const waterTankControls = ref([]);
 
 // 模块显示状态
 const showWaterTempModule = ref(false);
@@ -721,6 +740,24 @@ const handleBasicControl = (item, index) => {
   handleBasicControlEvent(item.name);
 };
 
+// 处理不常用两个控制控制
+const handleWaterTankControl = (event) => {
+  console.log(event);
+  // 重置其他按钮的选中状态
+  advancedControls.value.forEach((control, i) => {
+    control.active = false;
+  });
+  // 先隐藏所有模块
+  hideOtherModules();
+  // 显示选中状态500毫秒
+  waterTankControls.value = [event];
+  setTimeout(() => {
+    waterTankControls.value = [];
+  }, 500);
+
+  handleBasicControlEvent(event);
+};
+
 // 分别处理不同的基础事件
 // 0：停止
 // 1：烘干
@@ -773,6 +810,20 @@ const handleBasicControlEvent = async (event) => {
       sid: 0,
       fid: 4100,
       val: 5,
+    });
+  } else if (event === '水箱排空') {
+    params = createControlParams({
+      did: DEVICE_CONFIG.did,
+      sid: 0,
+      fid: 4112,
+      val: 1,
+    });
+  } else if (event === '水箱除垢') {
+    params = createControlParams({
+      did: DEVICE_CONFIG.did,
+      sid: 0,
+      fid: 4113,
+      val: 1,
     });
   }
   const res = await ctrlDevice(params);
@@ -1042,7 +1093,7 @@ const setFeminineWashMode = (mode) => {
 
 const goToSetting = () => {
   uni.navigateTo({
-    url: '/pages/toilet/toiletSetting?device=' + encodeURIComponent(JSON.stringify(device.value)),
+    url: '/pages/toiletH111/toiletSetting?device=' + encodeURIComponent(JSON.stringify(device.value)),
   });
 };
 
@@ -1055,7 +1106,6 @@ function feedbackResult(res, params) {
     uni.hideLoading();
   }
 }
-
 
 // 监听全局主题消息反馈操作成功
 let globalWSatchStop = null;
@@ -1110,6 +1160,7 @@ function clearTimeoutHideLoading() {
   clearTimeout(globalWSatchStopTimer);
   globalWSatchStopTimer = null;
 }
+
 // 设置（1~6档）
 const gearsOptions = [
   {
@@ -1731,10 +1782,6 @@ const confirmWaterAmount = () => {
   grid-template-rows: repeat(2, 1fr);
 }
 
-.advanced-controls {
-  margin-bottom: 200rpx;
-}
-
 .advanced-controls .control-grid {
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
@@ -1831,5 +1878,72 @@ const confirmWaterAmount = () => {
   .control-text {
     font-weight: bold;
   }
+}
+
+/* 水箱控制按钮样式 */
+.water-tank-controls {
+  padding: 40rpx;
+}
+.bottom200 {
+  margin-bottom: 200rpx;
+}
+
+.water-tank-container {
+  display: flex;
+  gap: 20rpx;
+  justify-content: space-between;
+}
+
+.water-tank-button {
+  flex: 1;
+  padding: 24rpx 0;
+  border-radius: 60rpx;
+  text-align: center;
+  font-size: 28rpx;
+  transition: all 0.3s ease;
+  background: linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%);
+  border: 1rpx solid #e0e0e0;
+  box-shadow: 0 2rpx 4rpx rgba(228, 228, 228, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.water-tank-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s ease;
+}
+
+.water-tank-button:active::before {
+  left: 100%;
+}
+
+.water-tank-button.active {
+  background: linear-gradient(135deg, #5a4a3f 0%, #6b5a4f 100%);
+  border-color: #5a4a3f;
+  box-shadow: 0 4rpx 12rpx rgba(90, 74, 63, 0.3);
+  transform: translateY(-2rpx);
+}
+
+.water-tank-button.active .water-text {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.water-text {
+  font-size: 28rpx;
+  color: #574b43;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.water-tank-button:active {
+  transform: scale(0.98);
 }
 </style>
