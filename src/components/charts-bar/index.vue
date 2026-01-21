@@ -228,6 +228,7 @@ const calculateChartWidth = () => {
 watch(
   () => props.data,
   (newData) => {
+    console.log('图表数据', newData);
     const { x = {}, y = {} } = newData || {};
     const categories = Array.isArray(x.data) ? x.data : [];
     const seriesData = Array.isArray(y.data) ? y.data : [];
@@ -259,7 +260,7 @@ watch(
     // 计算图表宽度（如果容器宽度已测量完成，则立即计算；否则等待测量完成后再计算）
     calculateChartWidth();
   },
-  { immediate: true, deep: false }
+  { immediate: true, deep: true }
 );
 
 // 监听 defaultRange prop 的变化，同步更新 currentRange
@@ -292,6 +293,7 @@ const switchRange = (range) => {
 const handleClickDate = (type) => {
   emit('changeDate', type, currentRange.value);
 };
+
 </script>
 
 <style lang="scss" scoped>

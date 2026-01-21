@@ -60,7 +60,7 @@
 
 <script setup>
 import { ref } from 'vue';
-import { onLoad } from '@dcloudio/uni-app';
+import { onLoad, onUnload } from '@dcloudio/uni-app';
 import { getProductModelDetails } from '@/api/mqttCommon';
 import { queryDeviceStatisticGroup } from '@/api/uEchartsApi';
 import ChartsBar from '@/components/charts-bar/index.vue';
@@ -331,6 +331,10 @@ async function getStatisticalData(objParams) {
     statisticalReady.value = true;
   }
 }
+
+onUnload(() => {
+  mqttClient.unregisterPageTopicHandler(reportTopic, handleReportTopicResponse);
+});
 </script>
 
 <style lang="scss" scoped>

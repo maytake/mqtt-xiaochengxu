@@ -1144,6 +1144,7 @@ function timeoutHideLoading() {
 }
 
 onUnload(() => {
+  mqttClient.unregisterPageTopicHandler(reportTopic, handleReportTopicResponse);
   cleanupWatchListeners();
   clearTimeoutHideLoading();
 });
@@ -1232,6 +1233,8 @@ const confirmPosition = () => {
 const confirmWaterAmount = () => {
   ctrFn(4110, waterAmountLevel.value);
 };
+
+
 </script>
 
 <style lang="scss" scoped>

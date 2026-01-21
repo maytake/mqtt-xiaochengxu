@@ -60,7 +60,7 @@
 
 <script setup>
 import { ref } from 'vue';
-import { onLoad } from '@dcloudio/uni-app';
+import { onLoad, onUnload } from '@dcloudio/uni-app';
 import { getProductModelDetails } from '@/api/mqttCommon';
 import { queryDeviceStatisticGroup } from '@/api/uEchartsApi';
 import ChartsBar from '@/components/charts-bar/index.vue';
@@ -83,6 +83,7 @@ const DEVICE_CONFIG = {
   dirDid: '011025092402001D',
 };
 let reportTopic = '';
+let reportTopicB = '';
 let todayCount = ref(0); // 今日统计次数
 // 当前已展示的按天区间
 const currentDayRange = ref({
@@ -194,9 +195,11 @@ onLoad(async (options) => {
     DEVICE_CONFIG.dst = data.dirDid;
     DEVICE_CONFIG.dirDid = data.dirDid;
   }
-  reportTopic = `olt/report/eid/${DEVICE_CONFIG.did}/8212`;
-  // 阶段2：订阅并仅监听一次设备报告主题
+  reportTopic = `olt/report/eid/${DEVICE_CONFIG.did}/8213`;
   mqttClient.registerPageTopicHandler(reportTopic, handleReportTopicResponse);
+
+  reportTopicB = `olt/report/eid/${DEVICE_CONFIG.did}/8214`;
+  mqttClient.registerPageTopicHandler(reportTopicB, handleReportTopicResponse);
 
   await Promise.all([loadProductModelDetails()]);
   const params = buildLastDayParams();
@@ -206,7 +209,7 @@ onLoad(async (options) => {
 // 页面级主题消息处理变量
 handleReportTopicResponse = (messageData, topic) => {
   console.log('pageMessage', messageData);
-  if (messageData?.topic === reportTopic) {
+  if (messageData?.topic === reportTopic || messageData?.topic === reportTopicB) {
     const params = messageData?.params;
     if (params) {
       todayCount.value++;
@@ -331,6 +334,11 @@ async function getStatisticalData(objParams) {
     statisticalReady.value = true;
   }
 }
+
+onUnload(() => {
+  mqttClient.unregisterPageTopicHandler(reportTopic, handleReportTopicResponse);
+  mqttClient.unregisterPageTopicHandler(reportTopicB, handleReportTopicResponse);
+});
 </script>
 
 <style lang="scss" scoped>

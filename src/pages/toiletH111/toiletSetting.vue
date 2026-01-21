@@ -566,6 +566,10 @@ const applyDefaultSettings = async () => {
   feedbackResult(res);
   handleDevicePidResponse(res);
 };
+
+onUnload(() => {
+  mqttClient.unregisterPageTopicHandler(reportTopic, handleReportTopicResponse);
+});
 </script>
 
 <style lang="scss" scoped>

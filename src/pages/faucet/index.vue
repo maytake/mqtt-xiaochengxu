@@ -60,7 +60,7 @@
 
 <script setup>
 import { ref } from 'vue';
-import { onLoad } from '@dcloudio/uni-app';
+import { onLoad, onUnload } from '@dcloudio/uni-app';
 import { getProductModelDetails } from '@/api/mqttCommon';
 import { queryDeviceStatisticGroup } from '@/api/uEchartsApi';
 import ChartsBar from '@/components/charts-bar/index.vue';
@@ -194,7 +194,7 @@ onLoad(async (options) => {
     DEVICE_CONFIG.dst = data.dirDid;
     DEVICE_CONFIG.dirDid = data.dirDid;
   }
-  reportTopic = `olt/report/eid/${DEVICE_CONFIG.did}/8212`;
+  reportTopic = `olt/report/eid/${DEVICE_CONFIG.did}/8218`;
   // 阶段2：订阅并仅监听一次设备报告主题
   mqttClient.registerPageTopicHandler(reportTopic, handleReportTopicResponse);
 
@@ -331,6 +331,10 @@ async function getStatisticalData(objParams) {
     statisticalReady.value = true;
   }
 }
+
+onUnload(() => {
+  mqttClient.unregisterPageTopicHandler(reportTopic, handleReportTopicResponse);
+});
 </script>
 
 <style lang="scss" scoped>

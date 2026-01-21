@@ -73,7 +73,7 @@ const mqttService = {
     client = mqtt.connect(MQTT_CONFIG.url, {
       keepalive: MQTT_CONFIG.keepalive,
       clientId: finalClientId,
-      clean: false,
+      clean: true,
       connectTimeout: MQTT_CONFIG.connectTimeout,
       username: username || MQTT_CONFIG.defaultUsername,
       password: finalPassword,
@@ -132,6 +132,7 @@ const mqttService = {
    */
   unsubscribe(topic, cb) {
     if (client && isConnected) {
+      console.log('取消订阅主题:', topic);
       client.unsubscribe(topic, cb);
       removeSubscription(topic);
     }

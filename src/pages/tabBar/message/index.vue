@@ -82,7 +82,7 @@
 <script setup>
 import { ref, computed, getCurrentInstance, watch, onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
-import { onReachBottom, onShow, onLoad } from '@dcloudio/uni-app';
+import { onReachBottom, onShow, onLoad, onPullDownRefresh } from '@dcloudio/uni-app';
 import { getProjectMessage, getDeviceCount } from '@/api/message';
 import cmdProgress from '@/components/cmd-progress/cmd-progress.vue';
 
@@ -146,11 +146,15 @@ onReachBottom(() => {
 // 获取故障设备数量
 async function getDeviceCountFn() {
   if (!projectId.value) return; // 如果 projectId 不存在，直接返回
-  const res2 = await getDeviceCount({ projectId: projectId.value });
-  if (res2.code === 0) {
-    const { normalCount: normalCountData, faultCount: faultCountData } = res2.data || {};
-    faultCount.value = faultCountData || 0;
-    normalCount.value = normalCountData || 0;
+  try {
+    const res2 = await getDeviceCount({ projectId: projectId.value });
+    if (res2.code === 0) {
+      const { normalCount: normalCountData, faultCount: faultCountData } = res2.data || {};
+      faultCount.value = faultCountData || 0;
+      normalCount.value = normalCountData || 0;
+    }
+  } catch (error) {
+    console.error('获取故障设备数量失败:', error);
   }
 }
 
@@ -244,6 +248,14 @@ watch(
 const seeDetail = (item) => {
   uni.navigateTo({ url: '/pages/message/diagnosis?device=' + encodeURIComponent(JSON.stringify(item)) });
 };
+
+onPullDownRefresh(async () => {
+  console.log('下拉刷新');
+  // 重新获取数据
+  getDeviceCountFn();
+  loadMore();
+  uni.stopPullDownRefresh();
+});
 </script>
 
 <style lang="scss" scoped>

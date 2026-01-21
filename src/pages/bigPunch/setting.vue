@@ -761,6 +761,10 @@ const clearDistanceTimer = () => {
     distanceTimer = null;
   }
 };
+
+onUnload(() => {
+  mqttClient.unregisterPageTopicHandler(reportTopic, handleReportTopicResponse);
+});
 </script>
 
 <style lang="scss" scoped>

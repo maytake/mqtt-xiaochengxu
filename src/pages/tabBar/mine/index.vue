@@ -69,7 +69,7 @@ onLoad(async () => {
     // 优先尝试从本地缓存恢复上次选择的地址与楼层
     const cacheAddress = uni.getStorageSync('HOME_SELECTED_ADDRESS');
     if (cacheAddress && cacheAddress.parentCode) {
-      uni.$emit('selected-address', cacheAddress);
+      uni.$emit('selected-address', cacheAddress, 'mine');
     } else {
       // 加载数据
       initData();
@@ -113,7 +113,8 @@ function loginOut() {
     content: '确定要退出登录吗？',
     success: function (res) {
       if (res.confirm) {
-        uni.clearStorageSync();
+        uni.removeStorageSync('token');
+        uni.removeStorageSync('refresh_token');
         uni.showToast({
           title: '已退出登录',
           icon: 'success',

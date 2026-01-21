@@ -258,9 +258,23 @@ const returnToGatewayDetail = () => {
 };
 
 // 完成返回设备列表页面，跳转不留历史记录
-const handleComplete = () => {
-  handleStop();
-  returnToGatewayDetail();
+const handleComplete = async () => {
+  try {
+    const params = {
+      src: clientId,
+      dst: device.value.did,
+      ver: 'V1.0',
+      seq: generateRandomSeq(),
+    };
+    const res = await stopDisc(params);
+    if (res.code == 0) {
+      const failedDevices = deviceList.value.filter((item) => item.status === 'loading');
+      failedDevices.forEach((item) => {
+        item.status = 'failed';
+      });
+      returnToGatewayDetail();
+    }
+  } catch (e) {}
 };
 
 // 兜底：防止某些特殊返回路径未触发 onBackPress

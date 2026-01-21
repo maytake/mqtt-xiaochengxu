@@ -1094,6 +1094,7 @@ function timeoutHideLoading() {
 }
 
 onUnload(() => {
+  mqttClient.unregisterPageTopicHandler(reportTopic, handleReportTopicResponse);
   cleanupWatchListeners();
   clearTimeoutHideLoading();
 });

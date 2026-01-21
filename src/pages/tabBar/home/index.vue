@@ -234,7 +234,11 @@ onLoad(async () => {
   //   }
   // }
 
-  uni.$on('selected-address', (data) => {
+  uni.$on('selected-address', (data, type) => {
+    // 地址切换时，清空已缓存的楼层选择，等待用户重新选择
+    if (type !== 'mine') {
+      uni.removeStorageSync(STORAGE_KEYS.floor);
+    }
     getFloorTreeByProjectId(data);
   });
   // 刷新首页厕所地图
@@ -267,7 +271,26 @@ onPullDownRefresh(async () => {
 });
 
 // 根据本地缓存恢复首页地址与楼层选择
-const restoreFromCache = (cacheAddress, cacheFloor) => {
+const restoreFromCache = async (cacheAddress, cacheFloor) => {
+  // 获取地址列表，检查缓存的地址是否在列表中
+  const res = await projectList();
+  if (res.code === 0) {
+    const addressList = res.data || [];
+    // 检查缓存的地址是否在地址列表中（通过 projectId 判断）
+    const isAddressInList = addressList.some((item) => item.projectId === cacheAddress.projectId);
+
+    if (!isAddressInList) {
+      // 如果缓存的地址不在列表中，获取第一个默认地址
+      initData();
+      return;
+    }
+  } else {
+    // 如果获取地址列表失败，也使用默认地址
+    initData();
+    return;
+  }
+
+  // 缓存的地址在列表中，继续使用缓存的地址
   selectedAddress.value = cacheAddress;
   mainStore.setProjectItem(cacheAddress);
   // 先根据地址加载楼层树，待树加载完成后再根据 projectId 选中对应楼层
@@ -291,8 +314,7 @@ function getFloorTreeByProjectId(itemAddress) {
   // 记录选中的项目地址到本地缓存
   uni.setStorageSync(STORAGE_KEYS.address, itemAddress);
   selectedValue.value = ''; // 清空楼层选择
-  // 地址切换时，清空已缓存的楼层选择，等待用户重新选择
-  uni.removeStorageSync(STORAGE_KEYS.floor);
+
   getTreeProject(); // 重新获取楼层树
 }
 
