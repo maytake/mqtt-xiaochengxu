@@ -24,7 +24,7 @@ export function getCurrentRoute() {
   return fullPath;
 }
 // 生成16位随机数
-export function generateRandomSeq(n=16) {
+export function generateRandomSeq(n = 16) {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let result = '';
   for (let i = 0; i < n; i++) {
@@ -88,10 +88,10 @@ export function decryptPassword(encryptedBase64, key = '39dc0125d2489439') {
  */
 export function formatDate(date, format = 'yyyy-MM-dd') {
   if (!date) return '';
-  
+
   const d = new Date(date);
   if (isNaN(d.getTime())) return '';
-  
+
   const year = d.getFullYear();
   const month = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
@@ -99,7 +99,7 @@ export function formatDate(date, format = 'yyyy-MM-dd') {
   const hours12 = String(d.getHours() % 12 || 12).padStart(2, '0');
   const minutes = String(d.getMinutes()).padStart(2, '0');
   const seconds = String(d.getSeconds()).padStart(2, '0');
-  
+
   // 按顺序替换，先替换长的格式，避免短格式被误替换
   return format
     .replace('yyyy', year)

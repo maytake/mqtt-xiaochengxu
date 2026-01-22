@@ -1,30 +1,35 @@
 <template>
   <view class="bathroom-layout" ref="mapElementRef">
     <view class="bathroom-wrap" v-if="imageUrl">
-      <u-lazy-load
-        class="m-pic"
-        :image="imageUrl"
-        :loading-img="loadingImg"
-        :error-img="errorImg"
+      <u-lazy-load class="m-pic" :image="imageUrl" :loading-img="loadingImg" :error-img="errorImg"
         :img-mode="isFullscreen ? 'heightFix' : 'widthFix'" />
-      <view
-        v-for="device in devices"
-        :key="device.pointId"
-        class="device-icon"
-        :style="getDeviceStyle(device)"
-        :class="{
-          alarm: device.deviceStatus != 1,
-        }"
-        @click="selectDevice(device)">
-        <view class="status-indicator" :class="{ on: device.status }">
-          {{ device.pointName }}
-          <text class="font_family m-arrow">&#xe60d;</text>
+      <view v-for="device in devices" :key="device.pointId" class="device-icon" :style="getDeviceStyle(device)" :class="{
+        alarm: device.deviceStatus != 1,
+      }">
+
+        <!-- 只显示一个圆点 -->
+        <view class="only-one-dot"  v-if="device.placement == 'hide-text'">
+          <view class="point-dot" :class="{ alarm: device.deviceStatus != 1 }" @click="selectDevice(device)"></view>
         </view>
-        <image
-          v-if="device.deviceStatus != 1"
-          src="@/static/images/localAlarm.png"
-          class="font_family plus-btn"></image>
-        <image v-else src="@/static/images/local.png" class="font_family plus-btn"></image>
+        <!-- 文字在圆点上面 -->
+        <view class="status-indicator-up" v-if="device.placement == 'top'" @click="selectDevice(device)">
+          <view class="status-indicator" :class="{ on: device.status }">
+            {{ device.pointName }}
+            <text class="font_family m-arrow">&#xe60d;</text>
+          </view>
+          <view class="connector-line" :class="{ alarm: device.deviceStatus != 1 }"></view>
+          <view class="point-dot" :class="{ alarm: device.deviceStatus != 1 }"></view>
+        </view>
+        <!-- 文字在圆点下面 -->
+        <view class="status-indicator-down" v-if="device.placement == 'bottom'" @click="selectDevice(device)">
+          <view class="point-dot" :class="{ alarm: device.deviceStatus != 1 }"></view>
+          <view class="connector-line" :class="{ alarm: device.deviceStatus != 1 }"></view>
+          <view class="status-indicator" :class="{ on: device.status }">
+            {{ device.pointName }}
+            <text class="font_family m-arrow">&#xe60d;</text>
+          </view>
+        </view>
+        <!-- 文字在圆点下面-end -->
       </view>
     </view>
     <view class="toilet-map-empty" v-else>
@@ -213,6 +218,7 @@ const scan = (pointId) => {
   border-radius: 20rpx;
   width: 100%;
 }
+
 .toilet-map-empty {
   margin: 100rpx 0;
   height: 280rpx;
@@ -220,6 +226,7 @@ const scan = (pointId) => {
   justify-content: center;
   align-items: center;
 }
+
 .m-pic ::v-deep .u-lazy-item {
   width: 100%;
   min-height: 240rpx;
@@ -229,7 +236,7 @@ const scan = (pointId) => {
   position: absolute;
   min-width: 100rpx;
   height: 90rpx;
-  transform: translate(-50%, -70%);
+  transform: translate(-50%, -80%);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -239,14 +246,76 @@ const scan = (pointId) => {
 }
 
 .device-icon.active {
-  transform: translate(-50%, -70%) scale(1.1);
+  transform: translate(-50%, -80%) scale(1.1);
   box-shadow: 0 0 10px #b69d8d;
 }
+
+.status-indicator-up {
+  position: absolute;
+  min-width: 100rpx;
+  height: 90rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.status-indicator-down {
+  position: absolute;
+  min-width: 100rpx;
+  height: 90rpx;
+  transform: translate(0%, 58%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
 
 .plus-btn {
   width: 26rpx;
   height: 36rpx;
   color: #574b43;
+}
+
+.only-one-dot {
+  position: absolute;
+  min-width: 50rpx;
+  height: 50rpx;
+  transform: translate(0%, 50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 竖线和点的容器 */
+.connector-line {
+  width: 4rpx;
+  height: 12rpx;
+  background: #574b43;
+  /* 默认棕色 */
+}
+
+.connector-line.alarm {
+  background: #f50a0a;
+  /* 报警红色与点保持一致*/
+}
+
+/* 新的点位样式 */
+.point-dot {
+  width: 20rpx;
+  height: 20rpx;
+  border-radius: 50%;
+  background: #574b43;
+  border: 2px solid #9f816c;
+}
+
+
+
+.point-dot.alarm {
+  background: #f50a0a;
+  border: 2px solid #fe7070;
 }
 
 .status-indicator {
@@ -262,6 +331,7 @@ const scan = (pointId) => {
   transition: background 0.3s;
   box-shadow: 0 0 6rpx #9e9e9e;
 }
+
 .device-icon.alarm .status-indicator {
   background: #f50a0a;
 }
@@ -271,8 +341,5 @@ const scan = (pointId) => {
   margin-left: 2rpx;
 }
 
-.status-indicator.on {
-  background: #67c23a;
-  color: #fff;
-}
+
 </style>
