@@ -121,9 +121,10 @@ const mqttService = {
    * 订阅主题
    */
   subscribe(topic, options = {}, cb) {
+    // 先记录订阅请求，保证即使当前未连接，也会在连接后恢复
+    saveSubscription(topic, options);
     if (client && isConnected) {
       client.subscribe(topic, options, cb);
-      saveSubscription(topic, options);
     }
   },
 

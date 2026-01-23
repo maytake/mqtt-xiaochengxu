@@ -3,17 +3,15 @@
     <view class="bathroom-wrap" v-if="imageUrl">
       <u-lazy-load class="m-pic" :image="imageUrl" :loading-img="loadingImg" :error-img="errorImg"
         :img-mode="isFullscreen ? 'heightFix' : 'widthFix'" />
-      <view v-for="device in devices" :key="device.pointId" class="device-icon" :style="getDeviceStyle(device)" :class="{
-        alarm: device.deviceStatus != 1,
-      }">
-
+      <view v-for="device in devices" :key="device.pointId" class="device-icon" :style="getDeviceStyle(device)"
+        :class="getDeviceStyleByPosition(device)">
         <!-- 只显示一个圆点 -->
-        <view class="only-one-dot"  v-if="device.placement == 'hide-text'">
+        <view class="only-one-dot" v-if="device.placement == 'hide-text'">
           <view class="point-dot" :class="{ alarm: device.deviceStatus != 1 }" @click="selectDevice(device)"></view>
         </view>
         <!-- 文字在圆点上面 -->
         <view class="status-indicator-up" v-if="device.placement == 'top'" @click="selectDevice(device)">
-          <view class="status-indicator" :class="{ on: device.status }">
+          <view class="status-indicator" :class="{ on: device.status, alarm: device.deviceStatus != 1 }">
             {{ device.pointName }}
             <text class="font_family m-arrow">&#xe60d;</text>
           </view>
@@ -24,7 +22,7 @@
         <view class="status-indicator-down" v-if="device.placement == 'bottom'" @click="selectDevice(device)">
           <view class="point-dot" :class="{ alarm: device.deviceStatus != 1 }"></view>
           <view class="connector-line" :class="{ alarm: device.deviceStatus != 1 }"></view>
-          <view class="status-indicator" :class="{ on: device.status }">
+          <view class="status-indicator" :class="{ on: device.status, alarm: device.deviceStatus != 1 }">
             {{ device.pointName }}
             <text class="font_family m-arrow">&#xe60d;</text>
           </view>
@@ -204,6 +202,17 @@ const scan = (pointId) => {
     },
   });
 };
+
+// 根据点位返回的位置信息修改样式
+const getDeviceStyleByPosition = (device) => {
+  const { placement } = device;
+  return {
+    'text-top': placement === 'top',
+    'text-bottom': placement === 'bottom',
+    'hide-text': placement === 'hide-text',
+  };
+};
+
 </script>
 
 <style lang="scss" scoped>
@@ -236,7 +245,7 @@ const scan = (pointId) => {
   position: absolute;
   min-width: 100rpx;
   height: 90rpx;
-  transform: translate(-50%, -80%);
+
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -251,7 +260,6 @@ const scan = (pointId) => {
 }
 
 .status-indicator-up {
-  position: absolute;
   min-width: 100rpx;
   height: 90rpx;
   display: flex;
@@ -261,10 +269,9 @@ const scan = (pointId) => {
 }
 
 .status-indicator-down {
-  position: absolute;
   min-width: 100rpx;
   height: 90rpx;
-  transform: translate(0%, 58%);
+
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -282,7 +289,7 @@ const scan = (pointId) => {
   position: absolute;
   min-width: 50rpx;
   height: 50rpx;
-  transform: translate(0%, 50%);
+
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -332,7 +339,7 @@ const scan = (pointId) => {
   box-shadow: 0 0 6rpx #9e9e9e;
 }
 
-.device-icon.alarm .status-indicator {
+.alarm {
   background: #f50a0a;
 }
 
@@ -341,5 +348,18 @@ const scan = (pointId) => {
   margin-left: 2rpx;
 }
 
+.text-top {
+  transform: translate(-50%, -80%);
+}
 
+.text-bottom {
+  transform: translate(-50%, -20%);
+}
+
+.hide-text {
+  width: 50rpx;
+  min-width: 50rpx;
+  height: 50rpx;
+  transform: translate(-50%, -40%);
+}
 </style>

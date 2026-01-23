@@ -31,3 +31,21 @@ export function getMessageDetail(data) {
     data: data,
   });
 }
+
+export function updateReadStatus(data) {
+  return request({
+    url: '/maintain-api/deviceMessage/updateReadStatus',
+    method: 'post',
+    data: data,
+  });
+}
+
+export function getFaultMessageCount(data) {
+  return request({
+    url: '/maintain-api/deviceMessage/getFaultMessageCount',
+    method: 'post',
+    data: data,
+  });
+}
+
+

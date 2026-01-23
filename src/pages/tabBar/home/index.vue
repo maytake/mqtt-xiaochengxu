@@ -70,7 +70,7 @@ const { proxy } = getCurrentInstance();
 import toiletMap from '@/components/toilet-map/index.vue';
 import LkTree from '@/components/lk-tree/index.vue';
 import ChartsBar from '@/components/charts-bar/index.vue';
-
+import { getFaultMessageCount } from '@/api/message';
 import { treeProjec, getToiletiemDetails } from '@/api/home';
 import { queryHomeStatisticGroup } from '@/api/uEchartsApi';
 import { projectList } from '@/api/home';
@@ -238,8 +238,9 @@ onLoad(async () => {
     // 地址切换时，清空已缓存的楼层选择，等待用户重新选择
     if (type !== 'mine') {
       uni.removeStorageSync(STORAGE_KEYS.floor);
+      getFloorTreeByProjectId(data);
     }
-    getFloorTreeByProjectId(data);
+   
   });
   // 刷新首页厕所地图
   uni.$on('refresh-map', () => {
@@ -380,7 +381,9 @@ const findNodeByProjectId = (nodes, projectId) => {
 };
 
 const getTreeProject = async (preSelectedProjectId) => {
-  const { parentCode } = selectedAddress.value;
+  const { parentCode, projectId } = selectedAddress.value;
+  console.log('projectId', projectId);
+
   if (!parentCode) return;
   const res = await treeProjec(parentCode);
   const { code, data } = res || {};
@@ -402,7 +405,6 @@ const getTreeProject = async (preSelectedProjectId) => {
       selectedValue.value = projectId;
       buildingTreeStore.setSelectedId(projectId);
       locationToilet.value = nameSr;
-
       getToiletFn(projectId);
       currentRange.value = 'month';
       const params = buildLastMonthParams();
@@ -531,6 +533,9 @@ async function getStatisticalData(objParams) {
     statisticalReady.value = true;
   }
 }
+
+
+
 </script>
 
 <style lang="scss" scoped>

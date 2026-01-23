@@ -1,9 +1,59 @@
 <script>
 import request from '@/utils/request';
 import mqttService from '@/utils/mqtt';
+import { getFaultMessageCount } from '@/api/message';
+
+import { computed, watch, getCurrentInstance } from 'vue';
+import { storeToRefs } from 'pinia';
+import { useStore } from '@/stores/index';
 
 export default {
-  onLaunch: function () {
+  setup() {
+    let reportTopic = ''
+    const { proxy } = getCurrentInstance();
+
+    // 页面级主题消息处理函数
+    const handleReportTopicResponse = (messageData, topic) => {
+      console.log('pageMessage', messageData);
+      if (messageData) {
+        proxy.messageCount++;
+        console.log('监听增加消息数量', proxy.messageCount);
+        const count = String(proxy.messageCount);
+        uni.setTabBarBadge({
+          index: 1, // 对应tabBar list中“消息”项的索引，从0开始计数
+          text: count // 显示的数字，超过99会显示“…”。
+        });
+      }
+    };
+
+    const { projectItem } = storeToRefs(useStore());
+    const projectId = computed(() => projectItem.value?.projectId);
+
+    // 监听 projectId 变化，切换订阅主题
+    watch(
+      projectId,
+      (newVal, oldVal) => {
+        console.log('projectId', newVal, oldVal);
+        // 先取消旧主题订阅
+        if (oldVal) {
+          const oldTopic = `olt/fault/push/${oldVal}`;
+          mqttService.unregisterPageTopicHandler(oldTopic, handleReportTopicResponse);
+        }
+
+        // 订阅新主题
+        if (newVal) {
+          reportTopic = `olt/fault/push/${newVal}`;
+          mqttService.registerPageTopicHandler(reportTopic, handleReportTopicResponse);
+          proxy.getFaultMessageCountFn(newVal);
+        }
+      },
+      { immediate: true }
+    );
+
+    // 可以根据需要在初始化时手动调用一次
+    // handleReportTopicResponse();
+  },
+  onLaunch() {
     // 全局路由拦截，只拦截 pages/intelligent/detail 页面
     uni.addInterceptor('navigateTo', {
       invoke(args) {
@@ -57,10 +107,28 @@ export default {
       refreshTokenTimer: null,
       isRefreshing: false, // 防止重复刷新
       mqttTimer: null, // MQTT连接定时器
+      messageCount: 0,
     };
   },
 
   methods: {
+    // 获取未读消息数量
+    async getFaultMessageCountFn(projectId) {
+      const res = await getFaultMessageCount({ projectId });
+      if (res.code === 0) {
+        console.log('全局页面的故障消息数量', res.data);
+        this.messageCount = res.data;
+        const count = res.data ? String(res.data) : null;
+        if (count) {
+          uni.setTabBarBadge({
+            index: 1, // 对应tabBar list中“消息”项的索引，从0开始计数
+            text: count, // 显示的数字，超过99会显示“…”。
+          });
+        } else {
+          uni.removeTabBarBadge({ index: 1 });
+        }
+      }
+    },
     clearMqttTimer() {
       if (this.mqttTimer) {
         clearTimeout(this.mqttTimer);

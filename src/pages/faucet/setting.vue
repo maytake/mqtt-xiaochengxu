@@ -46,10 +46,7 @@
           <view class="list-item">
             <view :class="['label', { dot: cleaningModeWarn }]" @click="handlePidTip('cleaningMode')">清洁模式</view>
             <view class="extra">
-              <up-switch
-                v-model="cleaningMode"
-                size="20"
-                activeColor="#5a4a3f"
+              <up-switch v-model="cleaningMode" size="20" activeColor="#5a4a3f"
                 @change="updateCleaningMode"></up-switch>
             </view>
           </view>
@@ -122,13 +119,8 @@
       </up-popup>
       <!-- 清洁模式时间弹出层功能-end -->
       <!-- 自动冲洗时间弹出层功能-start -->
-      <up-picker
-        :show="showPicker"
-        :columns="pickerColumns"
-        :title="pickerTitle"
-        :defaultIndex="pickerDefaultIndex"
-        @confirm="onPickerConfirm"
-        @cancel="showPicker = false"></up-picker>
+      <up-picker :show="showPicker" :columns="pickerColumns" :title="pickerTitle" :defaultIndex="pickerDefaultIndex"
+        @confirm="onPickerConfirm" @cancel="showPicker = false"></up-picker>
       <!-- 弹出层功能-end -->
       <!-- 感应距离（按设计重构：三步状态机） -->
       <up-modal :show="showDistance" :closeOnClickOverlay="false" :showCancelButton="false" :showConfirmButton="false">
@@ -176,21 +168,9 @@
           <!-- 操作区：按状态禁用 -->
           <view class="distance-divider"></view>
           <view class="distance-actions">
-            <up-button
-              class="confirm-btn"
-              :text="distancePrimaryText"
-              type="primary"
-              color="#6a4f40"
-              shape="circle"
-              :disabled="primaryDisabled"
-              @click="onDistancePrimary"></up-button>
-            <up-button
-              class="cancel-btn"
-              text="关闭"
-              type="info"
-              plain
-              shape="circle"
-              :disabled="closeDisabled"
+            <up-button class="confirm-btn" :text="distancePrimaryText" type="primary" color="#6a4f40" shape="circle"
+              :disabled="primaryDisabled" @click="onDistancePrimary"></up-button>
+            <up-button class="cancel-btn" text="关闭" type="info" plain shape="circle" :disabled="closeDisabled"
               @click="onDistanceClose"></up-button>
           </view>
         </view>
@@ -335,6 +315,8 @@ onUnload(() => {
   if (reportTopic) {
     mqttClient.unregisterPageTopicHandler(reportTopic, handleReportTopicResponse);
   }
+  cleanWatchListeners();
+  clearTimeoutHideLoading();
 });
 onMounted(async () => {
   await Promise.all([readDevicePidValues(), loadProductModelDetails()]);
@@ -511,7 +493,7 @@ const toggleWater = async () => {
     val: 1,
   });
   const res = await ctrlDevice(params);
-  feedbackResult(res);
+  feedbackSuccess(res, params.seq);
 };
 
 // 设备设置更新
@@ -742,6 +724,65 @@ const clearDistanceTimer = () => {
     distanceTimer = null;
   }
 };
+
+
+
+// 监听全局主题消息反馈操作成功
+let globalWatchStop = null;
+let globalWatchStopTimer = null;
+function feedbackSuccess(res, seq) {
+  if (res.code === 0) {
+    uni.showLoading({
+      title: '操作中...',
+      mask: true,
+    });
+    timeoutHideLoading();
+    const { globalTopicInfo } = storeToRefs(useStore());
+    cleanWatchListeners();
+    globalWatchStop = watch(
+      globalTopicInfo,
+      (newVal) => {
+        console.log('阶段1：', newVal);
+        if (newVal?.seq === seq) {
+          if (newVal?.result == 1) {
+            uni.hideLoading();
+            uni.showToast({ icon: 'success', title: '操作成功', duration: 500 });
+            clearTimeoutHideLoading();
+          }
+        }
+      },
+      { deep: true, immediate: false }
+    );
+  } else {
+    uni.showToast({ icon: 'error', title: '操作失败', duration: 500 });
+    uni.hideLoading();
+  }
+}
+
+// 超时10秒后，隐藏loading
+function timeoutHideLoading() {
+  clearTimeoutHideLoading();
+  globalWatchStopTimer = setTimeout(() => {
+    uni.hideLoading();
+    uni.showToast({ icon: 'error', title: '操作超时', duration: 500 });
+  }, 10000);
+}
+
+
+function cleanWatchListeners() {
+  if (globalWatchStop) {
+    globalWatchStop();
+    globalWatchStop = null;
+  }
+}
+
+// 清除超时定时器
+function clearTimeoutHideLoading() {
+  clearTimeout(globalWatchStopTimer);
+  globalWatchStopTimer = null;
+}
+
+
 </script>
 <style lang="scss" scoped>
 .page {
@@ -749,6 +790,7 @@ const clearDistanceTimer = () => {
   min-height: 100vh;
   overflow: hidden;
 }
+
 .page-bg {
   min-height: 100vh;
   padding: 30rpx;
@@ -809,6 +851,7 @@ const clearDistanceTimer = () => {
 .status-online {
   color: #00a20f;
 }
+
 .status-offline {
   color: #fa3534;
 }
@@ -838,12 +881,14 @@ const clearDistanceTimer = () => {
   border-radius: 8rpx;
   cursor: pointer;
 }
+
 .switch-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 52rpx 0;
 }
+
 .primary-btn {
   height: 72rpx;
   width: 270rpx;
@@ -856,19 +901,23 @@ const clearDistanceTimer = () => {
   font-size: 32rpx;
   box-shadow: 0 10rpx 26rpx rgba(0, 0, 0, 0.06);
 }
+
 .primary-btn.active {
   background: #6a4f40;
   color: #fff;
   box-shadow: 0 10rpx 26rpx rgba(0, 0, 0, 0.06);
 }
+
 .m-faucet {
   font-size: 28rpx;
   margin-right: 10rpx;
   color: #3b3b3b;
 }
+
 .primary-btn.active .m-faucet {
   color: #fff;
 }
+
 .settings-card {
   margin-top: 32rpx;
   padding: 8rpx 0;
@@ -923,6 +972,7 @@ const clearDistanceTimer = () => {
   background: #e2e2e2;
   margin: 0 32rpx;
 }
+
 .popup-content {
   padding: 32rpx 32rpx 48rpx 32rpx;
 }
@@ -1000,18 +1050,21 @@ const clearDistanceTimer = () => {
 .distance-modal {
   width: 100%;
 }
+
 .distance-header {
   text-align: center;
   font-size: 32rpx;
   font-weight: 600;
   color: #303133;
 }
+
 .distance-body {
   margin-top: 28rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
+
 .distance-icon-wrap {
   width: 96rpx;
   height: 96rpx;
@@ -1020,36 +1073,44 @@ const clearDistanceTimer = () => {
   align-items: center;
   justify-content: center;
 }
+
 .distance-icon.idle {
   font-size: 70rpx;
   color: #ff941a;
 }
+
 .distance-title {
   margin-top: 20rpx;
   font-size: 30rpx;
   color: #303133;
 }
+
 .distance-title.success {
   color: #00a20f;
 }
+
 .distance-title.failed {
   color: #fa3534;
 }
+
 .distance-sub {
   margin-top: 8rpx;
   font-size: 24rpx;
   color: #909399;
 }
+
 .distance-divider {
   height: 2rpx;
   background: #ebedf0;
   margin: 42rpx -50rpx 32rpx;
 }
+
 .distance-actions {
   display: flex;
   gap: 70rpx;
   justify-content: center;
 }
+
 /* 开始按钮颜色设置 */
 .confirm-btn :deep(.u-button--primary),
 .confirm-btn :deep(.u-button) {
@@ -1057,6 +1118,7 @@ const clearDistanceTimer = () => {
   border-color: #6a4f40 !important;
   color: #fff !important;
 }
+
 .confirm-btn :deep(.u-button--primary:disabled),
 .confirm-btn :deep(.u-button:disabled) {
   background-color: #c0c4cc !important;

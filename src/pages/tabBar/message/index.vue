@@ -6,12 +6,7 @@
       <view class="circle-wrap">
         <view class="bg-circle">
           <view class="bg-circle-wrap">
-            <cmd-progress
-              type="circle"
-              :percent="percent"
-              stroke-color="#574b43"
-              :stroke-width="6"
-              :width="150"
+            <cmd-progress type="circle" :percent="percent" stroke-color="#574b43" :stroke-width="6" :width="150"
               :showInfo="false"></cmd-progress>
             <view class="circle-text">
               <view class="circle-text-value">
@@ -52,11 +47,7 @@
           </view>
         </view>
         <view class="device-wrap">
-          <image
-            :src="item.imageUrl"
-            mode="widthFix"
-            class="device-img"
-            lazy-load
+          <image :src="item.imageUrl" mode="widthFix" class="device-img" lazy-load
             :placeholder="'/static/images/placeholder.jpg'" />
         </view>
         <view class="desc">
@@ -69,7 +60,9 @@
             <text class="font_family battery-icon">&#xe62d;</text>
             <text>{{ item.faultDesc }}</text>
           </view>
-          <view v-if="activeTab === 'pending'" class="btn-view" @click="seeDetail(item)">查看</view>
+          <view v-if="activeTab === 'pending'" class="btn-view" :class="{ 'unread': item.readStatus === 0 }"
+            @click="seeDetail(item)">{{ item.readStatus === 0 ?
+              '未查看' : '查看' }}</view>
         </view>
       </view>
 
@@ -83,7 +76,7 @@
 import { ref, computed, getCurrentInstance, watch, onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
 import { onReachBottom, onShow, onLoad, onPullDownRefresh } from '@dcloudio/uni-app';
-import { getProjectMessage, getDeviceCount } from '@/api/message';
+import { getProjectMessage, getDeviceCount, updateReadStatus, getFaultMessageCount } from '@/api/message';
 import cmdProgress from '@/components/cmd-progress/cmd-progress.vue';
 
 import { useStore } from '@/stores/index';
@@ -175,7 +168,7 @@ async function getList(status = 0, page = 1) {
         hasMore: pages < total,
       };
     }
-  } catch (error) {}
+  } catch (error) { }
 
   return {
     list: [],
@@ -228,14 +221,7 @@ watch(
     // 当 projectId 变化且新值存在时，重新加载数据
     if (newProjectId && newProjectId !== oldProjectId) {
       // 重置列表和分页
-      pendingList.value = [];
-      doneList.value = [];
-      pendingPage.value = 0;
-      donePage.value = 0;
-      pendingHasMore.value = true;
-      doneHasMore.value = true;
-      pendingLoadStatus.value = 'more';
-      doneLoadStatus.value = 'more';
+      resetListAndPage()
       // 重新获取数据
       getDeviceCountFn();
       loadMore();
@@ -245,17 +231,66 @@ watch(
 );
 
 // 查看详情
-const seeDetail = (item) => {
-  uni.navigateTo({ url: '/pages/message/diagnosis?device=' + encodeURIComponent(JSON.stringify(item)) });
+const seeDetail = async (item) => {
+  const res = await updateReadStatus(item.id);
+  if (res.code === 0) {
+    item.readStatus = 1;
+  }
+  const res2 = await getFaultMessageCount({ projectId: projectId.value });
+  console.log('消息页面的故障消息数量', res2.data);
+  if (res2.code === 0 && res2.data) {
+    if (res2.data > 0) {
+      uni.setTabBarBadge({
+        index: 1,
+        text: String(res2.data),
+        success() {               // 角标设置成功后再跳转
+          uni.navigateTo({
+            url: '/pages/message/diagnosis?device=' +
+              encodeURIComponent(JSON.stringify(item))
+          });
+        },
+        fail() {                  // 设置失败也要保证能跳转
+          uni.navigateTo({
+            url: '/pages/message/diagnosis?device=' +
+              encodeURIComponent(JSON.stringify(item))
+          });
+        }
+      });
+    } else {
+      uni.removeTabBarBadge({ index: 1 });
+    }
+
+
+  } else {
+    uni.navigateTo({
+      url: '/pages/message/diagnosis?device=' +
+        encodeURIComponent(JSON.stringify(item))
+    });
+  }
 };
 
 onPullDownRefresh(async () => {
   console.log('下拉刷新');
-  // 重新获取数据
+
+  // 重置列表和分页
+  resetListAndPage()
   getDeviceCountFn();
   loadMore();
   uni.stopPullDownRefresh();
 });
+
+// 重置列表和分页参数
+function resetListAndPage() {
+  pendingList.value = [];
+  doneList.value = [];
+  pendingPage.value = 0;
+  donePage.value = 0;
+  pendingHasMore.value = true;
+  doneHasMore.value = true;
+  pendingLoadStatus.value = 'more';
+  doneLoadStatus.value = 'more';
+}
+
 </script>
 
 <style lang="scss" scoped>
@@ -280,18 +315,21 @@ $color-primary: #4e4036;
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
   padding: 30rpx 0 30rpx;
 }
+
 .work-status {
   font-size: 32rpx;
   color: $color-title;
   padding: 0 30rpx;
   margin-top: 30rpx;
 }
+
 .circle-wrap {
   display: flex;
   justify-content: center;
   padding: 36rpx 0 30rpx;
   position: relative;
 }
+
 .bg-circle {
   display: flex;
   justify-content: center;
@@ -353,6 +391,7 @@ $color-primary: #4e4036;
   color: $color-label;
   font-size: 24rpx;
 }
+
 .legend-circle {
   display: flex;
   justify-content: center;
@@ -363,15 +402,19 @@ $color-primary: #4e4036;
   background: #d7f2dd;
   margin-right: 8rpx;
 }
+
 .legend-item .data-icon {
   font-size: 28rpx;
 }
+
 .legend-item.normal .data-icon {
   color: #34c759;
 }
+
 .legend-item.warn .legend-circle {
   background: #ffe0c9;
 }
+
 .legend-item.warn .data-icon {
   color: #ff7108;
 }
@@ -408,10 +451,12 @@ $color-primary: #4e4036;
   display: flex;
   flex-direction: column;
 }
+
 .card {
   padding: 60rpx 0;
   border-top: 1px solid $color-border;
 }
+
 .card-header {
   padding: 0 24rpx;
 }
@@ -420,14 +465,17 @@ $color-primary: #4e4036;
   color: $color-label;
   font-size: 24rpx;
 }
+
 .status-text {
   color: $color-title;
   font-size: 28rpx;
   margin-bottom: 8rpx;
 }
+
 .model-text {
   margin-bottom: 8rpx;
 }
+
 .device-wrap {
   width: 500rpx;
   margin: 50rpx auto 20rpx;
@@ -489,5 +537,10 @@ $color-primary: #4e4036;
   background: #fff;
   color: $color-primary;
   box-shadow: 0 2rpx 8rpx rgba(78, 64, 54, 0.08);
+}
+
+.unread {
+  border: 1px solid #ff7108;
+  color: #ff7108;
 }
 </style>

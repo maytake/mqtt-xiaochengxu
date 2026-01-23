@@ -60,6 +60,7 @@ const { proxy } = getCurrentInstance();
 import { onLoad, onUnload } from '@dcloudio/uni-app';
 import { useStore } from '@/stores/index';
 import { projectList } from '@/api/home';
+import { getFaultMessageCount } from '@/api/message';
 const mainStore = useStore();
 const selectedAddress = ref({});
 onLoad(async () => {
@@ -141,12 +142,14 @@ async function initData() {
     selectedAddress.value = itemAddress; // 选中项目地址
     mainStore.setProjectItem(itemAddress); // 设置项目地址
     uni.setStorageSync('HOME_SELECTED_ADDRESS', itemAddress);
+
   }
 }
 
 uni.$on('selected-address', (itemAddress) => {
   selectedAddress.value = itemAddress; // 选中项目地址
   mainStore.setProjectItem(itemAddress); // 设置项目地址
+
 });
 
 const selectAddress = () => {
@@ -160,6 +163,7 @@ onUnload(() => {
   // 页面卸载时再移除监听，防止重复注册
   uni.$off('selected-address');
 });
+
 </script>
 
 <style lang="scss" scoped>
@@ -168,6 +172,7 @@ onUnload(() => {
   min-height: 100vh;
   overflow: hidden;
 }
+
 /* 头部区域 */
 .header-section {
   position: relative;
@@ -292,10 +297,12 @@ wx-button:after {
     .location-icon {
       margin-right: 12rpx;
     }
+
     .location-icon-text {
       font-size: 26rpx;
       color: #333;
     }
+
     .location-text {
       font-size: 30rpx;
       color: #333;

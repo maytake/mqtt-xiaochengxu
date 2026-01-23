@@ -26,3 +26,4 @@ export function updateDid(data) {
     data: data
   })
 }
+

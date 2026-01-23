@@ -615,7 +615,7 @@ const toggleWater = async () => {
     val: 1,
   });
   const res = await ctrlDevice(params);
-  feedbackResult(res);
+  feedbackSuccess(res, params.seq);
 };
 
 const applyDefaultSettings = async () => {
@@ -912,6 +912,64 @@ const clearDistanceTimer = () => {
 onUnload(() => {
   mqttClient.unregisterPageTopicHandler(reportTopic, handleReportTopicResponse);
 });
+
+
+
+// 监听全局主题消息反馈操作成功
+let globalWatchStop = null;
+let globalWatchStopTimer = null;
+function feedbackSuccess(res, seq) {
+  if (res.code === 0) {
+    uni.showLoading({
+      title: '操作中...',
+      mask: true,
+    });
+    timeoutHideLoading();
+    const { globalTopicInfo } = storeToRefs(useStore());
+    cleanWatchListeners();
+    globalWatchStop = watch(
+      globalTopicInfo,
+      (newVal) => {
+        console.log('阶段1：', newVal);
+        if (newVal?.seq === seq) {
+          if (newVal?.result == 1) {
+            uni.hideLoading();
+            uni.showToast({ icon: 'success', title: '操作成功', duration: 500 });
+            clearTimeoutHideLoading();
+          }
+        }
+      },
+      { deep: true, immediate: false }
+    );
+  } else {
+    uni.showToast({ icon: 'error', title: '操作失败', duration: 500 });
+    uni.hideLoading();
+  }
+}
+
+// 超时10秒后，隐藏loading
+function timeoutHideLoading() {
+  clearTimeoutHideLoading();
+  globalWatchStopTimer = setTimeout(() => {
+    uni.hideLoading();
+    uni.showToast({ icon: 'error', title: '操作超时', duration: 500 });
+  }, 10000);
+}
+
+
+function cleanWatchListeners() {
+  if (globalWatchStop) {
+    globalWatchStop();
+    globalWatchStop = null;
+  }
+}
+
+// 清除超时定时器
+function clearTimeoutHideLoading() {
+  clearTimeout(globalWatchStopTimer);
+  globalWatchStopTimer = null;
+}
+
 </script>
 
 <style lang="scss" scoped>
