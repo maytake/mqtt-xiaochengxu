@@ -13,17 +13,13 @@
           </view>
         </view>
       </view> -->
-
+      <view class="header-title">
+        <text class="header-title-text">{{ selectedAddress?.name }}</text>
+      </view>
       <!-- 楼层选择 -->
       <view class="floor-selector mt60">
-        <lk-tree
-          style="width: 100%"
-          v-model="selectedValue"
-          :data="treeData"
-          node-key="projectId"
-          :props="defaultProps"
-          placeholder="请选择部门"
-          @node-click="handleNodeClick" />
+        <lk-tree style="width: 100%" v-model="selectedValue" :data="treeData" node-key="projectId" :props="defaultProps"
+          placeholder="请选择部门" @node-click="handleNodeClick" />
       </view>
 
       <!-- 厕所施工图 -->
@@ -45,14 +41,8 @@
 
       <!-- 统计表格 -->
       <view class="statistical-table-container">
-        <charts-bar
-          @changeRange="handleChangeRange"
-          @changeDate="handleChangeDate"
-          :data="statisticalData"
-          :ready="statisticalReady"
-          :defaultRange="currentRange"
-          ref="chartsBarRef"
-          :buttonTab="[
+        <charts-bar @changeRange="handleChangeRange" @changeDate="handleChangeDate" :data="statisticalData"
+          :ready="statisticalReady" :defaultRange="currentRange" ref="chartsBarRef" :buttonTab="[
             { label: '按月', value: 'month' },
             { label: '按天', value: 'day' },
           ]" />
@@ -64,6 +54,7 @@
 
 <script setup>
 import { ref, getCurrentInstance, nextTick } from 'vue';
+import { onShow as onPageShow } from '@dcloudio/uni-app';
 import { onLoad, onUnload, onPullDownRefresh, onShow } from '@dcloudio/uni-app';
 import { storeToRefs } from 'pinia';
 const { proxy } = getCurrentInstance();
@@ -217,7 +208,10 @@ onShow(() => {
       initData();
     }
   }
+
 });
+
+
 
 onLoad(async () => {
   // const url = proxy.$getCurrentRoute();
@@ -240,7 +234,7 @@ onLoad(async () => {
       uni.removeStorageSync(STORAGE_KEYS.floor);
       getFloorTreeByProjectId(data);
     }
-   
+
   });
   // 刷新首页厕所地图
   uni.$on('refresh-map', () => {
@@ -294,6 +288,8 @@ const restoreFromCache = async (cacheAddress, cacheFloor) => {
   // 缓存的地址在列表中，继续使用缓存的地址
   selectedAddress.value = cacheAddress;
   mainStore.setProjectItem(cacheAddress);
+
+  updateFaultMessageCountOnce();
   // 先根据地址加载楼层树，待树加载完成后再根据 projectId 选中对应楼层
   getTreeProject(cacheFloor);
 };
@@ -312,6 +308,8 @@ async function initData() {
 function getFloorTreeByProjectId(itemAddress) {
   selectedAddress.value = itemAddress; // 选中项目地址
   mainStore.setProjectItem(itemAddress); // 设置项目地址
+
+  updateFaultMessageCountOnce();
   // 记录选中的项目地址到本地缓存
   uni.setStorageSync(STORAGE_KEYS.address, itemAddress);
   selectedValue.value = ''; // 清空楼层选择
@@ -536,6 +534,22 @@ async function getStatisticalData(objParams) {
 
 
 
+
+// 防止同一页面多次调用角标刷新
+const hasUpdatedMessageCount = ref(false);
+function updateFaultMessageCountOnce() {
+  if (hasUpdatedMessageCount.value) return;
+  const app = getApp();
+  app?.getFaultMessageCountFn?.(); // 更新角标数
+  console.log('home页面的故障消息数量', app.messageCount);
+  hasUpdatedMessageCount.value = true;
+}
+
+onUnload(() => {
+  // 页面卸载时重置，下一次进入页面再允许刷新
+  hasUpdatedMessageCount.value = false;
+});
+
 </script>
 
 <style lang="scss" scoped>
@@ -544,9 +558,22 @@ async function getStatisticalData(objParams) {
   min-height: 100vh;
   overflow: hidden;
 }
+
 .page-content {
   padding: 24rpx;
 }
+
+.header-title {
+  margin-top: 30rpx;
+  text-align: center;
+}
+
+.header-title-text {
+  font-size: 32rpx;
+  color: #333;
+  font-weight: bold;
+}
+
 .header-section {
   margin: 30rpx 0 0;
 }
@@ -561,10 +588,12 @@ async function getStatisticalData(objParams) {
   .location-icon {
     margin-right: 12rpx;
   }
+
   .location-icon-text {
     font-size: 26rpx;
     color: #333;
   }
+
   .location-text {
     font-size: 30rpx;
     color: #333;
@@ -585,9 +614,11 @@ async function getStatisticalData(objParams) {
   margin-top: 10rpx;
   position: relative;
 }
+
 .mt60 {
-  margin-top: 60rpx;
+  margin-top: 30rpx;
 }
+
 .toilet-map-container {
   flex: 1;
   display: flex;
@@ -609,16 +640,19 @@ async function getStatisticalData(objParams) {
 .toilet-map {
   margin: 42rpx 0;
 }
+
 .toilet-map-empty {
   margin: 60rpx 0;
   overflow: hidden;
 }
+
 .screen-content {
   margin-top: 30rpx;
   line-height: 70rpx;
   display: flex;
   justify-content: flex-end;
 }
+
 .screen-inner {
   display: flex;
   align-items: center;
@@ -629,15 +663,18 @@ async function getStatisticalData(objParams) {
   width: 180rpx;
   border-radius: 100rpx;
 }
+
 .screen-text {
   font-size: 26rpx;
   color: #574b43;
 }
+
 .m-full {
   margin-right: 8rpx;
   font-size: 24rpx;
   color: #574b43;
 }
+
 .statistical-table-container {
   margin: 60rpx 0 200rpx;
 }

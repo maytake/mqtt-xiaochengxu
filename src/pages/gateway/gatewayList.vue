@@ -11,7 +11,9 @@
             <view class="device-name">{{ item.pointName }}</view>
             <view class="device-id">{{ item.productModel }}</view>
           </view>
-          <view class="device-status">在线</view>
+          <view class="device-status" :class="{ 'device-status-offline': !item.deviceStatus }">{{ item.deviceStatus ?
+            '在线' :
+            '离线' }}</view>
           <view class="delete-btn" @click.stop="handleDelete(item, index)">
             <text class="delete-icon">×</text>
           </view>
@@ -246,6 +248,10 @@ const initDeviceData = async (options) => {
   color: #00a20f;
 }
 
+.device-status-offline {
+  color: #ff0000;
+}
+
 .delete-btn {
   position: absolute;
   right: 19rpx;
@@ -293,6 +299,7 @@ const initDeviceData = async (options) => {
   box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.1);
   z-index: 10;
 }
+
 .m-empty {
   margin: 100rpx 0;
   height: 280rpx;

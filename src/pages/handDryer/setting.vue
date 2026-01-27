@@ -377,6 +377,7 @@ const flowModeWarn = computed(() => isPidWarn(PID_CONFIG.FLOW_MODE));
 const selfHeatingWarn = computed(() => isPidWarn(PID_CONFIG.SELF_HEATING));
 const windWarmWarn = computed(() => isPidWarn(PID_CONFIG.WIND_WARM));
 const senseAutoCloseTimeWarn = computed(() => isPidWarn(PID_CONFIG.SENSE_AUTO_CLOSE_TIME));
+const repeaterWarn = computed(() => isPidWarn(PID_CONFIG.REPEATER));
 
 const handlePidTip = (type) => {
   const warnMap = {
@@ -385,6 +386,7 @@ const handlePidTip = (type) => {
     selfHeating: selfHeatingWarn,
     windWarm: windWarmWarn,
     senseAutoCloseTime: senseAutoCloseTimeWarn,
+    repeater: repeaterWarn,
   };
   const warnRef = warnMap[type];
   if (!warnRef || !warnRef.value) return;
@@ -501,6 +503,7 @@ const applyDefaultSettings = async () => {
       { pid: PID_CONFIG.FLOW_MODE, sid: 0 },
       { pid: PID_CONFIG.WIND_WARM, sid: 0 },
       { pid: PID_CONFIG.SENSE_AUTO_CLOSE_TIME, sid: 0 },
+      { pid: PID_CONFIG.REPEATER, sid: 0 },
     ],
   });
 
@@ -821,6 +824,7 @@ function feedbackSuccess(res, seq) {
             uni.hideLoading();
             uni.showToast({ icon: 'success', title: '操作成功', duration: 500 });
             clearTimeoutHideLoading();
+            cleanWatchListeners();
           }
         }
       },

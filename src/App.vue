@@ -3,7 +3,7 @@ import request from '@/utils/request';
 import mqttService from '@/utils/mqtt';
 import { getFaultMessageCount } from '@/api/message';
 
-import { computed, watch, getCurrentInstance } from 'vue';
+import { computed, watch, getCurrentInstance, nextTick } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useStore } from '@/stores/index';
 
@@ -16,13 +16,9 @@ export default {
     const handleReportTopicResponse = (messageData, topic) => {
       console.log('pageMessage', messageData);
       if (messageData) {
-        proxy.messageCount++;
-        console.log('监听增加消息数量', proxy.messageCount);
-        const count = String(proxy.messageCount);
-        uni.setTabBarBadge({
-          index: 1, // 对应tabBar list中“消息”项的索引，从0开始计数
-          text: count // 显示的数字，超过99会显示“…”。
-        });
+        // 后端返回的消息总量 messageCount 需要在接口基础上累加
+        proxy.messageCount = (proxy.messageCount || 0) + 1;
+        proxy.updateTabBarBadge();
       }
     };
 
@@ -44,10 +40,14 @@ export default {
         if (newVal) {
           reportTopic = `olt/fault/push/${newVal}`;
           mqttService.registerPageTopicHandler(reportTopic, handleReportTopicResponse);
-          proxy.getFaultMessageCountFn(newVal);
+          // 等下一轮视图/TabBar 更新完毕后再去请求接口
+          // 等下一轮视图/TabBar 更新完毕后再去请求接口
+          nextTick(() => {
+            proxy.getFaultMessageCountFn();
+          });
         }
       },
-      { immediate: true }
+      { immediate: false }
     );
 
     // 可以根据需要在初始化时手动调用一次
@@ -112,21 +112,70 @@ export default {
   },
 
   methods: {
+    // 更新（或移除）TabBar 角标
+    updateTabBarBadge() {
+      const count = this.messageCount ? String(this.messageCount) : null;
+
+      // ============ 辅助：设置角标（带最多 5 次重试） =============
+      const trySet = (retry = 0) => {
+        uni.setTabBarBadge({
+          index: 1,
+          text: count,
+          success: () => { },
+          fail: (err) => {
+            if (retry < 5) {
+              setTimeout(() => trySet(retry + 1), 300);
+            }
+          },
+        });
+      };
+
+      // 如果不需要显示数字，仅移除即可
+      if (!count) {
+        const tryRemove = (retry = 0) => {
+          uni.removeTabBarBadge({
+            index: 1,
+            success: () => { },
+            fail: () => {
+              // if (retry < 5) {
+              //   setTimeout(() => tryRemove(retry + 1), 300);
+              // }
+            },
+          });
+        };
+        return tryRemove();
+      }
+
+      // 需要显示数字：先移除再设置，确保顺序
+      const removeThenSet = (retry = 0) => {
+        uni.removeTabBarBadge({
+          index: 1,
+          // 无论成功失败，都继续 set（失败多半是还未设置过角标，本来也无需再移除）
+          complete: () => {
+            // 给一点点缓冲再设置，避免极端渲染冲突；无需双重 setTimeout
+            setTimeout(() => trySet(), 50);
+          },
+          fail: () => {
+            // 如果 remove 失败，重试几次；超过次数直接继续 set
+            if (retry < 5) {
+              setTimeout(() => removeThenSet(retry + 1), 300);
+            }
+          },
+        });
+      };
+      removeThenSet();
+    },
     // 获取未读消息数量
-    async getFaultMessageCountFn(projectId) {
+    async getFaultMessageCountFn() {
+      const { projectItem } = storeToRefs(useStore());
+      const projectId = projectItem.value?.projectId
+      console.log('全局页面projectId', projectId)
+      if (!projectId) return;
       const res = await getFaultMessageCount({ projectId });
       if (res.code === 0) {
         console.log('全局页面的故障消息数量', res.data);
         this.messageCount = res.data;
-        const count = res.data ? String(res.data) : null;
-        if (count) {
-          uni.setTabBarBadge({
-            index: 1, // 对应tabBar list中“消息”项的索引，从0开始计数
-            text: count, // 显示的数字，超过99会显示“…”。
-          });
-        } else {
-          uni.removeTabBarBadge({ index: 1 });
-        }
+        this.updateTabBarBadge();
       }
     },
     clearMqttTimer() {
@@ -240,5 +289,12 @@ export default {
   color: #333;
   box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
   border: 1rpx solid #e0e0e0;
+}
+.picker-text {
+  text-align: right;
+  background: none;
+  color: #9aa0a6;
+  font-size: 28rpx;
+  width: 120rpx;
 }
 </style>

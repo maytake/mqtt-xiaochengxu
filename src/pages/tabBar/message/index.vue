@@ -130,6 +130,11 @@ onShow(() => {
   if (isLogin) {
     if (pendingList.value.length === 0) loadMore();
   }
+  const app = getApp();
+  if (app && app.getFaultMessageCountFn) {
+    console.log('消息页面的故障消息数量', app.messageCount);
+    app.getFaultMessageCountFn();
+  }
 });
 
 onReachBottom(() => {
@@ -238,27 +243,25 @@ const seeDetail = async (item) => {
   }
   const res2 = await getFaultMessageCount({ projectId: projectId.value });
   console.log('消息页面的故障消息数量', res2.data);
-  if (res2.code === 0 && res2.data) {
-    if (res2.data > 0) {
-      uni.setTabBarBadge({
-        index: 1,
-        text: String(res2.data),
-        success() {               // 角标设置成功后再跳转
-          uni.navigateTo({
-            url: '/pages/message/diagnosis?device=' +
-              encodeURIComponent(JSON.stringify(item))
-          });
-        },
-        fail() {                  // 设置失败也要保证能跳转
-          uni.navigateTo({
-            url: '/pages/message/diagnosis?device=' +
-              encodeURIComponent(JSON.stringify(item))
-          });
-        }
-      });
-    } else {
-      uni.removeTabBarBadge({ index: 1 });
-    }
+  uni.removeTabBarBadge({ index: 1 });
+  if (res2.code === 0 && res2.data > 0) {
+    uni.setTabBarBadge({
+      index: 1,
+      text: String(res2.data),
+      success() {               // 角标设置成功后再跳转
+        uni.navigateTo({
+          url: '/pages/message/diagnosis?device=' +
+            encodeURIComponent(JSON.stringify(item))
+        });
+      },
+      fail() {                  // 设置失败也要保证能跳转
+        uni.navigateTo({
+          url: '/pages/message/diagnosis?device=' +
+            encodeURIComponent(JSON.stringify(item))
+        });
+      }
+    });
+
 
 
   } else {

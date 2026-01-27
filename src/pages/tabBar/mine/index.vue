@@ -57,7 +57,7 @@
 <script setup>
 import { ref, getCurrentInstance } from 'vue';
 const { proxy } = getCurrentInstance();
-import { onLoad, onUnload } from '@dcloudio/uni-app';
+import { onLoad, onUnload, onShow } from '@dcloudio/uni-app';
 import { useStore } from '@/stores/index';
 import { projectList } from '@/api/home';
 import { getFaultMessageCount } from '@/api/message';
@@ -75,6 +75,13 @@ onLoad(async () => {
       // 加载数据
       initData();
     }
+  }
+});
+onShow(() => {
+  const app = getApp();
+  if (app && app.getFaultMessageCountFn) {
+    console.log('我的页面的故障消息数量', app.messageCount);
+    app.getFaultMessageCountFn();
   }
 });
 // 处理菜单点击

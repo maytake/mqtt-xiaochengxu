@@ -45,6 +45,7 @@ export function getFaultMessageCount(data) {
     url: '/maintain-api/deviceMessage/getFaultMessageCount',
     method: 'post',
     data: data,
+    loading: false,
   });
 }
 

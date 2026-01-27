@@ -4,7 +4,9 @@
       <view class="card product-card">
         <view class="product-header">
           <view>
-            <view class="productName">{{ device.locationToilet }}</view>
+            <view class="productName">
+              {{ device.locationToilet }}
+            </view>
             <view class="productModel">
               型号：
               <text>{{ productModelDetails.model }}</text>
@@ -62,7 +64,9 @@
           <view class="list-item">
             <view :class="['label', { dot: autoFlushWarn }]" @click="handlePidTip('autoFlush')">自动冲洗时间</view>
             <view class="extra value" @click="openPicker('autoFlush')">
-              <text>{{ autoFlushTime }}</text>
+              <text>
+                {{ autoFlushTime }}
+              </text>
               <text class="font_family m-arrow arrow">&#xe60d;</text>
             </view>
           </view>
@@ -83,6 +87,22 @@
               <text class="font_family m-arrow arrow">&#xe60d;</text>
             </view>
           </view>
+
+          <!-- 中继级数配置 -->
+          <view class="divider"></view>
+          <view class="list-item">
+            <view :class="['label', { dot: RepeaterWarn }]" @click="handlePidTip('repeater')">中继级数配置</view>
+            <view class="extra value">
+              <up-picker-data v-model="repeaterValue" title="请选择中继级数配置" :options="repeaterOptions" valueKey="id"
+                labelKey="label" @confirm="confirmRepeater">
+                <template #trigger="{ current }">
+                  <view class="picker-text">{{ current || '0级' }}</view>
+                </template>
+              </up-picker-data>
+              <text class="font_family m-arrow arrow">&#xe60d;</text>
+            </view>
+          </view>
+          <!-- 中继级数配置end -->
         </view>
       </view>
       <!-- 水龙头设置属性区-end -->
@@ -216,6 +236,7 @@ const PID_CONFIG = {
   CLEANING_MODE_TIME: '35',
   AUTO_FLUSH: '14',
   TIMEOUT_CLOSE: '15',
+  REPEATER: '63', // 中继器 63
 };
 
 // 选择器配置
@@ -256,6 +277,7 @@ const cleaningModeWarn = computed(() => isPidWarn(PID_CONFIG.CLEANING_MODE));
 const cleanTimeWarn = computed(() => isPidWarn(PID_CONFIG.CLEANING_MODE_TIME));
 const autoFlushWarn = computed(() => isPidWarn(PID_CONFIG.AUTO_FLUSH));
 const timeoutCloseWarn = computed(() => isPidWarn(PID_CONFIG.TIMEOUT_CLOSE));
+const repeaterWarn = computed(() => isPidWarn(PID_CONFIG.REPEATER));
 
 const handlePidTip = (type) => {
   const warnMap = {
@@ -263,6 +285,7 @@ const handlePidTip = (type) => {
     cleanTime: cleanTimeWarn,
     autoFlush: autoFlushWarn,
     timeoutClose: timeoutCloseWarn,
+    repeater: repeaterWarn,
   };
   const warnRef = warnMap[type];
   if (!warnRef || !warnRef.value) return;
@@ -277,6 +300,7 @@ const pickerColumns = ref([]);
 const pickerTitle = ref('');
 const currentSetting = ref('');
 const pickerDefaultIndex = ref([0]);
+
 
 // ==================== 工具函数 ====================
 const mqttUserInfo = uni.getStorageSync('mqttUserInfo');
@@ -303,6 +327,9 @@ const pidHandlers = {
   },
   [PID_CONFIG.TIMEOUT_CLOSE]: (val) => {
     timeoutCloseTime.value = `${val}S`;
+  },
+  [PID_CONFIG.REPEATER]: (val) => {
+    repeaterValue.value = Number(val) || 0;
   },
 };
 // 页面级主题消息处理函数
@@ -361,6 +388,7 @@ const readDevicePidValues = async () => {
         { pid: PID_CONFIG.CLEANING_MODE_TIME, sid: 0 },
         { pid: PID_CONFIG.AUTO_FLUSH, sid: 0 },
         { pid: PID_CONFIG.TIMEOUT_CLOSE, sid: 0 },
+        { pid: PID_CONFIG.REPEATER, sid: 0 },
       ],
     });
 
@@ -544,6 +572,7 @@ const applyDefaultSettings = async () => {
       { pid: PID_CONFIG.CLEANING_MODE_TIME, sid: 0 },
       { pid: PID_CONFIG.AUTO_FLUSH, sid: 0 },
       { pid: PID_CONFIG.TIMEOUT_CLOSE, sid: 0 },
+      { pid: PID_CONFIG.REPEATER, sid: 0 },
     ],
   });
 
@@ -725,8 +754,6 @@ const clearDistanceTimer = () => {
   }
 };
 
-
-
 // 监听全局主题消息反馈操作成功
 let globalWatchStop = null;
 let globalWatchStopTimer = null;
@@ -748,6 +775,7 @@ function feedbackSuccess(res, seq) {
             uni.hideLoading();
             uni.showToast({ icon: 'success', title: '操作成功', duration: 500 });
             clearTimeoutHideLoading();
+            cleanWatchListeners();
           }
         }
       },
@@ -768,7 +796,6 @@ function timeoutHideLoading() {
   }, 10000);
 }
 
-
 function cleanWatchListeners() {
   if (globalWatchStop) {
     globalWatchStop();
@@ -781,6 +808,38 @@ function clearTimeoutHideLoading() {
   clearTimeout(globalWatchStopTimer);
   globalWatchStopTimer = null;
 }
+
+// 中继级数配置
+const repeaterOptions = [
+  {
+    label: '0级',
+    id: 0,
+  },
+  {
+    label: '1级',
+    id: 1,
+  },
+  {
+    label: '2级',
+    id: 2,
+  },
+  {
+    label: '3级',
+    id: 3,
+  },
+  {
+    label: '4级',
+    id: 4,
+  },
+  {
+    label: '5级',
+    id: 5,
+  }
+];
+const repeaterValue = ref(0);
+const confirmRepeater = () => {
+  writeDevicePidValue([{ pid: PID_CONFIG.REPEATER, val: repeaterValue.value }]);
+};
 
 
 </script>

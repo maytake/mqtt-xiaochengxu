@@ -47,6 +47,8 @@ const LkTreeComponent = {
     level: { type: Number, default: 0 },
     indent: { type: Number, default: 28 },
     checkStrictly: { type: Boolean, default: false },
+    // labelMode: 'last' 仅显示最后一级; 'full' 显示完整路径
+    labelMode: { type: String, default: 'full' },
   },
   data() {
     return {
@@ -112,12 +114,26 @@ const LkTreeComponent = {
     // 根据 modelValue 更新显示文本
     updateDisplayText(modelValue) {
       if (modelValue === undefined || modelValue === null) {
+        this.selectedLabel = '';
         return;
       }
 
+      let displayText = '';
       // 查找对应的节点
       const node = this.findNodeInTree(this.data, modelValue);
-      const displayText = node ? node[this.labelKey] : '';
+      if (!node) {
+        this.selectedLabel = '';
+        return;
+      }
+
+      if (this.labelMode === 'full') {
+        // 组合完整路径
+        const pathLabels = [];
+        this.collectPathLabels(this.data, modelValue, pathLabels);
+        displayText = pathLabels.join('/');
+      } else {
+        displayText = node ? node[this.labelKey] : '';
+      }
 
       // 更新 selectedLabel 用于显示
       this.selectedLabel = displayText;
@@ -170,7 +186,13 @@ const LkTreeComponent = {
 
       this.$emit('update:modelValue', key);
       this.$emit('node-click', node);
-      this.selectedLabel = node[this.labelKey];
+      if (this.labelMode === 'full') {
+        const pathLabels = [];
+        this.collectPathLabels(this.data, key, pathLabels);
+        this.selectedLabel = pathLabels.join('/');
+      } else {
+        this.selectedLabel = node[this.labelKey];
+      }
 
       // 强制更新显示文本
       this.$forceUpdate();
@@ -298,6 +320,26 @@ const LkTreeComponent = {
         }
       });
     },
+    // 收集从根到目标节点的 label 路径
+    collectPathLabels(nodes, targetKey, pathLabels) {
+      for (let i = 0; i < nodes.length; i++) {
+        const node = nodes[i];
+        if (!node) continue;
+        pathLabels.push(node[this.labelKey]);
+        if (node[this.nodeKey] === targetKey) {
+          return true;
+        }
+        const children = node[this.childrenKey];
+        if (children && Array.isArray(children) && children.length > 0) {
+          const found = this.collectPathLabels(children, targetKey, pathLabels);
+          if (found) return true;
+        }
+        // 未找到，回溯
+        pathLabels.pop();
+      }
+      return false;
+    },
+
     // 扁平化树数据的方法
     flattenTreeData(nodes, currentLevel, result) {
       if (!nodes || !Array.isArray(nodes)) {

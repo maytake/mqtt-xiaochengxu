@@ -80,13 +80,8 @@
           <view class="list-item">
             <view :class="['label', { dot: flushVolumeWarn }]" @click="handlePidTip('flushVolume')">冲水量</view>
             <view class="extra value">
-              <up-picker-data
-                v-model="flushVolumeValue"
-                title="请选择风量模式"
-                :options="flushVolumeOptions"
-                valueKey="id"
-                labelKey="label"
-                @confirm="confirmFlushVolume">
+              <up-picker-data v-model="flushVolumeValue" title="请选择风量模式" :options="flushVolumeOptions" valueKey="id"
+                labelKey="label" @confirm="confirmFlushVolume">
                 <template #trigger="{ current }">
                   <view class="picker-text">{{ current || '一档' }}</view>
                 </template>
@@ -115,13 +110,8 @@
               微波模式
             </view>
             <view class="extra value">
-              <up-picker-data
-                v-model="microwaveValue"
-                title="请选择微波模式"
-                :options="microwaveOptions"
-                valueKey="id"
-                labelKey="label"
-                @confirm="confirmMicrowave">
+              <up-picker-data v-model="microwaveValue" title="请选择微波模式" :options="microwaveOptions" valueKey="id"
+                labelKey="label" @confirm="confirmMicrowave">
                 <template #trigger="{ current }">
                   <view class="picker-text">{{ current || '一档' }}</view>
                 </template>
@@ -136,6 +126,21 @@
               <up-switch v-model="footLid" size="20" activeColor="#5a4a3f" @change="updateFootLid" />
             </view>
           </view>
+          <!-- 中继级数配置 -->
+          <view class="divider"></view>
+          <view class="list-item">
+            <view :class="['label', { dot: RepeaterWarn }]" @click="handlePidTip('repeater')">中继级数配置</view>
+            <view class="extra value">
+              <up-picker-data v-model="repeaterValue" title="请选择中继级数配置" :options="repeaterOptions" valueKey="id"
+                labelKey="label" @confirm="confirmRepeater">
+                <template #trigger="{ current }">
+                  <view class="picker-text">{{ current || '0级' }}</view>
+                </template>
+              </up-picker-data>
+              <text class="font_family m-arrow arrow">&#xe60d;</text>
+            </view>
+          </view>
+          <!-- 中继级数配置end -->
         </view>
       </view>
 
@@ -268,6 +273,7 @@ const PID_CONFIG = {
   LASER_MODE: '40',
   MICrowave_MODE: '38',
   FOOT_LID: '33',
+  REPEATER: '63',
 };
 // PID 值处理映射
 const pidHandlers = {
@@ -312,6 +318,9 @@ const pidHandlers = {
   [PID_CONFIG.FOOT_LID]: (val) => {
     footLid.value = Number(val) === 1;
   },
+  [PID_CONFIG.REPEATER]: (val) => {
+    repeaterValue.value = Number(val) || 0;
+  },
 };
 
 // 根据返回的状态，红点提示'命令已下发，设备处于休眠状态。'
@@ -335,6 +344,7 @@ const laserTempLevelWarn = computed(() => isPidWarn(PID_CONFIG.LASER_MODE_LEVEL)
 const laserTypeWarn = computed(() => isPidWarn(PID_CONFIG.LASER_MODE));
 const microwaveValueWarn = computed(() => isPidWarn(PID_CONFIG.MICrowave_MODE));
 const footLidWarn = computed(() => isPidWarn(PID_CONFIG.FOOT_LID));
+const repeaterWarn = computed(() => isPidWarn(PID_CONFIG.REPEATER));
 const handlePidTip = (type) => {
   const warnMap = {
     cleaningMode: cleaningModeWarn,
@@ -351,6 +361,7 @@ const handlePidTip = (type) => {
     laserType: laserTypeWarn,
     microwaveValue: microwaveValueWarn,
     footLid: footLidWarn,
+    repeater: repeaterWarn,
   };
   const warnRef = warnMap[type];
   if (!warnRef || !warnRef.value) return;
@@ -454,7 +465,7 @@ const readDevicePidValues = async () => {
         { pid: PID_CONFIG.SEASON_MODE, sid: 0 },
         { pid: PID_CONFIG.SILENT, sid: 0 },
 
- 
+
         { pid: PID_CONFIG.PRE_WET, sid: 0 },
         { pid: PID_CONFIG.AUTO_FLUSH_SEAT, sid: 0 },
 
@@ -464,6 +475,7 @@ const readDevicePidValues = async () => {
 
         { pid: PID_CONFIG.MICrowave_MODE, sid: 0 },
         { pid: PID_CONFIG.FOOT_LID, sid: 0 },
+        { pid: PID_CONFIG.REPEATER, sid: 0 },
       ],
     });
 
@@ -649,6 +661,7 @@ const applyDefaultSettings = async () => {
       { pid: PID_CONFIG.AUTO_LID, sid: 0 },
       { pid: PID_CONFIG.MICrowave_MODE, sid: 0 },
       { pid: PID_CONFIG.FOOT_LID, sid: 0 },
+      { pid: PID_CONFIG.REPEATER, sid: 0 },
     ],
   });
   const res = await resetDevicePid(params);
@@ -659,6 +672,39 @@ const applyDefaultSettings = async () => {
 onUnload(() => {
   mqttClient.unregisterPageTopicHandler(reportTopic, handleReportTopicResponse);
 });
+
+// 中继级数配置
+const repeaterOptions = [
+  {
+    label: '0级',
+    id: 0,
+  },
+  {
+    label: '1级',
+    id: 1,
+  },
+  {
+    label: '2级',
+    id: 2,
+  },
+  {
+    label: '3级',
+    id: 3,
+  },
+  {
+    label: '4级',
+    id: 4,
+  },
+  {
+    label: '5级',
+    id: 5,
+  }
+];
+const repeaterValue = ref(0);
+const confirmRepeater = () => {
+  writeDevicePidValue([{ pid: PID_CONFIG.REPEATER, val: repeaterValue.value }]);
+};
+
 </script>
 
 <style lang="scss" scoped>
@@ -667,6 +713,7 @@ onUnload(() => {
   min-height: 100vh;
   overflow: hidden;
 }
+
 .page-bg {
   min-height: 100vh;
   padding: 30rpx;
@@ -739,6 +786,7 @@ onUnload(() => {
 .popup-content {
   padding: 32rpx 32rpx 48rpx 32rpx;
 }
+
 .title-row {
   position: relative;
   display: flex;
@@ -746,6 +794,7 @@ onUnload(() => {
   justify-content: space-between;
   padding: 8rpx 8rpx 16rpx 8rpx;
 }
+
 .title-row .title {
   font-weight: bold;
   position: absolute;
@@ -754,12 +803,15 @@ onUnload(() => {
   font-size: 32rpx;
   color: #303133;
 }
+
 .action-btn {
   font-size: 28rpx;
 }
+
 .action-cancel {
   color: #c8c9cc;
 }
+
 .action-confirm {
   color: #1677ff;
 }
@@ -814,6 +866,7 @@ onUnload(() => {
   justify-content: center;
   gap: 20rpx;
 }
+
 .seg {
   min-width: 160rpx;
   height: 64rpx;
@@ -826,6 +879,7 @@ onUnload(() => {
   justify-content: center;
   box-shadow: 0 10rpx 26rpx rgba(0, 0, 0, 0.06);
 }
+
 .seg.active {
   background: #6a4f40;
   color: #fff;
@@ -845,6 +899,7 @@ onUnload(() => {
   overflow: hidden;
   margin: 145rpx auto 120rpx;
 }
+
 .seg-opt {
   flex: 1;
   display: flex;
@@ -854,10 +909,12 @@ onUnload(() => {
   color: #7f7f7f;
   height: 100%;
 }
+
 .seg-opt.active {
   background: #5a4a3f;
   color: #ffffff;
 }
+
 .picker-text {
   text-align: right;
   background: none;
