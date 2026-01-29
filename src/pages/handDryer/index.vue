@@ -234,7 +234,7 @@ const loadProductModelDetails = async () => {
 
 const goToSetting = () => {
   uni.navigateTo({
-    url: '/pages/bigPunch/setting?device=' + encodeURIComponent(JSON.stringify(device.value)),
+    url: '/pages/handDryer/setting?device=' + encodeURIComponent(JSON.stringify(device.value)),
   });
 };
 

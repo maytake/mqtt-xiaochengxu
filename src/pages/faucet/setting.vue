@@ -91,7 +91,7 @@
           <!-- 中继级数配置 -->
           <view class="divider"></view>
           <view class="list-item">
-            <view :class="['label', { dot: RepeaterWarn }]" @click="handlePidTip('repeater')">中继级数配置</view>
+            <view :class="['label', { dot: repeaterWarn }]" @click="handlePidTip('repeater')">中继级数配置</view>
             <view class="extra value">
               <up-picker-data v-model="repeaterValue" title="请选择中继级数配置" :options="repeaterOptions" valueKey="id"
                 labelKey="label" @confirm="confirmRepeater">

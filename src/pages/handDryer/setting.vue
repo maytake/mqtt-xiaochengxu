@@ -62,13 +62,8 @@
           <view class="list-item">
             <view :class="['label', { dot: flowModeWarn }]" @click="handlePidTip('flowMode')">风量模式</view>
             <view class="extra value">
-              <up-picker-data
-                v-model="flowModeValue"
-                title="请选择风量模式"
-                :options="flowOptions"
-                valueKey="id"
-                labelKey="label"
-                @confirm="confirmFlowMode">
+              <up-picker-data v-model="flowModeValue" title="请选择风量模式" :options="flowOptions" valueKey="id"
+                labelKey="label" @confirm="confirmFlowMode">
                 <template #trigger="{ current }">
                   <view class="picker-text">{{ current || '标准' }}</view>
                 </template>
@@ -114,6 +109,21 @@
               <text class="font_family m-arrow arrow">&#xe60d;</text>
             </view>
           </view>
+          <!-- 中继级数配置 -->
+          <view class="divider"></view>
+          <view class="list-item">
+            <view :class="['label', { dot: repeaterWarn }]" @click="handlePidTip('repeater')">中继级数配置</view>
+            <view class="extra value">
+              <up-picker-data v-model="repeaterValue" title="请选择中继级数配置" :options="repeaterOptions" valueKey="id"
+                labelKey="label" @confirm="confirmRepeater">
+                <template #trigger="{ current }">
+                  <view class="picker-text">{{ current || '0级' }}</view>
+                </template>
+              </up-picker-data>
+              <text class="font_family m-arrow arrow">&#xe60d;</text>
+            </view>
+          </view>
+
         </view>
       </view>
 
@@ -148,11 +158,7 @@
       </up-popup>
 
       <!-- 风温弹窗 -->
-      <up-popup
-        :show="showWindWarmPopup"
-        :round="10"
-        mode="bottom"
-        :closeOnClickOverlay="false"
+      <up-popup :show="showWindWarmPopup" :round="10" mode="bottom" :closeOnClickOverlay="false"
         @close="closeWindWarmPopup">
         <view class="popup-content">
           <view class="title-row">
@@ -183,11 +189,7 @@
       </up-popup>
 
       <!-- 感应自动关闭时间 -->
-      <up-popup
-        :show="showSenseAutoCloseTimePopup"
-        :round="10"
-        mode="bottom"
-        :closeOnClickOverlay="false"
+      <up-popup :show="showSenseAutoCloseTimePopup" :round="10" mode="bottom" :closeOnClickOverlay="false"
         @close="closeSenseAutoCloseTimePopup">
         <view class="popup-content">
           <view class="title-row">
@@ -261,21 +263,9 @@
           <!-- 操作区 -->
           <view class="distance-divider"></view>
           <view class="distance-actions">
-            <up-button
-              class="confirm-btn"
-              :text="distancePrimaryText"
-              type="primary"
-              color="#6a4f40"
-              shape="circle"
-              :disabled="primaryDisabled"
-              @click="onDistancePrimary"></up-button>
-            <up-button
-              class="cancel-btn"
-              text="关闭"
-              type="info"
-              plain
-              shape="circle"
-              :disabled="closeDisabled"
+            <up-button class="confirm-btn" :text="distancePrimaryText" type="primary" color="#6a4f40" shape="circle"
+              :disabled="primaryDisabled" @click="onDistancePrimary"></up-button>
+            <up-button class="cancel-btn" text="关闭" type="info" plain shape="circle" :disabled="closeDisabled"
               @click="onDistanceClose"></up-button>
           </view>
         </view>
@@ -345,6 +335,7 @@ const PID_CONFIG = {
   SELF_HEATING: '19',
   WIND_WARM: '20',
   SENSE_AUTO_CLOSE_TIME: '21',
+  REPEATER: '63',
 };
 // PID 值处理映射
 const pidHandlers = {
@@ -362,6 +353,9 @@ const pidHandlers = {
   },
   [PID_CONFIG.SENSE_AUTO_CLOSE_TIME]: (val) => {
     senseAutoCloseTime.value = Number(val) || 0;
+  },
+  [PID_CONFIG.REPEATER]: (val) => {
+    repeaterValue.value = Number(val) || 0;
   },
 };
 
@@ -581,6 +575,7 @@ const readDevicePidValues = async () => {
         { pid: PID_CONFIG.FLOW_MODE, sid: 0 },
         { pid: PID_CONFIG.WIND_WARM, sid: 0 },
         { pid: PID_CONFIG.SENSE_AUTO_CLOSE_TIME, sid: 0 },
+        { pid: PID_CONFIG.REPEATER, sid: 0 },
       ],
     });
 
@@ -859,6 +854,38 @@ function clearTimeoutHideLoading() {
   globalWatchStopTimer = null;
 }
 
+// 中继级数配置
+const repeaterOptions = [
+  {
+    label: '0级',
+    id: 0,
+  },
+  {
+    label: '1级',
+    id: 1,
+  },
+  {
+    label: '2级',
+    id: 2,
+  },
+  {
+    label: '3级',
+    id: 3,
+  },
+  {
+    label: '4级',
+    id: 4,
+  },
+  {
+    label: '5级',
+    id: 5,
+  }
+];
+const repeaterValue = ref(0);
+const confirmRepeater = () => {
+  writeDevicePidValue([{ pid: PID_CONFIG.REPEATER, val: repeaterValue.value }]);
+};
+
 
 </script>
 
@@ -868,6 +895,7 @@ function clearTimeoutHideLoading() {
   min-height: 100vh;
   overflow: hidden;
 }
+
 .page-bg {
   min-height: 100vh;
   padding: 30rpx;
@@ -928,6 +956,7 @@ function clearTimeoutHideLoading() {
 .status-online {
   color: #00a20f;
 }
+
 .status-offline {
   color: #fa3534;
 }
@@ -946,6 +975,7 @@ function clearTimeoutHideLoading() {
   justify-content: center;
   padding: 52rpx 0;
 }
+
 .primary-btn {
   height: 72rpx;
   width: 270rpx;
@@ -958,19 +988,23 @@ function clearTimeoutHideLoading() {
   font-size: 32rpx;
   box-shadow: 0 10rpx 26rpx rgba(0, 0, 0, 0.06);
 }
+
 .primary-btn.active {
   background: #6a4f40;
   color: #fff;
   box-shadow: 0 10rpx 26rpx rgba(0, 0, 0, 0.06);
 }
+
 .m-faucet {
   font-size: 28rpx;
   margin-right: 10rpx;
   color: #3b3b3b;
 }
+
 .primary-btn.active .m-faucet {
   color: #fff;
 }
+
 .settings-card {
   margin-top: 32rpx;
   padding: 8rpx 0;
@@ -1101,28 +1135,34 @@ function clearTimeoutHideLoading() {
 .sense-popup {
   padding-bottom: 60rpx;
 }
+
 .sense-section {
   margin-top: 60rpx;
 }
+
 .section-title {
   font-size: 30rpx;
   text-align: center;
   color: #303133;
 }
+
 .sense-row {
   margin-top: 30rpx;
 }
+
 .sense-unit {
   font-size: 32rpx;
   letter-spacing: 4rpx;
   color: #909399;
   text-align: center;
 }
+
 .sense-divider {
   height: 2rpx;
   background: #f1f2f5;
   margin: 40rpx 0 20rpx;
 }
+
 .sense-note {
   margin-top: 48rpx;
   font-size: 24rpx;
@@ -1134,18 +1174,21 @@ function clearTimeoutHideLoading() {
 .distance-modal {
   width: 100%;
 }
+
 .distance-header {
   text-align: center;
   font-size: 32rpx;
   font-weight: 600;
   color: #303133;
 }
+
 .distance-body {
   margin-top: 28rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
+
 .distance-icon-wrap {
   width: 96rpx;
   height: 96rpx;
@@ -1154,36 +1197,44 @@ function clearTimeoutHideLoading() {
   align-items: center;
   justify-content: center;
 }
+
 .distance-icon.idle {
   font-size: 70rpx;
   color: #ff941a;
 }
+
 .distance-title {
   margin-top: 20rpx;
   font-size: 30rpx;
   color: #303133;
 }
+
 .distance-title.success {
   color: #00a20f;
 }
+
 .distance-title.failed {
   color: #fa3534;
 }
+
 .distance-sub {
   margin-top: 8rpx;
   font-size: 24rpx;
   color: #909399;
 }
+
 .distance-divider {
   height: 2rpx;
   background: #ebedf0;
   margin: 42rpx -50rpx 32rpx;
 }
+
 .distance-actions {
   display: flex;
   gap: 70rpx;
   justify-content: center;
 }
+
 /* 开始按钮颜色设置 */
 .confirm-btn :deep(.u-button--primary),
 .confirm-btn :deep(.u-button) {
@@ -1191,12 +1242,14 @@ function clearTimeoutHideLoading() {
   border-color: #6a4f40 !important;
   color: #fff !important;
 }
+
 .confirm-btn :deep(.u-button--primary:disabled),
 .confirm-btn :deep(.u-button:disabled) {
   background-color: #c0c4cc !important;
   border-color: #c0c4cc !important;
   color: #fff !important;
 }
+
 .picker-text {
   text-align: right;
   background: none;

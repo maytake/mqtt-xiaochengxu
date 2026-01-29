@@ -2,15 +2,8 @@
   <view class="m-content">
     <!-- 背景图懒加载 -->
     <view class="bg-container">
-      <image
-        v-if="showBackground"
-        class="bg-image"
-        :class="{ loaded: backgroundLoaded }"
-        :src="backgroundUrl"
-        mode="aspectFill"
-        @load="onBackgroundLoad"
-        @error="onBackgroundError"
-        lazy-load />
+      <image v-if="showBackground" class="bg-image" :class="{ loaded: backgroundLoaded }" :src="backgroundUrl"
+        mode="aspectFill" @load="onBackgroundLoad" @error="onBackgroundError" lazy-load />
       <!-- 加载占位 -->
       <view v-if="!backgroundLoaded" class="bg-placeholder"></view>
     </view>
@@ -22,39 +15,20 @@
       <form class="form-section-form">
         <view class="m-form-item">
           <text class="font_family m-icon">&#xe609;</text>
-          <input
-            class="m-input"
-            v-model="form.username"
-            placeholder="请输入用户名"
-            type="text"
-            border="none"
-            @input="onUsernameInput"
-            @blur="onUsernameBlur" />
+          <input class="m-input" v-model="form.username" placeholder="请输入用户名" type="text" border="none"
+            @input="onUsernameInput" @blur="onUsernameBlur" />
         </view>
         <view v-if="usernameError && usernameTouched" class="error-tip">{{ usernameError }}</view>
 
         <view class="m-form-item mt45">
           <text class="font_family m-icon">&#xe60a;</text>
-          <input
-            class="m-input"
-            v-model="form.password"
-            type="password"
-            placeholder="请输入密码"
-            border="none"
-            :disabled="!isUsernameValid"
-            @input="onPasswordInput"
-            @blur="onPasswordBlur" />
+          <input class="m-input" v-model="form.password" type="password" placeholder="请输入密码" border="none"
+            :disabled="!isUsernameValid" @input="onPasswordInput" @blur="onPasswordBlur" />
         </view>
         <view v-if="passwordError && passwordTouched" class="error-tip">{{ passwordError }}</view>
         <view class="m-form-item mt45">
           <text class="font_family m-icon">&#xe60a;</text>
-          <input
-            class="m-input"
-            v-model="form.code"
-            type="text"
-            placeholder="请输入验证码"
-            border="none"
-            @input="onCodeInput"
+          <input class="m-input" v-model="form.code" type="text" placeholder="请输入验证码" border="none" @input="onCodeInput"
             @blur="onCodeBlur" />
           <image @click="getCode" class="m-code-img" :src="codeUrl" mode="scaleToFill" />
         </view>
@@ -82,15 +56,8 @@
       </view>
     </view>
     <!-- 用户协议与隐私政策弹窗 -->
-    <u-modal
-      :show="showAgreementModal"
-      title="用户协议及隐私政策"
-      content="我已阅读并同意《用户协议》与《隐私政策》"
-      :showCancelButton="true"
-      confirmText="同意并登录"
-      cancelText="不同意"
-      @confirm="onAgreeAndLogin"
-      @cancel="onDisagree"
+    <u-modal :show="showAgreementModal" title="用户协议及隐私政策" content="我已阅读并同意《用户协议》与《隐私政策》" :showCancelButton="true"
+      confirmText="同意并登录" cancelText="不同意" @confirm="onAgreeAndLogin" @cancel="onDisagree"
       @close="showAgreementModal = false" />
   </view>
 </template>
@@ -319,6 +286,7 @@ const onLogin = async (e) => {
         icon: 'success',
         title: '登录成功',
       });
+      uni.setStorageSync('userInfo', res);
       uni.setStorageSync('token', access_token);
       uni.setStorageSync('refresh_token', refresh_token_new);
 

@@ -16,6 +16,15 @@
               <text>{{ productModelDetails.model }}</text>
             </view>
           </view>
+          <!-- <view class="status-item">
+            <up-icon class="font_family m-arrow icon" name="wifi"></up-icon>
+            <text>
+              信号：
+              <text :class="status === 1 ? 'status-online' : 'status-offline'">
+                {{ '无' }}
+              </text>
+            </text>
+          </view> -->
         </view>
         <view class="product-hero">
           <!-- 这里可以按需替换为真实图片 -->
@@ -43,12 +52,8 @@
 
       <!-- 统计表格 -->
       <view class="statistical-table-container">
-        <charts-bar
-          @changeRange="handleChangeRange"
-          :data="statisticalData"
-          @changeDate="handleChangeDate"
-          :ready="statisticalReady"
-          :buttonTab="[
+        <charts-bar @changeRange="handleChangeRange" :data="statisticalData" @changeDate="handleChangeDate"
+          :ready="statisticalReady" :buttonTab="[
             { label: '按天', value: 'day' },
             { label: '按小时', value: 'hour' },
           ]" />
@@ -342,6 +347,7 @@ onUnload(() => {
   min-height: 100vh;
   overflow: hidden;
 }
+
 .page-bg {
   min-height: 100vh;
   padding: 30rpx;
@@ -402,6 +408,7 @@ onUnload(() => {
 .status-online {
   color: #00a20f;
 }
+
 .status-offline {
   color: #fa3534;
 }

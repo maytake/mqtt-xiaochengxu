@@ -427,7 +427,7 @@ const basicControls = ref([
   { name: '停止', active: false, icon: 'icon-a-ziyuan31' },
   { name: '烘干', active: false, icon: 'icon-a-ziyuan25' },
   { name: '冲洗', active: false, icon: 'icon-a-ziyuan35' },
-  { name: '小冲', active: false, icon: 'icon-a-ziyuan34' },
+  // { name: '小冲', active: false, icon: 'icon-a-ziyuan34' },
   { name: '喷杆自动清洁', active: false, icon: 'icon-a-ziyuan45' },
   { name: '喷杆手动清洁', active: false, icon: 'icon-a-ziyuan42' },
 ]);

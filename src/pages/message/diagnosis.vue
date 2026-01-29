@@ -26,41 +26,54 @@
       <!-- 状态列表卡片 -->
       <view class="card status-card">
         <view class="list" v-if="faultDeviceList.length > 0">
-          <view v-for="(item, index) in faultDeviceList" :key="item.faultCode">
-            <view class="list-item">
-              <view class="label">{{ item.faultDesc }}</view>
-              <view class="extra">
-                <view :class="['circle', !item.isFault ? 'ok' : 'bad']">
-                  <text class="font_family circle-text">{{ !item.isFault ? '&#xe634;' : '&#xe632;' }}</text>
+          <u-collapse :border="false">
+            <u-collapse-item v-for="(item, index) in faultDeviceList" :key="item.faultCode">
+              <template #title>
+                <view class="list-item">
+                  <view class="extra">
+                    <view :class="['circle', !item.isFault ? 'ok' : 'bad']">
+                      <text class="font_family circle-text">{{ !item.isFault ? '&#xe634;' : '&#xe632;' }}</text>
+                    </view>
+                  </view>
+                  <view class="label">{{ item.faultDesc }}</view>
                 </view>
-              </view>
-            </view>
-            <view class="divider" v-if="index !== faultDeviceList.length - 1"></view>
-          </view>
+              </template>
+
+              <view class="list-faultGuide">{{ item.faultGuide }}</view>
+            </u-collapse-item>
+
+          </u-collapse>
         </view>
-        <up-empty
-          v-else
-          iconSize="80rpx"
-          textColor="#999"
-          textSize="28rpx"
-          height="300rpx"
-          text="暂无数据"
+        <up-empty v-else iconSize="80rpx" textColor="#999" textSize="28rpx" height="300rpx" text="暂无数据"
           style="padding: 30rpx 0"></up-empty>
       </view>
 
       <!-- 操作按钮 -->
       <view class="footer-btn-wrap">
-        <view class="primary-btn" @click="handleResolved">已处理</view>
+        <view class="primary-btn" @click="handleResolved">更新诊断</view>
+        <view class="primary-btn" @click="handleRepair">一键报修</view>
       </view>
+
+
+      <u-modal title="诊断描述" :show="show" @confirm="handleRepairModal" ref="uModal" @close="() => show = false"
+        @cancel="() => show = false" showCancelButton closeOnClickOverlay>
+        <view class="slot-content" style="width: 100%;">
+          <up-form class="form-content" labelPosition="top" :model="model1" :rules="rules" ref="form1">
+            <up-form-item prop="intro">
+              <up-textarea placeholder="不低于3个字" v-model="model1.intro"></up-textarea>
+            </up-form-item>
+          </up-form>
+        </view>
+      </u-modal>
     </view>
   </view>
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, reactive } from 'vue';
 import { onLoad } from '@dcloudio/uni-app';
 import toiletMap from '@/components/toilet-map/index.vue';
-import { updateDiagnose, getMessageDetail } from '@/api/message';
+import { updateDiagnose, getMessageDetail, reportMaintain } from '@/api/message';
 import { generateRandomSeq } from '@/utils/common';
 const mqttUserInfo = uni.getStorageSync('mqttUserInfo');
 const clientId = mqttUserInfo?.clientId || '';
@@ -103,8 +116,50 @@ async function getList(item) {
 }
 
 const handleResolved = async () => {
-  const { dirDid, did } = device.value;
+  form1.value.resetFields();
+  show.value = true;
 
+};
+
+
+const handleRepair = async () => {
+  const { dirDid, did } = device.value;
+  const userInfo = uni.getStorageSync('userInfo');
+  const { username } = userInfo || {};
+  // 在faultDeviceList找出所有的isFault为true的item.faultCode，用逗号拼接
+  const faultCode = faultDeviceList.value.filter((item) => item.isFault).map((item) => item.faultCode).join(',');
+  const params = {
+    "dirDid": dirDid,
+    "did": did,
+    "faultCode": faultCode,
+    "userName": username,
+  };
+  console.log(params);
+  const res = await reportMaintain(params);
+  if (res.code === 0) {
+    uni.showToast({
+      title: '操作成功',
+      icon: 'success',
+      duration: 2000,
+    });
+  }
+};
+
+const show = ref(false);
+const model1 = ref({
+  intro: '',
+});
+const rules = ref({
+  intro: [{ required: true, message: '请输入诊断描述', trigger: 'blur' }],
+});
+const form1 = ref(null);
+
+const handleRepairModal = async () => {
+  const valid = await form1.value.validate();
+  if (!valid) return;
+
+  const { dirDid, did } = device.value;
+  const faultCode = faultDeviceList.value.filter((item) => item.isFault).map((item) => item.faultCode).join(',');
   const params = {
     src: clientId,
     dst: dirDid,
@@ -112,10 +167,14 @@ const handleResolved = async () => {
     seq: generateRandomSeq(),
     params: {
       did,
+      "dirDid": dirDid,
+      "faultCode": faultCode,
+      "dealContent": model1.value.intro
     },
   };
-
+  console.log(params);
   const res = await updateDiagnose(params);
+  show.value = false;
   if (res.code === 0) {
     faultDeviceList.value.forEach((item) => {
       item.isFault = false;
@@ -129,6 +188,7 @@ const handleResolved = async () => {
       duration: 2000,
     });
   }
+
 };
 </script>
 
@@ -138,6 +198,7 @@ const handleResolved = async () => {
   min-height: 100vh;
   overflow: hidden;
 }
+
 .page-bg {
   min-height: 100vh;
   padding: 30rpx;
@@ -153,33 +214,40 @@ const handleResolved = async () => {
 .product-card {
   padding: 30rpx 40rpx;
 }
+
 .product-header {
   display: flex;
   justify-content: space-between;
 }
+
 .productName {
   font-size: 32rpx;
   font-weight: 600;
   color: #1f1f1f;
 }
+
 .productModel {
   margin-top: 12rpx;
   font-size: 24rpx;
   color: #9aa0a6;
 }
+
 .product-hero {
   min-height: 240rpx;
   margin-top: 32rpx;
 }
+
 .product-img {
   width: 100%;
   border-radius: 16rpx;
 }
+
 .product-footer {
   margin-top: 32rpx;
   display: flex;
   gap: 30rpx;
 }
+
 .status-item {
   display: flex;
   align-items: center;
@@ -187,6 +255,7 @@ const handleResolved = async () => {
   font-size: 26rpx;
   color: #6b7280;
 }
+
 .icon {
   font-size: 28rpx;
   color: #9aa0a6;
@@ -195,27 +264,41 @@ const handleResolved = async () => {
 .status-card {
   margin-top: 32rpx;
   padding: 8rpx 0;
+  overflow: hidden;
 }
+
 .list {
   width: 100%;
 }
+
 .list-item {
-  padding: 36rpx 32rpx;
+  padding: 0rpx 6rpx;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: start;
 }
+
 .label {
   font-size: 30rpx;
   color: #2b2b2b;
 }
+
 .extra {
   display: flex;
-  align-items: center;
+  margin-right: 10rpx;
 }
+
 .value text {
   color: #9aa0a6;
 }
+
+.list-faultGuide {
+  font-size: 24rpx;
+  color: #9aa0a6;
+  padding: 0rpx 24rpx;
+  margin: 0;
+}
+
 .divider {
   height: 2rpx;
   background: #e2e2e2;
@@ -231,14 +314,17 @@ const handleResolved = async () => {
   align-items: center;
   justify-content: center;
 }
+
 .circle-text {
-  font-size: 48rpx;
+  font-size: 40rpx;
 }
+
 .ok {
   .circle-text {
     color: #16c25a;
   }
 }
+
 .bad {
   .circle-text {
     color: #fa3534;
@@ -248,6 +334,7 @@ const handleResolved = async () => {
 .text-warning {
   color: #d38b2a;
 }
+
 .text-normal {
   color: #2b2b2b;
 }
@@ -257,7 +344,9 @@ const handleResolved = async () => {
   justify-content: center;
   margin-top: 48rpx;
   margin-bottom: 80rpx;
+  gap: 30rpx;
 }
+
 .primary-btn {
   height: 88rpx;
   width: 420rpx;
@@ -269,5 +358,21 @@ const handleResolved = async () => {
   justify-content: center;
   font-size: 32rpx;
   box-shadow: 0 10rpx 26rpx rgba(0, 0, 0, 0.06);
+}
+
+:deep(.u-collapse-item) {
+  border-top: 1px solid #e2e2e2;
+
+  &:first-child {
+    border-top: none;
+  }
+
+  .u-collapse-item__content {
+    background: #f8f8f8;
+  }
+}
+
+.form-content :deep(.u-textarea) {
+  border: 1px solid #d6d7d9!important;
 }
 </style>

@@ -122,6 +122,7 @@ function loginOut() {
     success: function (res) {
       if (res.confirm) {
         uni.removeStorageSync('token');
+        uni.removeStorageSync('userInfo');
         uni.removeStorageSync('refresh_token');
         uni.showToast({
           title: '已退出登录',

@@ -49,4 +49,12 @@ export function getFaultMessageCount(data) {
   });
 }
 
+export function reportMaintain(data) {
+  return request({
+    url: '/maintain-api/deviceMessage/reportMaintain',
+    method: 'post',
+    data: data,
+  });
+}
+
 

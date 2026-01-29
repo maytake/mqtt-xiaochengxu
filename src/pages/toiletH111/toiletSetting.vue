@@ -18,6 +18,24 @@
               <up-switch v-model="cleaningMode" size="20" activeColor="#5a4a3f" @change="updateCleaningMode" />
             </view>
           </view>
+
+          <view class="divider"></view>
+          <view class="list-item">
+            <view :class="['label', { dot: cleanTimeWarn }]" @click="handlePidTip('cleanTime')">
+              清洁模式时间
+            </view>
+            <view class="extra value">
+              <up-picker-data v-model="cleanModeTime" title="请选择清洁模式时间" :options="cleanTimeOptions" valueKey="id"
+                labelKey="label" @confirm="confirmCleanTime">
+                <template #trigger="{ current }">
+                  <view class="picker-text">{{ current || '1MIN' }}</view>
+                </template>
+              </up-picker-data>
+              <text class="font_family m-arrow arrow">&#xe60d;</text>
+            </view>
+          </view>
+
+
           <view class="divider"></view>
 
           <view class="list-item">
@@ -111,7 +129,7 @@
           <!-- 中继级数配置 -->
           <view class="divider"></view>
           <view class="list-item">
-            <view :class="['label', { dot: RepeaterWarn }]" @click="handlePidTip('repeater')">中继级数配置</view>
+            <view :class="['label', { dot: repeaterWarn }]" @click="handlePidTip('repeater')">中继级数配置</view>
             <view class="extra value">
               <up-picker-data v-model="repeaterValue" title="请选择中继级数配置" :options="repeaterOptions" valueKey="id"
                 labelKey="label" @confirm="confirmRepeater">
@@ -230,6 +248,7 @@ const footLid = ref(false);
 // 中继级数配置 63
 const PID_CONFIG = {
   CLEANING_MODE: '53',
+  CLEANING_MODE_TIME: '35',
   ENERGY_SAVING: '23',
   SEASON_MODE: '24',
   SILENT: '25',
@@ -246,6 +265,9 @@ const PID_CONFIG = {
 const pidHandlers = {
   [PID_CONFIG.CLEANING_MODE]: (val) => {
     cleaningMode.value = Number(val) === 1;
+  },
+  [PID_CONFIG.CLEANING_MODE_TIME]: (val) => {
+    cleanModeTime.value = Number(val) || 0;
   },
   [PID_CONFIG.ENERGY_SAVING]: (val) => {
     energySaving.value = Number(val) === 1;
@@ -293,6 +315,7 @@ const isPidWarn = (pid) => {
 };
 
 const cleaningModeWarn = computed(() => isPidWarn(PID_CONFIG.CLEANING_MODE));
+const cleanTimeWarn = computed(() => isPidWarn(PID_CONFIG.CLEANING_MODE_TIME));
 const energySavingWarn = computed(() => isPidWarn(PID_CONFIG.ENERGY_SAVING));
 const seasonModeWarn = computed(() => isPidWarn(PID_CONFIG.SEASON_MODE));
 const silentModeWarn = computed(() => isPidWarn(PID_CONFIG.SILENT));
@@ -309,6 +332,7 @@ const repeaterWarn = computed(() => isPidWarn(PID_CONFIG.REPEATER));
 const handlePidTip = (type) => {
   const warnMap = {
     cleaningMode: cleaningModeWarn,
+    cleanTime: cleanTimeWarn,
     energySaving: energySavingWarn,
     seasonMode: seasonModeWarn,
     silentMode: silentModeWarn,
@@ -321,7 +345,7 @@ const handlePidTip = (type) => {
     laserTempLevel: laserTempLevelWarn,
     laserType: laserTypeWarn,
     microwaveValue: microwaveValueWarn,
-    footLid: footLidWarn, 
+    footLid: footLidWarn,
     repeater: repeaterWarn,
   };
   const warnRef = warnMap[type];
@@ -426,7 +450,7 @@ const readDevicePidValues = async () => {
         { pid: PID_CONFIG.SEASON_MODE, sid: 0 },
         { pid: PID_CONFIG.SILENT, sid: 0 },
 
-
+        { pid: PID_CONFIG.CLEANING_MODE_TIME, sid: 0 },
         { pid: PID_CONFIG.PRE_WET, sid: 0 },
         { pid: PID_CONFIG.AUTO_FLUSH_SEAT, sid: 0 },
         { pid: PID_CONFIG.AUTO_LID, sid: 0 },
@@ -572,7 +596,7 @@ const applyDefaultSettings = async () => {
       { pid: PID_CONFIG.ENERGY_SAVING, sid: 0 },
       { pid: PID_CONFIG.SEASON_MODE, sid: 0 },
       { pid: PID_CONFIG.SILENT, sid: 0 },
-
+      { pid: PID_CONFIG.CLEANING_MODE_TIME, sid: 0 },
 
       { pid: PID_CONFIG.PRE_WET, sid: 0 },
       { pid: PID_CONFIG.AUTO_FLUSH_SEAT, sid: 0 },
@@ -623,6 +647,15 @@ const confirmRepeater = () => {
   writeDevicePidValue([{ pid: PID_CONFIG.REPEATER, val: repeaterValue.value }]);
 };
 
+// 清洁模式时间1-30MIN
+const cleanTimeOptions = Array.from({ length: 30 }, (_, index) => ({
+  label: `${index + 1}MIN`,
+  id: index + 1,
+}));
+const cleanModeTime = ref(1);
+const confirmCleanTime = () => {
+  writeDevicePidValue([{ pid: PID_CONFIG.CLEANING_MODE_TIME, val: cleanModeTime.value }]);
+}
 </script>
 
 <style lang="scss" scoped>
