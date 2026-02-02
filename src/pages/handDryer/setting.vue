@@ -854,38 +854,6 @@ function clearTimeoutHideLoading() {
   globalWatchStopTimer = null;
 }
 
-// 中继级数配置
-const repeaterOptions = [
-  {
-    label: '0级',
-    id: 0,
-  },
-  {
-    label: '1级',
-    id: 1,
-  },
-  {
-    label: '2级',
-    id: 2,
-  },
-  {
-    label: '3级',
-    id: 3,
-  },
-  {
-    label: '4级',
-    id: 4,
-  },
-  {
-    label: '5级',
-    id: 5,
-  }
-];
-const repeaterValue = ref(0);
-const confirmRepeater = () => {
-  writeDevicePidValue([{ pid: PID_CONFIG.REPEATER, val: repeaterValue.value }]);
-};
-
 
 </script>
 

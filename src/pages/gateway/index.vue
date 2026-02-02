@@ -194,9 +194,10 @@ onBackPress(() => {
 }
 
 .product-footer {
-  margin-top: 32rpx;
+  margin-top: 20rpx;
   display: flex;
   gap: 30rpx;
+  justify-content: space-between;
 }
 
 .status-item {

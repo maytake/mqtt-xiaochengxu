@@ -59,12 +59,17 @@
             </view>
           </view>
           <view class="divider"></view>
-
-          <!-- 清洁模式时间 -->
           <view class="list-item">
-            <view :class="['label', { dot: cleanTimeWarn }]" @click="handlePidTip('cleanTime')">清洁模式时间</view>
-            <view class="extra value" @click="openCleanTimePopup">
-              <text>{{ cleanModeTime }}</text>
+            <view :class="['label', { dot: cleanTimeWarn }]" @click="handlePidTip('cleanTime')">
+              清洁模式时间
+            </view>
+            <view class="extra value">
+              <up-picker-data v-model="cleanModeTime" title="请选择清洁模式时间" :options="cleanTimeOptions" valueKey="id"
+                labelKey="label" @confirm="confirmCleanTime">
+                <template #trigger="{ current }">
+                  <view class="picker-text">{{ current || '1MIN' }}</view>
+                </template>
+              </up-picker-data>
               <text class="font_family m-arrow arrow">&#xe60d;</text>
             </view>
           </view>
@@ -285,7 +290,7 @@ const pidHandlers = {
   },
   [PID_CONFIG.CLEANING_MODE_TIME]: (val) => {
     const numVal = Number(val) || 0;
-    cleanMinutes.value = numVal;
+    cleanModeTime.value = numVal;
   },
   [PID_CONFIG.SOAP_TIME]: (val) => {
     soapSeconds.value = Number(val) / 10 || 0;
@@ -333,24 +338,24 @@ const updateCleaningMode = async () => {
 };
 
 // 清洁模式时间
-const cleanMinutes = ref(DEFAULT_SETTINGS.cleanMinutes);
-const tempCleanMinutes = ref(3); // 弹窗内临时调整的清洁模式时间
-const cleanModeTime = computed(() => `${cleanMinutes.value}MIN`);
+// const cleanMinutes = ref(DEFAULT_SETTINGS.cleanMinutes);
+// const tempCleanMinutes = ref(3); // 弹窗内临时调整的清洁模式时间
+// const cleanModeTime = computed(() => `${cleanMinutes.value}MIN`);
 
-const showFlushPopup = ref(false);
-const openCleanTimePopup = () => {
-  // 打开弹窗时，用当前已生效的时间初始化临时值，避免列表跟随变化
-  tempCleanMinutes.value = cleanMinutes.value;
-  showFlushPopup.value = true;
-};
-const closePopup = () => {
-  showFlushPopup.value = false;
-};
-const confirmCleanTime = () => {
-  cleanMinutes.value = tempCleanMinutes.value;
-  closePopup();
-  writeDevicePidValue([{ pid: PID_CONFIG.CLEANING_MODE_TIME, val: cleanMinutes.value }]);
-};
+// const showFlushPopup = ref(false);
+// const openCleanTimePopup = () => {
+//   // 打开弹窗时，用当前已生效的时间初始化临时值，避免列表跟随变化
+//   tempCleanMinutes.value = cleanMinutes.value;
+//   showFlushPopup.value = true;
+// };
+// const closePopup = () => {
+//   showFlushPopup.value = false;
+// };
+// const confirmCleanTime = () => {
+//   cleanMinutes.value = tempCleanMinutes.value;
+//   closePopup();
+//   writeDevicePidValue([{ pid: PID_CONFIG.CLEANING_MODE_TIME, val: cleanMinutes.value }]);
+// };
 
 // 出皂时间
 const soapSeconds = ref(2);
@@ -737,7 +742,15 @@ const confirmRepeater = () => {
   writeDevicePidValue([{ pid: PID_CONFIG.REPEATER, val: repeaterValue.value }]);
 };
 
-
+// 清洁模式时间1-30MIN
+const cleanTimeOptions = Array.from({ length: 30 }, (_, index) => ({
+  label: `${index + 1}MIN`,
+  id: index + 1,
+}));
+const cleanModeTime = ref(1);
+const confirmCleanTime = () => {
+  writeDevicePidValue([{ pid: PID_CONFIG.CLEANING_MODE_TIME, val: cleanModeTime.value }]);
+}
 </script>
 
 <style lang="scss" scoped>

@@ -54,12 +54,20 @@
           </view>
           <view class="divider"></view>
           <view class="list-item">
-            <view :class="['label', { dot: cleanTimeWarn }]" @click="handlePidTip('cleanTime')">清洁模式时间</view>
-            <view class="extra value" @click="openCleanTimePopup">
-              <text>{{ cleanModeTime }}</text>
+            <view :class="['label', { dot: cleanTimeWarn }]" @click="handlePidTip('cleanTime')">
+              清洁模式时间
+            </view>
+            <view class="extra value">
+              <up-picker-data v-model="cleanModeTime" title="请选择清洁模式时间" :options="cleanTimeOptions" valueKey="id"
+                labelKey="label" @confirm="confirmCleanTime">
+                <template #trigger="{ current }">
+                  <view class="picker-text">{{ current || '1MIN' }}</view>
+                </template>
+              </up-picker-data>
               <text class="font_family m-arrow arrow">&#xe60d;</text>
             </view>
           </view>
+
           <view class="divider"></view>
           <view class="list-item">
             <view :class="['label', { dot: autoFlushWarn }]" @click="handlePidTip('autoFlush')">自动冲洗时间</view>
@@ -263,7 +271,7 @@ const productModelDetails = ref({});
 const cleaningMode = ref(true);
 const cleanMinutes = ref(3); // 实际已下发/生效的清洁模式时间
 const tempCleanMinutes = ref(3); // 弹窗内临时调整的清洁模式时间
-const cleanModeTime = computed(() => `${cleanMinutes.value}MIN`);
+// const cleanModeTime = computed(() => `${cleanMinutes.value}MIN`);
 const autoFlushTime = ref('24H');
 const timeoutCloseTime = ref('60S');
 const pidStatusMap = reactive({});
@@ -320,7 +328,7 @@ const pidHandlers = {
   },
   [PID_CONFIG.CLEANING_MODE_TIME]: (val) => {
     const numVal = Number(val) || 0;
-    cleanMinutes.value = numVal;
+    cleanModeTime.value = numVal;
   },
   [PID_CONFIG.AUTO_FLUSH]: (val) => {
     autoFlushTime.value = `${val}H`;
@@ -536,12 +544,12 @@ const updateCleaningMode = async () => {
   feedbackResult(res);
 };
 
-const confirmCleanTime = () => {
-  // 点击确定时才将临时值写回实际值，并下发到设备
-  cleanMinutes.value = tempCleanMinutes.value;
-  closePopup();
-  writeDevicePidValue([{ pid: PID_CONFIG.CLEANING_MODE_TIME, val: cleanMinutes.value }]);
-};
+// const confirmCleanTime = () => {
+//   // 点击确定时才将临时值写回实际值，并下发到设备
+//   cleanMinutes.value = tempCleanMinutes.value;
+//   closePopup();
+//   writeDevicePidValue([{ pid: PID_CONFIG.CLEANING_MODE_TIME, val: cleanMinutes.value }]);
+// };
 
 const updateAutoFlushTime = () => {
   writeDevicePidValue([{ pid: PID_CONFIG.AUTO_FLUSH, val: extractNumber(autoFlushTime.value) }]);
@@ -841,7 +849,15 @@ const confirmRepeater = () => {
   writeDevicePidValue([{ pid: PID_CONFIG.REPEATER, val: repeaterValue.value }]);
 };
 
-
+// 清洁模式时间1-30MIN
+const cleanTimeOptions = Array.from({ length: 30 }, (_, index) => ({
+  label: `${index + 1}MIN`,
+  id: index + 1,
+}));
+const cleanModeTime = ref(1);
+const confirmCleanTime = () => {
+  writeDevicePidValue([{ pid: PID_CONFIG.CLEANING_MODE_TIME, val: cleanModeTime.value }]);
+}
 </script>
 <style lang="scss" scoped>
 .page {

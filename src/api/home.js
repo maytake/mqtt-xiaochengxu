@@ -11,6 +11,7 @@ export function treeProjec(parentCode) {
   return request({
     url: `/itemDevice-api/project/treeProjec/${parentCode}`,
     method: 'get',
+    loading: false,
   });
 }
 export function getToiletiemDetails(projectId) {

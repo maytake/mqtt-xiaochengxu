@@ -5,17 +5,9 @@
 
 import request from '@/utils/request'
 
-export function updateSystem(query) {
+export function triggerPidReport(data) {
   return request({
-    url: '/system/version',
-    method: 'get',
-    params: query
-  })
-}
-
-export function getSystemConfig(data) {
-  return request({
-    url: '/system/config',
+    url: '/itemDevice-api/devicePid/triggerPidReport',
     method: 'post',
     data: data
   })

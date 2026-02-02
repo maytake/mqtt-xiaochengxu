@@ -21,6 +21,15 @@
           <!-- 这里可以按需替换为真实图片 -->
           <image class="product-img" :src="productModelDetails.image" mode="aspectFit" lazy-load />
         </view>
+        <view class="status-item">
+          <up-icon class="font_family m-arrow icon" name="wifi"></up-icon>
+          <text>
+            信号：
+            <text :class="signalRedColor">
+              {{ signalStrength }}
+            </text>
+          </text>
+        </view>
         <view class="product-footer">
           <view class="status-item">
             <text class="font_family m-arrow icon">&#xe61b;</text>
@@ -43,12 +52,8 @@
 
       <!-- 统计表格 -->
       <view class="statistical-table-container">
-        <charts-bar
-          @changeRange="handleChangeRange"
-          :data="statisticalData"
-          @changeDate="handleChangeDate"
-          :ready="statisticalReady"
-          :buttonTab="[
+        <charts-bar @changeRange="handleChangeRange" :data="statisticalData" @changeDate="handleChangeDate"
+          :ready="statisticalReady" :buttonTab="[
             { label: '按天', value: 'day' },
             { label: '按小时', value: 'hour' },
           ]" />
@@ -63,10 +68,16 @@ import { ref } from 'vue';
 import { onLoad, onUnload } from '@dcloudio/uni-app';
 import { getProductModelDetails } from '@/api/mqttCommon';
 import { queryDeviceStatisticGroup } from '@/api/uEchartsApi';
+import { generateRandomSeq } from '@/utils/common';
+import { triggerPidReport } from '@/api/index';
 import ChartsBar from '@/components/charts-bar/index.vue';
+// 创建设备请求参数
+const mqttUserInfo = uni.getStorageSync('mqttUserInfo');
+const clientId = mqttUserInfo?.clientId || '';
 
 const mqttClient = getApp().globalData.mqttService;
 import { formatDate } from '@/utils/common';
+
 // 设备相关
 const device = ref('');
 const status = ref('0');
@@ -94,6 +105,9 @@ const currentHourRange = ref({
   statDateHour: '',
   endDateHour: '',
 });
+
+
+
 // ==================== 设备控制 ====================
 // 公用：构造“按天，往前推6天”的统计参数
 const buildLastDayParams = () => {
@@ -181,8 +195,29 @@ const buildMove7HourParams = (type, currentRange) => {
   };
 };
 
+// 触发设备信号强度
+const createDeviceParams = (params) => ({
+  dst: DEVICE_CONFIG.dst,
+  seq: generateRandomSeq(),
+  src: clientId,
+  ver: 'V1.0',
+  params: {
+    did: DEVICE_CONFIG.did,
+    dirDid: DEVICE_CONFIG.dirDid,
+    ...params,
+  },
+});
+const triggerPidReportFn = async () => {
+  const params = createDeviceParams({
+    pids: [{ pid: 2, sid: 0 }],
+  });
+  const res = await triggerPidReport(params);
+};
+
 // 页面级主题消息处理函数
 let handleReportTopicResponse = null;
+let signalTopic = ''// 设备信号强度主题
+let handleSignalTopicResponse = null;// 设备信号强度主题处理函数
 onLoad(async (options) => {
   const deviceData = options.device;
   if (deviceData) {
@@ -197,10 +232,14 @@ onLoad(async (options) => {
   reportTopic = `olt/report/eid/${DEVICE_CONFIG.did}/8212`;
   // 阶段2：订阅并仅监听一次设备报告主题
   mqttClient.registerPageTopicHandler(reportTopic, handleReportTopicResponse);
+  // 订阅设备信号强度主题
+  signalTopic = `olt/report/pid/${DEVICE_CONFIG.did}`;
+  mqttClient.registerPageTopicHandler(signalTopic, handleSignalTopicResponse);
 
   await Promise.all([loadProductModelDetails()]);
   const params = buildLastDayParams();
   getStatisticalData(params);
+  triggerPidReportFn()
 });
 
 // 页面级主题消息处理变量
@@ -215,6 +254,23 @@ handleReportTopicResponse = (messageData, topic) => {
 };
 
 handleReportTopicResponse();
+
+// 设备信号强度主题处理函数
+const signalStrength = ref('无');
+const signalRedColor = ref('status-offline');
+// 设备信号强度主题处理函数
+handleSignalTopicResponse = (messageData, topic) => {
+  if (messageData?.topic === signalTopic) {
+    console.log('signalTopic', messageData);
+    const pids = messageData?.params?.properties?.pids || [];
+    if (Array.isArray(pids) && pids.some((item) => item.pid == 2)) {
+      const signal = pids.find((item) => item.pid == 2)?.val;
+      signalStrength.value = signal;
+    }
+  }
+};
+
+handleSignalTopicResponse();
 
 // ==================== 产品信息 ====================
 const loadProductModelDetails = async () => {
@@ -334,6 +390,7 @@ async function getStatisticalData(objParams) {
 
 onUnload(() => {
   mqttClient.unregisterPageTopicHandler(reportTopic, handleReportTopicResponse);
+  mqttClient.unregisterPageTopicHandler(signalTopic, handleSignalTopicResponse);
 });
 </script>
 
@@ -343,6 +400,7 @@ onUnload(() => {
   min-height: 100vh;
   overflow: hidden;
 }
+
 .page-bg {
   min-height: 100vh;
   padding: 30rpx;
@@ -387,9 +445,10 @@ onUnload(() => {
 }
 
 .product-footer {
-  margin-top: 32rpx;
+  margin-top: 20rpx;
   display: flex;
   gap: 30rpx;
+  justify-content: space-between;
 }
 
 .status-item {
@@ -403,6 +462,7 @@ onUnload(() => {
 .status-online {
   color: #00a20f;
 }
+
 .status-offline {
   color: #fa3534;
 }
