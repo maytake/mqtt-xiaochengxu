@@ -262,7 +262,7 @@ handleReportTopicResponse = (messageData, topic) => {
 handleReportTopicResponse();
 
 // 设备信号强度主题处理函数
-const signalStrength = ref('无');
+const signalStrength = ref('弱');
 const signalRedColor = ref('status-offline');
 handleSignalTopicResponse = (messageData, topic) => {
   if (messageData?.topic === signalTopic) {

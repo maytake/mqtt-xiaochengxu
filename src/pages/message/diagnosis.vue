@@ -88,6 +88,7 @@ const faultDeviceList = ref([]);
 onLoad((options) => {
   const { device: deviceStr } = options;
   const item = JSON.parse(decodeURIComponent(deviceStr));
+  console.log('item', item);
   const { coordinateJson, pointName, imagePath } = item;
   device.value = item;
   devicesList.value = [

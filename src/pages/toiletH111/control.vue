@@ -36,12 +36,8 @@
       <!-- 基础控制宫格 -->
       <view class="card basic-controls">
         <view class="control-grid">
-          <view
-            v-for="(item, index) in basicControls"
-            :key="index"
-            class="control-item"
-            :class="{ active: item.active }"
-            @click="handleBasicControl(item, index)">
+          <view v-for="(item, index) in basicControls" :key="index" class="control-item"
+            :class="{ active: item.active }" @click="handleBasicControl(item, index)">
             <text class="font_family control-icon" :class="item.icon"></text>
             <text class="control-text">{{ item.name }}</text>
           </view>
@@ -78,18 +74,14 @@
         </view>
         <view class="feminine-wash-divider"></view>
         <view class="feminine-wash-modes">
-          <view
-            class="mode-btn"
-            :class="{ active: seatRingMode.includes('seatCover') }"
+          <view class="mode-btn" :class="{ active: seatRingMode.includes('seatCover') }"
             @click="setSeatRingMode('seatCover')">
             <text>开关座盖</text>
           </view>
           <view class="mode-btn disabled">
             <text></text>
           </view>
-          <view
-            class="mode-btn"
-            :class="{ active: seatRingMode.includes('seatRing') }"
+          <view class="mode-btn" :class="{ active: seatRingMode.includes('seatRing') }"
             @click="setSeatRingMode('seatRing')">
             <text>开关座圈</text>
           </view>
@@ -126,9 +118,7 @@
         </view>
         <view class="feminine-wash-divider"></view>
         <view class="feminine-wash-modes">
-          <view
-            class="mode-btn"
-            :class="{ active: hipWashMode.includes('reciprocating') }"
+          <view class="mode-btn" :class="{ active: hipWashMode.includes('reciprocating') }"
             @click="setHipWashMode('reciprocating')">
             <text>往复清洗</text>
           </view>
@@ -171,21 +161,15 @@
         </view>
         <view class="feminine-wash-divider"></view>
         <view class="feminine-wash-modes">
-          <view
-            class="mode-btn"
-            :class="{ active: feminineWashMode.includes('reciprocating') }"
+          <view class="mode-btn" :class="{ active: feminineWashMode.includes('reciprocating') }"
             @click="setFeminineWashMode('reciprocating')">
             <text>往复清洗</text>
           </view>
-          <view
-            class="mode-btn"
-            :class="{ active: feminineWashMode.includes('bubble') }"
+          <view class="mode-btn" :class="{ active: feminineWashMode.includes('bubble') }"
             @click="setFeminineWashMode('bubble')">
             <text>气泡按摩</text>
           </view>
-          <view
-            class="mode-btn"
-            :class="{ active: feminineWashMode.includes('pulse') }"
+          <view class="mode-btn" :class="{ active: feminineWashMode.includes('pulse') }"
             @click="setFeminineWashMode('pulse')">
             <text>脉冲按摩</text>
           </view>
@@ -216,12 +200,7 @@
         </view>
         <view class="temp-content">
           <view class="temp-display">
-            <up-picker-data
-              v-model="waterTemp"
-              title="请选择档位"
-              :options="gearsOptions"
-              valueKey="id"
-              labelKey="label"
+            <up-picker-data v-model="waterTemp" title="请选择档位" :options="gearsOptions" valueKey="id" labelKey="label"
               @confirm="confirmWaterTemp">
               <template #trigger="{ current }">
                 <view class="temp-value">{{ current || '1档' }}</view>
@@ -246,12 +225,7 @@
         </view>
         <view class="temp-content">
           <view class="temp-display">
-            <up-picker-data
-              v-model="windTemp"
-              title="请选择档位"
-              :options="gearsOptions"
-              valueKey="id"
-              labelKey="label"
+            <up-picker-data v-model="windTemp" title="请选择档位" :options="gearsOptions" valueKey="id" labelKey="label"
               @confirm="confirmWindTemp">
               <template #trigger="{ current }">
                 <view class="temp-value">{{ current || '1档' }}</view>
@@ -276,12 +250,7 @@
         </view>
         <view class="temp-content">
           <view class="temp-display">
-            <up-picker-data
-              v-model="seatTemp"
-              title="请选择档位"
-              :options="gearsOptions"
-              valueKey="id"
-              labelKey="label"
+            <up-picker-data v-model="seatTemp" title="请选择档位" :options="gearsOptions" valueKey="id" labelKey="label"
               @confirm="confirmSeatTemp">
               <template #trigger="{ current }">
                 <view class="temp-value">{{ current || '1档' }}</view>
@@ -306,13 +275,8 @@
         </view>
         <view class="position-content">
           <view class="position-display">
-            <up-picker-data
-              v-model="positionLevel"
-              title="请选择档位"
-              :options="gearsOptionsB"
-              valueKey="id"
-              labelKey="label"
-              @confirm="confirmPosition">
+            <up-picker-data v-model="positionLevel" title="请选择档位" :options="gearsOptionsB" valueKey="id"
+              labelKey="label" @confirm="confirmPosition">
               <template #trigger="{ current }">
                 <view class="position-value">{{ current || '1档' }}</view>
               </template>
@@ -338,13 +302,8 @@
         </view>
         <view class="position-content">
           <view class="position-display">
-            <up-picker-data
-              v-model="waterAmountLevel"
-              title="请选择档位"
-              :options="gearsOptionsB"
-              valueKey="id"
-              labelKey="label"
-              @confirm="confirmWaterAmount">
+            <up-picker-data v-model="waterAmountLevel" title="请选择档位" :options="gearsOptionsB" valueKey="id"
+              labelKey="label" @confirm="confirmWaterAmount">
               <template #trigger="{ current }">
                 <view class="position-value">{{ current || '1档' }}</view>
               </template>
@@ -364,12 +323,8 @@
       <!-- 高级控制宫格 -->
       <view class="card advanced-controls">
         <view class="control-grid">
-          <view
-            v-for="(item, index) in advancedControls"
-            :key="index"
-            class="control-item"
-            :class="{ active: item.active }"
-            @click="handleAdvancedControl(item, index)">
+          <view v-for="(item, index) in advancedControls" :key="index" class="control-item"
+            :class="{ active: item.active }" @click="handleAdvancedControl(item, index)">
             <text class="font_family control-icon" :class="item.icon"></text>
             <text class="control-text">{{ item.name }}</text>
           </view>
@@ -378,20 +333,82 @@
       <!-- 不常用两个控制控制 -->
       <view class="card water-tank-controls bottom200">
         <view class="water-tank-container">
-          <view
-            class="water-tank-button"
-            :class="{ active: waterTankControls.includes('水箱排空') }"
+          <view class="water-tank-button" :class="{ active: waterTankControls.includes('水箱排空') }"
             @click="handleWaterTankControl('水箱排空')">
             <text class="water-text">水箱排空</text>
           </view>
-          <view
-            class="water-tank-button"
-            :class="{ active: waterTankControls.includes('水箱除垢') }"
-            @click="handleWaterTankControl('水箱除垢')">
+          <view class="water-tank-button" :class="{ active: waterTankControls.includes('水箱除垢') }"
+            @click="openWaterTank('水箱除垢')">
             <text class="water-text">水箱除垢</text>
           </view>
         </view>
       </view>
+
+      <!-- 感应距离弹窗（三步状态机，前端模拟流程） -->
+      <up-modal :show="showWaterTank" :closeOnClickOverlay="false" :showCancelButton="false" :showConfirmButton="false">
+        <view class="distance-modal">
+          <view class="distance-header">水箱除垢</view>
+
+          <view class="distance-body">
+            <!-- 图标区：根据状态切换 -->
+            <view class="distance-icon-wrap">
+              <template v-if="waterTankState === 'idle'">
+                <text class="font_family distance-icon idle">&#xe710;</text>
+              </template>
+              <template v-else-if="['sending', 'waiting', 'addCleaner', 'cleaning'].includes(waterTankState)">
+                <up-loading-icon mode="circle" size="42" color="#6a4f40"></up-loading-icon>
+              </template>
+              <template v-else-if="waterTankState === 'success'">
+                <up-icon name="checkmark-circle-fill" color="#00a20f" size="42"></up-icon>
+              </template>
+              <template v-else-if="waterTankState === 'failed'">
+                <up-icon name="close-circle-fill" color="#fa3534" size="42"></up-icon>
+              </template>
+            </view>
+
+            <!-- 文案区：根据状态切换 -->
+            <template v-if="waterTankState === 'idle'">
+              <view class="distance-title">确定要进行水箱除垢吗？</view>
+              <view class="distance-sub">提示：水箱除垢过程中，请不要关闭页面</view>
+            </template>
+            <template v-if="waterTankState === 'sending'">
+              <view class="distance-title">指令发送中...</view>
+              <view class="distance-sub">请稍候，不要关闭页面</view>
+            </template>
+            <template v-if="waterTankState === 'waiting'">
+              <view class="distance-title">请等待水箱排空</view>
+              <view class="distance-sub">直到水箱排空完成，水箱除垢开始</view>
+            </template>
+            <template v-if="waterTankState === 'addCleaner'">
+              <view class="distance-title">请加清洁液到指定刻度线</view>
+              <view class="distance-sub">直到清洁液加到指定刻度线，水箱除垢开始</view>
+            </template>
+            <template v-if="waterTankState === 'cleaning'">
+              <view class="distance-title">水箱清洗中</view>
+              <view class="distance-sub">请等待水箱清洗完成</view>
+            </template>
+            <template v-if="waterTankState === 'success'">
+              <view class="distance-title success">水箱除垢完成</view>
+              <view class="distance-sub">如不合适，请重新除垢</view>
+            </template>
+            <template v-if="waterTankState === 'failed'">
+              <view class="distance-title failed">指令发送失败，请稍后重试。</view>
+              <view class="distance-sub">请检查设备状态或稍后重试</view>
+            </template>
+          </view>
+
+          <!-- 操作区 -->
+          <view class="distance-divider"></view>
+          <view class="distance-actions">
+            <up-button class="confirm-btn" :text="primaryText" type="primary" color="#6a4f40" shape="circle"
+              :disabled="primaryDisabled" @click="onPrimary"></up-button>
+            <up-button class="cancel-btn" text="关闭" type="info" plain shape="circle" :disabled="closeDisabled"
+              @click="onWaterTankClose"></up-button>
+          </view>
+        </view>
+      </up-modal>
+
+
     </view>
   </view>
 </template>
@@ -405,6 +422,7 @@ import { getProductModelDetails, ctrlDevice, readDevicePidVal, writeDevicePid } 
 import { generateRandomSeq } from '@/utils/common';
 import { isEqual } from 'lodash';
 const mqttClient = getApp().globalData.mqttService;
+
 // ==================== 常量配置 ====================
 const DEVICE_STATUS = ['离线', '在线', '故障'];
 // ==================== 工具函数 ====================
@@ -548,8 +566,8 @@ const initDeviceData = (options) => {
 
 // 页面级主题消息处理变量
 handleReportTopicResponse = (messageData, topic) => {
-  console.log('pageMessage', messageData);
   if (messageData?.topic === reportTopic) {
+    console.log('pageMessage', messageData);
     const pids = messageData?.params?.properties?.pids || [];
     handleDevicePidResponse(pids);
   }
@@ -718,6 +736,14 @@ function handleDevicePidResponse(pids) {
     }
     if (pidKey === PID_CONFIG.FEMININE_WASH) {
       highlightWashButton('feminine', item.val);
+    }
+    // 水箱蓄水状态
+    if (pidKey === '64') {
+      handleWaterTankStatus(item.val)
+    }
+    // 水箱清洗状态
+    if (pidKey === '65') {
+      handleWaterTankCleaningStatus(item.val)
     }
   });
 }
@@ -1147,6 +1173,9 @@ onUnload(() => {
   mqttClient.unregisterPageTopicHandler(reportTopic, handleReportTopicResponse);
   cleanupWatchListeners();
   clearTimeoutHideLoading();
+  startWaterTankTimer();
+  cleanupWaterTankWatchListeners()
+  clearWaterTankTimer();
 });
 
 function cleanupWatchListeners() {
@@ -1235,6 +1264,215 @@ const confirmWaterAmount = () => {
 };
 
 
+// 水箱除垢部分逻辑-start
+let waterTankWatchStop = null;
+const startWaterTankCleaning = async () => {
+  waterTankState.value = 'sending';
+  // 发送开始校准指令
+  try {
+    // 为本次流程生成唯一 seq，后续按此进行消息关联
+    const seq = generateRandomSeq();
+    const params = {
+      src: clientId,
+      dst: DEVICE_CONFIG.dst,
+      ver: 'V1.0',
+      seq,
+      params: {
+        did: DEVICE_CONFIG.did,
+        sid: 0,
+        fid: 4113,
+        val: 1,
+      },
+    };
+    const res = await ctrlDevice(params);
+    if (res.code === 0) {
+      const waitMs = res.waitTime || 5000;
+
+      // 启动超时兜底，只在 waiting 期间有效
+      // startWaterTankTimer(waitMs);
+      cleanupWaterTankWatchListeners();
+      // 监听全局主题消息
+      const { globalTopicInfo } = storeToRefs(useStore());
+      waterTankWatchStop = watch(
+        globalTopicInfo,
+        (newVal) => {
+          console.log('阶段1：', newVal);
+          if (newVal?.seq === seq) {
+            if (newVal?.result == 1) {
+              readWaterTankStatus()
+            } else {
+              waterTankState.value = 'failed';
+              clearWaterTankTimer();
+              cleanupWaterTankWatchListeners()
+            }
+          }
+        },
+        { deep: true, immediate: false }
+      );
+
+    } else {
+      waterTankState.value = 'failed';
+    }
+  } catch (error) {
+    waterTankState.value = 'failed';
+    console.error('距离校准指令发送失败', error);
+  }
+};
+
+const cleanupWaterTankWatchListeners = () => {
+  if (waterTankWatchStop) {
+    waterTankWatchStop();
+    waterTankWatchStop = null;
+  }
+};
+let waterTankStatus = 0;
+let waterTankCleaningStatus = 0;
+// 用读设备属性接口，读水箱蓄水状态属性和水箱清洗状态属性
+// 64水箱蓄水状态 0:未排空 1: 已排空
+// 65水箱清洗状态 0:已清洗 1: 开始清洗
+async function readWaterTankStatus() {
+  try {
+    const params = createDeviceParams({
+      pids: [{ pid: 64, sid: 0 }, { pid: 65, sid: 0 }],
+    });
+    const res = await readDevicePidVal(params);
+    const { pids = [] } = res.data || {};
+
+    pids.forEach(item => {
+      if (item.pid == 64) {
+        waterTankStatus = item.val;
+      }
+      if (item.pid == 65) {
+        waterTankCleaningStatus = item.val;
+      }
+    })
+
+    pids.forEach(item => {
+      if (item.pid == 64) {
+        // 水箱蓄水状态为未排空
+        if (item.val == 0) {
+          // 并监听水箱蓄水状态属性上报，如果水箱蓄水状态已排空，则进入下一步操作
+          waterTankState.value = 'waiting';
+        } else {
+          // 水箱蓄水状态为已排空,且水箱清洗状态为已完成
+          if (waterTankCleaningStatus == 0) {
+            waterTankState.value = 'addCleaner';
+          }
+          // 水箱蓄水状态为已排空，且水箱清洗状态为清洗中
+          if (waterTankCleaningStatus == 1) {
+            waterTankState.value = 'cleaning';
+          }
+        }
+      }
+    })
+
+  } catch (error) {
+    console.error('读取设备PID值失败:', error);
+  }
+}
+
+// 监听水箱蓄水状态处理方法
+function handleWaterTankStatus(val) {
+  // 此时状态为未排空，如果属性上报水箱蓄水状态已排空，则进入"加清洁液"
+  if (waterTankStatus == 0 && val == 1) {
+    waterTankState.value = 'addCleaner';
+  }
+}
+// 监听水箱清洗状态的方法
+function handleWaterTankCleaningStatus(val) {
+  if (waterTankState.value === 'addCleaner' && val == 1) {
+    waterTankState.value = 'cleaning';
+  }
+  // 水箱蓄水状态为已排空，且水箱清洗状态为清洗中
+  // 并监听水箱清洗状态属性上报，如果上报已完成，则进入下一步操作
+  if (waterTankState.value === 'cleaning' && val == 0) {
+    waterTankState.value = 'success';
+  }
+}
+
+// 水箱除垢部分逻辑
+const showWaterTank = ref(false);
+const waterTankState = ref('idle');
+const primaryDisabled = computed(() => ['sending', 'waiting', 'addCleaner', 'cleaning'].includes(waterTankState.value));
+const closeDisabled = computed(() => ['sending', 'waiting', 'addCleaner', 'cleaning'].includes(waterTankState.value));
+const primaryText = computed(() => {
+  if (waterTankState.value === 'idle') return '开始';
+  if (waterTankState.value === 'failed') return '重新开始';
+  if (waterTankState.value === 'success') return '完成';
+  return '进行中';
+});
+const openWaterTank = () => {
+  waterTankState.value = 'idle';
+  showWaterTank.value = true;
+}
+
+let count = 0;
+let timer = null;
+const onPrimary = () => {
+  if (waterTankState.value === 'idle' || waterTankState.value === 'failed') {
+    // 先把已有的定时器停掉
+    // if (timer) {
+    //   clearInterval(timer);
+    //   timer = null;
+    // }
+    // count = 0;
+    // waterTankState.value = 'idle';
+
+    // timer = setInterval(() => {
+    //   console.log('count', count);
+
+    //   if (count === 0) {
+    //     waterTankState.value = 'sending';
+    //   } else if (count === 1) {
+    //     waterTankState.value = 'waiting';
+    //   } else if (count === 2) {
+    //     waterTankState.value = 'addCleaner';
+    //   } else if (count === 3) {
+    //     waterTankState.value = 'cleaning';
+    //   } else if (count === 4) {
+    //     waterTankState.value = 'success';
+    //   }
+    //   count++;
+    //   if (count >= 5) {
+    //     clearInterval(timer)
+    //     timer = null;
+    //     count = 0;
+    //   }
+    // }, 3000);
+    startWaterTankCleaning();
+    return;
+  }
+  if (waterTankState.value === 'success') {
+    onWaterTankClose();
+  }
+
+}
+const onWaterTankClose = () => {
+  if (closeDisabled.value) return;
+  clearWaterTankTimer();
+  cleanupWaterTankWatchListeners()
+  showWaterTank.value = false;
+};
+
+let waterTankTimer = null;
+const startWaterTankTimer = (time) => {
+  clearWaterTankTimer();
+  // 例如 20s 超时失败
+  waterTankTimer = setTimeout(() => {
+    if (['waiting', 'sending', 'addCleaner', 'cleaning'].includes(waterTankState.value)) {
+      waterTankState.value = 'failed';
+    }
+  }, time || 20000);
+};
+
+const clearWaterTankTimer = () => {
+  if (waterTankTimer) {
+    clearTimeout(waterTankTimer);
+    waterTankTimer = null;
+  }
+};
+
+
 </script>
 
 <style lang="scss" scoped>
@@ -1243,6 +1481,7 @@ const confirmWaterAmount = () => {
   min-height: 100vh;
   overflow: hidden;
 }
+
 .page-bg {
   min-height: 100vh;
   padding: 30rpx;
@@ -1421,6 +1660,7 @@ const confirmWaterAmount = () => {
     background-color: #e0e0e0;
     margin: 30rpx 0;
   }
+
   .night-light {
     margin-top: 20rpx;
     height: 60rpx;
@@ -1428,10 +1668,12 @@ const confirmWaterAmount = () => {
     align-items: flex-end;
     justify-content: center;
   }
+
   .night-light-icon {
     font-size: 43rpx;
     color: #5a4a3f;
   }
+
   .light-on {
     font-size: 60rpx;
   }
@@ -1873,6 +2115,7 @@ const confirmWaterAmount = () => {
   text-align: center;
   transition: all 0.3s ease;
 }
+
 .control-item.active {
   .control-icon {
     font-weight: bold;
@@ -1887,6 +2130,7 @@ const confirmWaterAmount = () => {
 .water-tank-controls {
   padding: 40rpx;
 }
+
 .bottom200 {
   margin-bottom: 200rpx;
 }
@@ -1948,5 +2192,160 @@ const confirmWaterAmount = () => {
 
 .water-tank-button:active {
   transform: scale(0.98);
+}
+
+
+
+.popup-content {
+  padding: 32rpx 32rpx 48rpx 32rpx;
+}
+
+.title-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8rpx 8rpx 16rpx 8rpx;
+}
+
+.title-row .title {
+  font-weight: bold;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 32rpx;
+  color: #303133;
+}
+
+.action-btn {
+  font-size: 28rpx;
+}
+
+.action-cancel {
+  color: #c8c9cc;
+}
+
+.action-confirm {
+  color: #1677ff;
+}
+
+.number-row {
+  margin-top: 50rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.circle-btn {
+  width: 72rpx;
+  height: 72rpx;
+  border: 2rpx solid #dcdfe6;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #ffffff;
+}
+
+.value-text {
+  width: 128rpx;
+  text-align: center;
+  font-size: 56rpx;
+  color: #303133;
+}
+
+.unit {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #909399;
+}
+
+.description {
+  margin-top: 48rpx;
+  padding: 0 16rpx;
+  font-size: 26rpx;
+  line-height: 36rpx;
+  color: #cecece;
+  text-align: center;
+}
+
+/* 感应距离弹窗样式（按设计） */
+.distance-modal {
+  width: 100%;
+}
+
+.distance-header {
+  text-align: center;
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #303133;
+}
+
+.distance-body {
+  margin-top: 28rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.distance-icon-wrap {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.distance-icon.idle {
+  font-size: 70rpx;
+  color: #ff941a;
+}
+
+.distance-title {
+  margin-top: 20rpx;
+  font-size: 30rpx;
+  color: #303133;
+}
+
+.distance-title.success {
+  color: #00a20f;
+}
+
+.distance-title.failed {
+  color: #fa3534;
+}
+
+.distance-sub {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #909399;
+}
+
+.distance-divider {
+  height: 2rpx;
+  background: #ebedf0;
+  margin: 42rpx -50rpx 32rpx;
+}
+
+.distance-actions {
+  display: flex;
+  gap: 70rpx;
+  justify-content: center;
+}
+
+/* 开始按钮颜色设置 */
+.confirm-btn :deep(.u-button--primary),
+.confirm-btn :deep(.u-button) {
+  background-color: #6a4f40 !important;
+  border-color: #6a4f40 !important;
+  color: #fff !important;
+}
+
+.confirm-btn :deep(.u-button--primary:disabled),
+.confirm-btn :deep(.u-button:disabled) {
+  background-color: #c0c4cc !important;
+  border-color: #c0c4cc !important;
+  color: #fff !important;
 }
 </style>

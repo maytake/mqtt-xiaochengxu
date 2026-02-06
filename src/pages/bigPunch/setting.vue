@@ -26,13 +26,7 @@
               </text>
             </text>
           </view>
-          <view class="status-item">
-            <text class="font_family m-arrow icon">&#xe618;</text>
-            <text>
-              总用水量：
-              <text class="status-amount">{{ productModelDetails.waterTotal }}L</text>
-            </text>
-          </view>
+
         </view>
       </view>
 

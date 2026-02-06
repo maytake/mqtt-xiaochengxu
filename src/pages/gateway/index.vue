@@ -90,7 +90,7 @@ onLoad((options) => {
       }
     }
     loadProductModelDetails();
-    getBindDeviceTotal({dirDid: deviceData.dirDid}).then(res => {
+    getBindDeviceTotal({ dirDid: deviceData.dirDid }).then(res => {
       const { code, data } = res || {};
       if (code === 0) {
         deviceCount.value = data;
@@ -116,9 +116,8 @@ const loadProductModelDetails = async () => {
 // Wi-Fi配置
 const handleWiFiConfig = () => {
   // 跳转到Wi-Fi配置页面，可根据实际情况调整
-  uni.showToast({
-    title: 'Wi-Fi配置功能',
-    icon: 'none',
+  uni.navigateTo({
+    url: '/pages/gateway/wifiSetup',
   });
 };
 

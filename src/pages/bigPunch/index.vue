@@ -256,21 +256,32 @@ handleReportTopicResponse = (messageData, topic) => {
 handleReportTopicResponse();
 
 // 设备信号强度主题处理函数
-const signalStrength = ref('无');
+const signalStrength = ref('弱');
 const signalRedColor = ref('status-offline');
-// 设备信号强度主题处理函数
 handleSignalTopicResponse = (messageData, topic) => {
   if (messageData?.topic === signalTopic) {
     console.log('signalTopic', messageData);
     const pids = messageData?.params?.properties?.pids || [];
     if (Array.isArray(pids) && pids.some((item) => item.pid == 2)) {
-      const signal = pids.find((item) => item.pid == 2)?.val;
-      signalStrength.value = signal;
+      const signalVal = pids.find((item) => item.pid == 2)?.val || 0;
+      const signal = signalVal - 65536;
+      // 强：-30～-50dBm
+      if (signal > -50) {
+        signalStrength.value = '强';
+        signalRedColor.value = 'status-online';
+        // 中：-50～-80dBm
+      } else if (signal <= -50 && signal >= -80) {
+        signalStrength.value = '中';
+        signalRedColor.value = 'status-online';
+        // 弱：小于-80
+      } else if (signal < -80) {
+        signalStrength.value = '弱';
+        signalRedColor.value = 'status-offline';
+      }
     }
   }
 };
 
-handleSignalTopicResponse();
 
 // ==================== 产品信息 ====================
 const loadProductModelDetails = async () => {

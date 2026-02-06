@@ -260,31 +260,32 @@ handleReportTopicResponse = (messageData, topic) => {
 handleReportTopicResponse();
 
 // 设备信号强度主题处理函数
-const signalStrength = ref('无');
+const signalStrength = ref('弱');
 const signalRedColor = ref('status-offline');
 handleSignalTopicResponse = (messageData, topic) => {
   if (messageData?.topic === signalTopic) {
     console.log('signalTopic', messageData);
     const pids = messageData?.params?.properties?.pids || [];
     if (Array.isArray(pids) && pids.some((item) => item.pid == 2)) {
-      const signal = pids.find((item) => item.pid == 2)?.val;
-      // 信号返回值是0：无信号，10-30：信号弱，31-50：信号中，51-100：信号强
-      if (signal === 0) {
-        signalStrength.value = '无';
-        signalRedColor.value = 'status-offline';
-      } else if (signal >= 10 && signal <= 30) {
-        signalStrength.value = '弱';
-        signalRedColor.value = 'status-offline';
-      } else if (signal >= 31 && signal <= 50) {
-        signalStrength.value = '中';
-        signalRedColor.value = 'status-online';
-      } else if (signal >= 51 && signal <= 100) {
+      const signalVal = pids.find((item) => item.pid == 2)?.val || 0;
+      const signal = signalVal - 65536;
+      // 强：-30～-50dBm
+      if (signal > -50) {
         signalStrength.value = '强';
         signalRedColor.value = 'status-online';
+        // 中：-50～-80dBm
+      } else if (signal <= -50 && signal >= -80) {
+        signalStrength.value = '中';
+        signalRedColor.value = 'status-online';
+        // 弱：小于-80
+      } else if (signal < -80) {
+        signalStrength.value = '弱';
+        signalRedColor.value = 'status-offline';
       }
     }
   }
 };
+
 
 // ==================== 产品信息 ====================
 const loadProductModelDetails = async () => {

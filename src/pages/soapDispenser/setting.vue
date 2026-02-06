@@ -150,14 +150,15 @@
             <view class="action-btn action-confirm" @click="confirmSoapTime">确定</view>
           </view>
           <view class="number-row">
-            <up-number-box v-model="tempSoapSeconds" :min="2" :max="8" :step="1">
+            <up-number-box v-model="tempSoapSeconds" :min="0.1" :max="0.8" :step="0.1">
               <template #minus>
                 <view class="circle-btn">
                   <up-icon name="minus" size="14" color="#909399"></up-icon>
                 </view>
               </template>
               <template #input>
-                <text class="value-text">{{ tempSoapSeconds }}</text>
+                <!-- <text class="value-text">{{ tempSoapSeconds }}</text> -->
+                <input class="value-text" v-model="tempSoapSeconds" type="number" inputmode="decimal" />
               </template>
               <template #plus>
                 <view class="circle-btn">
@@ -167,7 +168,7 @@
             </up-number-box>
             <view class="unit">S</view>
           </view>
-          <view class="description">出皂时间设置范围在2-8S</view>
+          <view class="description">出皂时间设置范围在0.1-0.8S</view>
         </view>
       </up-popup>
 
@@ -359,8 +360,8 @@ const updateCleaningMode = async () => {
 
 // 出皂时间
 const soapSeconds = ref(2);
-const tempSoapSeconds = ref(2); // 弹窗内临时调整的出皂时间
-const soapTime = computed(() => `${soapSeconds.value}S`);
+const tempSoapSeconds = ref(0.1); // 弹窗内临时调整的出皂时间
+const soapTime = computed(() => `${soapSeconds.value }S`);
 
 const showSoapTimePopup = ref(false);
 const openSoapTimePopup = () => {
@@ -372,6 +373,7 @@ const closeSoapPopup = () => {
   showSoapTimePopup.value = false;
 };
 const confirmSoapTime = () => {
+  console.log('tempSoapSeconds.value', tempSoapSeconds.value);
   soapSeconds.value = tempSoapSeconds.value;
   closeSoapPopup();
   writeDevicePidValue([{ pid: PID_CONFIG.SOAP_TIME, val: soapSeconds.value * 10 }]);

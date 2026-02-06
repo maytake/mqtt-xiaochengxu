@@ -270,6 +270,12 @@
 					"style": {
 						"navigationBarTitleText": "添加设备"
 					}
+				},
+				{
+					"path": "wifiSetup",
+					"style": {
+						"navigationBarTitleText": "WiFi配网"
+					}
 				}
 			]
 		}
