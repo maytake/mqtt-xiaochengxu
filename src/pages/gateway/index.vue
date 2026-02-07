@@ -59,22 +59,22 @@ import { ref } from 'vue';
 import { onLoad, onBackPress } from '@dcloudio/uni-app';
 import { getProductModelDetails } from '@/api/mqttCommon';
 import { getBindDeviceTotal } from '@/api/gateway';
-// 设备信息
+
 const deviceName = ref('五号楼一层厕所01');
 const deviceModel = ref('U101');
-const deviceImage = ref(''); // 默认图片，可根据实际情况调整
-const deviceStatus = ref('online'); // online | offline
+const deviceImage = ref('');
+const deviceStatus = ref('online');
 const statusName = ref('在线');
 const deviceCount = ref(0);
 const status = ref('0');
 const device = ref(null);
 const productModelDetails = ref({});
 
-// ==================== 常量配置 ====================
+
 const DEVICE_STATUS = ['离线', '在线', '故障'];
-// 页面加载
+
 onLoad((options) => {
-  // 如果有传入设备信息，则使用传入的信息
+
   if (options.device) {
     const deviceData = JSON.parse(decodeURIComponent(options.device));
     console.log(deviceData);
@@ -99,7 +99,7 @@ onLoad((options) => {
   }
 });
 
-// ==================== 产品信息 ====================
+
 const loadProductModelDetails = async () => {
   try {
     const pointId = device.value.pointId;
@@ -113,17 +113,17 @@ const loadProductModelDetails = async () => {
   }
 };
 
-// Wi-Fi配置
+
 const handleWiFiConfig = () => {
-  // 跳转到Wi-Fi配置页面，可根据实际情况调整
+
   uni.navigateTo({
     url: '/pages/gateway/wifiSetup',
   });
 };
 
-// 设备管理
+
 const handleDeviceManagement = () => {
-  // 跳转到设备管理页面，可根据实际情况调整
+
   uni.navigateTo({
     url: '/pages/gateway/gatewayList?device=' + encodeURIComponent(JSON.stringify(device.value)),
   });
@@ -150,7 +150,7 @@ onBackPress(() => {
   padding: 30rpx;
 }
 
-// 卡片样式
+
 .card {
   background: linear-gradient(-90deg, #efefef 0%, #fff 100%);
   border-radius: 28rpx;
@@ -219,7 +219,7 @@ onBackPress(() => {
   font-size: 28rpx;
 }
 
-// 设备管理部分
+
 .device-management {
   margin-top: 32rpx;
 }

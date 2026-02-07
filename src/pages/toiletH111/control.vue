@@ -423,12 +423,12 @@ import { generateRandomSeq } from '@/utils/common';
 import { isEqual } from 'lodash';
 const mqttClient = getApp().globalData.mqttService;
 
-// ==================== 常量配置 ====================
+
 const DEVICE_STATUS = ['离线', '在线', '故障'];
-// ==================== 工具函数 ====================
+
 const mqttUserInfo = uni.getStorageSync('mqttUserInfo');
 const clientId = mqttUserInfo?.clientId || '';
-// 设备相关
+
 const device = ref('');
 const status = ref('0');
 const statusName = ref('离线');
@@ -440,17 +440,17 @@ const DEVICE_CONFIG = {
   dirDid: '011025092402002F',
 };
 
-// 基础控制数据
+
 const basicControls = ref([
   { name: '停止', active: false, icon: 'icon-a-ziyuan31' },
   { name: '烘干', active: false, icon: 'icon-a-ziyuan25' },
   { name: '冲洗', active: false, icon: 'icon-a-ziyuan35' },
-  // { name: '小冲', active: false, icon: 'icon-a-ziyuan34' },
+
   { name: '喷杆自动清洁', active: false, icon: 'icon-a-ziyuan45' },
   { name: '喷杆手动清洁', active: false, icon: 'icon-a-ziyuan42' },
 ]);
 
-// 高级控制数据
+
 const advancedControls = ref([
   { name: '开关座圈', active: false, icon: 'icon-a-ziyuan33' },
   { name: '臀洗', active: false, icon: 'icon-a-ziyuan32' },
@@ -463,10 +463,10 @@ const advancedControls = ref([
   { name: '水量调节', active: false, icon: 'icon-a-ziyuan40' },
 ]);
 
-// 不常用两个控制控制
+
 const waterTankControls = ref([]);
 
-// 模块显示状态
+
 const showWaterTempModule = ref(false);
 const showPositionModule = ref(false);
 const showNightLightModule = ref(false);
@@ -477,53 +477,53 @@ const showWindTempModule = ref(false);
 const showSeatTempModule = ref(false);
 const showWaterAmountModule = ref(false);
 
-// 档位通用显示（1档 ~ 5档）
+
 const LEVEL_LABELS = ['1档', '2档', '3档', '4档', '5档', '6档'];
 const LEVEL_LABELSB = ['1档', '2档', '3档', '4档', '5档'];
 
-// 位置调节
+
 const positionLevel = ref(1);
 
-// 夜灯状态
+
 const nightLightOn = ref(false);
 
-// 妇洗设置
+
 const feminineWashWaterTemp = ref(30);
 const feminineWashWindTemp = ref(30);
 const feminineWashSeatTemp = ref(30);
-const feminineWashMode = ref([]); // 改为数组，支持多选
+const feminineWashMode = ref([]);
 
-// 臀洗设置
+
 const hipWashWaterTemp = ref(30);
 const hipWashWindTemp = ref(30);
 const hipWashSeatTemp = ref(30);
 const hipWashMode = ref([]);
 
-// 开关座圈设置
+
 const seatRingMode = ref(['seatCover']);
 
-// 水温设置（1~5档）
+
 const waterTemp = ref(0);
 
-// 风温设置（1~5档）
+
 const windTemp = ref(0);
 
-// 座温设置（1~5档）
+
 const seatTemp = ref(0);
 
-// 水量调节
+
 const waterAmountLevel = ref(1);
-// ==================== 开始请求接口 ====================
-// 打开座盖:43
-// 打开座圈:44
-// 臀洗:41
-// 妇洗:42
-// 夜灯:48
-// 水温:45
-// 风温:46
-// 座温:47
-// 位置调节:49
-// 水量调节:50
+
+
+
+
+
+
+
+
+
+
+
 
 const PID_CONFIG = {
   SEAT_COVER: '43',
@@ -543,8 +543,8 @@ onLoad(async (options) => {
   loadProductModelDetails();
   readDevicePidValues();
 });
-// ==================== 设备数据处理 ====================
-// 页面级主题消息处理函数
+
+
 let handleReportTopicResponse = null;
 let reportTopic = '';
 
@@ -558,13 +558,13 @@ const initDeviceData = (options) => {
     DEVICE_CONFIG.did = data.did;
     DEVICE_CONFIG.dst = data.dirDid;
     DEVICE_CONFIG.dirDid = data.dirDid;
-    // 阶段2：订阅并仅监听一次设备报告主题
+
     reportTopic = `olt/report/pid/${DEVICE_CONFIG.did}`;
     mqttClient.registerPageTopicHandler(reportTopic, handleReportTopicResponse);
   }
 };
 
-// 页面级主题消息处理变量
+
 handleReportTopicResponse = (messageData, topic) => {
   if (messageData?.topic === reportTopic) {
     console.log('pageMessage', messageData);
@@ -575,7 +575,7 @@ handleReportTopicResponse = (messageData, topic) => {
 
 handleReportTopicResponse();
 
-// 创建控制功能请求参数
+
 const createControlParams = (params) => ({
   dst: DEVICE_CONFIG.dst,
   seq: generateRandomSeq(),
@@ -584,7 +584,7 @@ const createControlParams = (params) => ({
   params: params,
 });
 
-// 创建设备请求参数
+
 const createDeviceParams = (params) => ({
   dst: DEVICE_CONFIG.dst,
   seq: generateRandomSeq(),
@@ -599,7 +599,7 @@ const createDeviceParams = (params) => ({
 
 const pidStatusMap = reactive({});
 
-// 读取设备PID值
+
 async function readDevicePidValues() {
   try {
     const params = createDeviceParams({
@@ -625,30 +625,30 @@ async function readDevicePidValues() {
   }
 }
 
-// 高亮显示臀洗妇洗按钮的状态
+
 function highlightWashButton(type, val) {
-  const reciprocating = (val & 2) >> 1; // 往复清洗
-  const massageMode = (val & 28) >> 2; // 按摩模式
+  const reciprocating = (val & 2) >> 1;
+  const massageMode = (val & 28) >> 2;
   let newData = [];
   if (reciprocating === 1) {
-    // 打开往复清洗
+
     newData.push('reciprocating');
   } else {
-    // 关闭往复清洗
+
     newData = newData.filter((m) => m !== 'reciprocating');
   }
   if (massageMode === 1) {
-    // 打开气泡按摩
+
     newData.push('bubble');
   } else {
-    // 关闭气泡按摩
+
     newData = newData.filter((m) => m !== 'bubble');
   }
   if (massageMode === 2) {
-    // 打开脉冲按摩
+
     newData.push('pulse');
   } else {
-    // 关闭脉冲按摩
+
     newData = newData.filter((m) => m !== 'pulse');
   }
   if (type === 'feminine') {
@@ -659,7 +659,7 @@ function highlightWashButton(type, val) {
   }
 }
 
-// 写入设备PID值
+
 const writeDevicePidValue = async (pids) => {
   if (!Array.isArray(pids)) return;
   try {
@@ -675,7 +675,7 @@ const writeDevicePidValue = async (pids) => {
   }
 };
 
-// 控制设备功能
+
 async function ctrFn(fid, val) {
   const params = createControlParams({
     did: DEVICE_CONFIG.did,
@@ -687,29 +687,29 @@ async function ctrFn(fid, val) {
   feedbackResult(res, params);
 }
 
-// 处理设备PID响应
+
 function handleDevicePidResponse(pids) {
   pids.forEach((item) => {
     const pidKey = String(item.pid);
     if (pidKey === PID_CONFIG.SEAT_COVER) {
       if (item.val == 1) {
-        // 如果没有包含'seatCover'，则添加
+
         if (!seatRingMode.value.includes('seatCover')) {
           seatRingMode.value.push('seatCover');
         }
       } else {
-        // 关闭座盖
+
         seatRingMode.value = seatRingMode.value.filter((m) => m !== 'seatCover');
       }
     }
     if (pidKey === PID_CONFIG.SEAT_RING) {
       if (item.val == 1) {
-        // 如果没有包含'seatRing'，则添加
+
         if (!seatRingMode.value.includes('seatRing')) {
-          seatRingMode.value.push('seatRing'); // 打开座圈
+          seatRingMode.value.push('seatRing');
         }
       } else {
-        // 关闭座圈
+
         seatRingMode.value = seatRingMode.value.filter((m) => m !== 'seatRing');
       }
     }
@@ -737,27 +737,27 @@ function handleDevicePidResponse(pids) {
     if (pidKey === PID_CONFIG.FEMININE_WASH) {
       highlightWashButton('feminine', item.val);
     }
-    // 水箱蓄水状态
+
     if (pidKey === '64') {
       handleWaterTankStatus(item.val)
     }
-    // 水箱清洗状态
+
     if (pidKey === '65') {
       handleWaterTankCleaningStatus(item.val)
     }
   });
 }
 
-// 处理基础控制点击
+
 const handleBasicControl = (item, index) => {
   console.log(item, index);
-  // 重置其他按钮的选中状态
+
   advancedControls.value.forEach((control, i) => {
     control.active = false;
   });
-  // 先隐藏所有模块
+
   hideOtherModules();
-  // 显示选中状态500毫秒
+
   item.active = true;
   setTimeout(() => {
     item.active = false;
@@ -766,16 +766,16 @@ const handleBasicControl = (item, index) => {
   handleBasicControlEvent(item.name);
 };
 
-// 处理不常用两个控制控制
+
 const handleWaterTankControl = (event) => {
   console.log(event);
-  // 重置其他按钮的选中状态
+
   advancedControls.value.forEach((control, i) => {
     control.active = false;
   });
-  // 先隐藏所有模块
+
   hideOtherModules();
-  // 显示选中状态500毫秒
+
   waterTankControls.value = [event];
   setTimeout(() => {
     waterTankControls.value = [];
@@ -784,13 +784,13 @@ const handleWaterTankControl = (event) => {
   handleBasicControlEvent(event);
 };
 
-// 分别处理不同的基础事件
-// 0：停止
-// 1：烘干
-// 2：冲洗
-// 3：小冲
-// 4：喷杆自动清洁
-// 5：喷杆手动清洁
+
+
+
+
+
+
+
 
 const handleBasicControlEvent = async (event) => {
   console.log(event);
@@ -856,7 +856,7 @@ const handleBasicControlEvent = async (event) => {
   feedbackResult(res, params);
 };
 
-// ==================== 产品信息 ====================
+
 async function loadProductModelDetails() {
   try {
     const pointId = device.value.pointId;
@@ -870,7 +870,7 @@ async function loadProductModelDetails() {
   }
 }
 
-// 隐藏其他模块
+
 const hideOtherModules = () => {
   showWaterTempModule.value = false;
   showPositionModule.value = false;
@@ -883,22 +883,22 @@ const hideOtherModules = () => {
   showWaterAmountModule.value = false;
 };
 
-// 处理高级控制点击
+
 const handleAdvancedControl = (item, index) => {
-  // 重置其他按钮的选中状态
+
   advancedControls.value.forEach((control, i) => {
     if (i !== index) {
       control.active = false;
     }
   });
 
-  // 切换当前按钮状态
+
   item.active = !item.active;
 
-  // 先隐藏所有模块
+
   hideOtherModules();
 
-  // 根据功能显示对应模块
+
   if (item.name === '水温' && item.active) {
     showWaterTempModule.value = true;
   } else if (item.name === '位置调节' && item.active) {
@@ -907,11 +907,11 @@ const handleAdvancedControl = (item, index) => {
     showNightLightModule.value = true;
   } else if (item.name === '妇洗' && item.active) {
     showFeminineWashModule.value = true;
-    // 二进制转十进制，控制设备PID值
+
     clickWashControl(feminineWashMode.value, 'feminine');
   } else if (item.name === '臀洗' && item.active) {
     showHipWashModule.value = true;
-    // 二进制转十进制控制设备PID值
+
     clickWashControl(hipWashMode.value, 'hip');
     showHipWashModule.value = true;
   } else if (item.name === '开关座圈' && item.active) {
@@ -925,13 +925,13 @@ const handleAdvancedControl = (item, index) => {
   }
 };
 
-// 夜灯控制
+
 const toggleNightLight = () => {
   nightLightOn.value = !nightLightOn.value;
   ctrFn(4108, nightLightOn.value ? 1 : 0);
 };
 
-// 开关座圈模式设置
+
 const setSeatRingMode = async (mode) => {
   const currentModes = seatRingMode.value;
   let newModes = [...currentModes];
@@ -943,25 +943,25 @@ const setSeatRingMode = async (mode) => {
   }
 
   seatRingMode.value = newModes;
-  // 打开关闭座盖
+
   if (mode === 'seatCover') {
     if (seatRingMode.value.includes('seatCover')) {
-      ctrFn(4103, 1); // 打开座盖
+      ctrFn(4103, 1);
     } else {
-      ctrFn(4103, 0); // 关闭座盖
+      ctrFn(4103, 0);
     }
   }
-  // 打开关闭座圈
+
   if (mode === 'seatRing') {
     if (seatRingMode.value.includes('seatRing')) {
-      ctrFn(4104, 1); // 打开座圈
+      ctrFn(4104, 1);
     } else {
-      ctrFn(4104, 0); // 关闭座圈
+      ctrFn(4104, 0);
     }
   }
 };
 
-// 臀洗模式设置
+
 const setHipWashMode = (mode) => {
   const currentModes = hipWashMode.value;
   let newModes = [...currentModes];
@@ -975,34 +975,34 @@ const setHipWashMode = (mode) => {
   } else {
     const massageModes = ['bubble', 'pulse'];
     if (currentModes.includes(mode)) {
-      // 取反操作
+
       newModes = currentModes.filter((m) => m !== mode);
     } else {
-      // 如果有包含 'reciprocating'，把 'reciprocating'，加进newModes中
+
       newModes = currentModes.filter((m) => !massageModes.includes(m));
       newModes.push(mode);
     }
   }
 
   hipWashMode.value = newModes;
-  // 控制设备PID值
+
   clickWashControl(hipWashMode.value, 'hip');
 };
 
-// 点击臀洗或者妇洗，根据往复清洗、气泡按摩、脉冲按摩的状态，用8进制转成10进制，组合pid值
-// BIT0：臀洗或者妇洗开关 [0:关闭,1:打开]
-// BIT1：往复清洗 [0:关闭,1:打开]
-// BIT2-4：按摩模式 [0:关闭1:气泡按摩,2:脉冲按摩]
+
+
+
+
 const clickWashControl = (currentModes = [], type) => {
-  let pids = 1; // 打开妇洗
+  let pids = 1;
   if (currentModes.includes('reciprocating')) {
-    pids += 2; // 打开往复清洗
+    pids += 2;
   }
   if (currentModes.includes('bubble')) {
-    pids += 4; // 打开气泡按摩
+    pids += 4;
   }
   if (currentModes.includes('pulse')) {
-    pids += 8; // 打开脉冲按摩
+    pids += 8;
   }
   if (type === 'hip') {
     ctrFn(4101, pids);
@@ -1011,111 +1011,111 @@ const clickWashControl = (currentModes = [], type) => {
   }
 };
 
-// 妇洗模式设置
+
 const setFeminineWashMode = (mode) => {
   const currentModes = feminineWashMode.value;
   let newModes = [...currentModes];
 
   if (mode === 'reciprocating') {
-    // 往复清洗：可以与其他模式同时选择，点击切换
+
     if (currentModes.includes('reciprocating')) {
       newModes = currentModes.filter((m) => m !== 'reciprocating');
     } else {
       newModes = [...currentModes, 'reciprocating'];
     }
   } else {
-    // 气泡按摩和脉冲按摩：互斥选择
+
     const massageModes = ['bubble', 'pulse'];
 
     if (currentModes.includes(mode)) {
-      // 当前模式已选择，取消选择
+
       newModes = currentModes.filter((m) => m !== mode);
     } else {
-      // 选择当前模式，取消其他按摩模式，保留往复清洗
+
       newModes = currentModes.filter((m) => !massageModes.includes(m));
       newModes.push(mode);
     }
   }
 
   feminineWashMode.value = newModes;
-  // 控制设备PID值
+
   clickWashControl(feminineWashMode.value, 'feminine');
 };
 
-// // 水温调节（1~5档）
-// const increaseTemp = () => {
-//   if (waterTemp.value < 5) {
-//     waterTemp.value++;
-//     ctrFn(4105, waterTemp.value);
-//   }
-// };
 
-// const decreaseTemp = () => {
-//   if (waterTemp.value > 0) {
-//     waterTemp.value--;
-//     ctrFn(4105, waterTemp.value);
-//   }
-// };
 
-// // 风温调节（1~5档）
-// const increaseWindTemp = () => {
-//   if (windTemp.value < 5) {
-//     windTemp.value++;
-//     ctrFn(4106, windTemp.value);
-//   }
-// };
 
-// const decreaseWindTemp = () => {
-//   if (windTemp.value > 0) {
-//     windTemp.value--;
-//     ctrFn(4106, windTemp.value);
-//   }
-// };
 
-// // 座温调节（1~5档）
-// const increaseSeatTemp = () => {
-//   if (seatTemp.value < 5) {
-//     seatTemp.value++;
-//     ctrFn(4107, seatTemp.value);
-//   }
-// };
 
-// const decreaseSeatTemp = () => {
-//   if (seatTemp.value > 0) {
-//     seatTemp.value--;
-//     ctrFn(4107, seatTemp.value);
-//   }
-// };
 
-// // 位置调节
-// const increasePosition = () => {
-//   if (positionLevel.value < 4) {
-//     positionLevel.value++;
-//     ctrFn(4109, positionLevel.value);
-//   }
-// };
 
-// const decreasePosition = () => {
-//   if (positionLevel.value > 0) {
-//     positionLevel.value--;
-//     ctrFn(4109, positionLevel.value);
-//   }
-// };
 
-// // 水量调节
-// const increaseWaterAmount = () => {
-//   if (waterAmountLevel.value < 4) {
-//     waterAmountLevel.value++;
-//     ctrFn(4110, waterAmountLevel.value);
-//   }
-// };
 
-// const decreaseWaterAmount = () => {
-//   if (waterAmountLevel.value > 0) {
-//     waterAmountLevel.value--;
-//     ctrFn(4110, waterAmountLevel.value);
-//   }
-// };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 const goToSetting = () => {
   uni.navigateTo({
@@ -1123,7 +1123,7 @@ const goToSetting = () => {
   });
 };
 
-// 反馈结果
+
 function feedbackResult(res, params) {
   if (res.code === 0) {
     feedbackSuccess(params.seq);
@@ -1133,7 +1133,7 @@ function feedbackResult(res, params) {
   }
 }
 
-// 监听全局主题消息反馈操作成功
+
 let globalWSatchStop = null;
 let globalWSatchStopTimer = null;
 function feedbackSuccess(seq) {
@@ -1160,7 +1160,7 @@ function feedbackSuccess(seq) {
   );
 }
 
-// 超时10秒后，隐藏loading
+
 function timeoutHideLoading() {
   clearTimeoutHideLoading();
   globalWSatchStopTimer = setTimeout(() => {
@@ -1185,13 +1185,13 @@ function cleanupWatchListeners() {
   }
 }
 
-// 清除超时定时器
+
 function clearTimeoutHideLoading() {
   clearTimeout(globalWSatchStopTimer);
   globalWSatchStopTimer = null;
 }
 
-// 设置（1~6档）
+
 const gearsOptions = [
   {
     label: '1挡',
@@ -1219,7 +1219,7 @@ const gearsOptions = [
   },
 ];
 
-// 设置（1~5档）
+
 const gearsOptionsB = [
   {
     label: '1挡',
@@ -1264,13 +1264,13 @@ const confirmWaterAmount = () => {
 };
 
 
-// 水箱除垢部分逻辑-start
+
 let waterTankWatchStop = null;
 const startWaterTankCleaning = async () => {
   waterTankState.value = 'sending';
-  // 发送开始校准指令
+
   try {
-    // 为本次流程生成唯一 seq，后续按此进行消息关联
+
     const seq = generateRandomSeq();
     const params = {
       src: clientId,
@@ -1288,10 +1288,10 @@ const startWaterTankCleaning = async () => {
     if (res.code === 0) {
       const waitMs = res.waitTime || 5000;
 
-      // 启动超时兜底，只在 waiting 期间有效
-      // startWaterTankTimer(waitMs);
+
+
       cleanupWaterTankWatchListeners();
-      // 监听全局主题消息
+
       const { globalTopicInfo } = storeToRefs(useStore());
       waterTankWatchStop = watch(
         globalTopicInfo,
@@ -1327,9 +1327,9 @@ const cleanupWaterTankWatchListeners = () => {
 };
 let waterTankStatus = 0;
 let waterTankCleaningStatus = 0;
-// 用读设备属性接口，读水箱蓄水状态属性和水箱清洗状态属性
-// 64水箱蓄水状态 0:未排空 1: 已排空
-// 65水箱清洗状态 0:已清洗 1: 开始清洗
+
+
+
 async function readWaterTankStatus() {
   try {
     const params = createDeviceParams({
@@ -1349,16 +1349,16 @@ async function readWaterTankStatus() {
 
     pids.forEach(item => {
       if (item.pid == 64) {
-        // 水箱蓄水状态为未排空
+
         if (item.val == 0) {
-          // 并监听水箱蓄水状态属性上报，如果水箱蓄水状态已排空，则进入下一步操作
+
           waterTankState.value = 'waiting';
         } else {
-          // 水箱蓄水状态为已排空,且水箱清洗状态为已完成
+
           if (waterTankCleaningStatus == 0) {
             waterTankState.value = 'addCleaner';
           }
-          // 水箱蓄水状态为已排空，且水箱清洗状态为清洗中
+
           if (waterTankCleaningStatus == 1) {
             waterTankState.value = 'cleaning';
           }
@@ -1371,26 +1371,26 @@ async function readWaterTankStatus() {
   }
 }
 
-// 监听水箱蓄水状态处理方法
+
 function handleWaterTankStatus(val) {
-  // 此时状态为未排空，如果属性上报水箱蓄水状态已排空，则进入"加清洁液"
+
   if (waterTankStatus == 0 && val == 1) {
     waterTankState.value = 'addCleaner';
   }
 }
-// 监听水箱清洗状态的方法
+
 function handleWaterTankCleaningStatus(val) {
   if (waterTankState.value === 'addCleaner' && val == 1) {
     waterTankState.value = 'cleaning';
   }
-  // 水箱蓄水状态为已排空，且水箱清洗状态为清洗中
-  // 并监听水箱清洗状态属性上报，如果上报已完成，则进入下一步操作
+
+
   if (waterTankState.value === 'cleaning' && val == 0) {
     waterTankState.value = 'success';
   }
 }
 
-// 水箱除垢部分逻辑
+
 const showWaterTank = ref(false);
 const waterTankState = ref('idle');
 const primaryDisabled = computed(() => ['sending', 'waiting', 'addCleaner', 'cleaning'].includes(waterTankState.value));
@@ -1410,35 +1410,35 @@ let count = 0;
 let timer = null;
 const onPrimary = () => {
   if (waterTankState.value === 'idle' || waterTankState.value === 'failed') {
-    // 先把已有的定时器停掉
-    // if (timer) {
-    //   clearInterval(timer);
-    //   timer = null;
-    // }
-    // count = 0;
-    // waterTankState.value = 'idle';
 
-    // timer = setInterval(() => {
-    //   console.log('count', count);
 
-    //   if (count === 0) {
-    //     waterTankState.value = 'sending';
-    //   } else if (count === 1) {
-    //     waterTankState.value = 'waiting';
-    //   } else if (count === 2) {
-    //     waterTankState.value = 'addCleaner';
-    //   } else if (count === 3) {
-    //     waterTankState.value = 'cleaning';
-    //   } else if (count === 4) {
-    //     waterTankState.value = 'success';
-    //   }
-    //   count++;
-    //   if (count >= 5) {
-    //     clearInterval(timer)
-    //     timer = null;
-    //     count = 0;
-    //   }
-    // }, 3000);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     startWaterTankCleaning();
     return;
   }
@@ -1457,7 +1457,7 @@ const onWaterTankClose = () => {
 let waterTankTimer = null;
 const startWaterTankTimer = (time) => {
   clearWaterTankTimer();
-  // 例如 20s 超时失败
+
   waterTankTimer = setTimeout(() => {
     if (['waiting', 'sending', 'addCleaner', 'cleaning'].includes(waterTankState.value)) {
       waterTankState.value = 'failed';

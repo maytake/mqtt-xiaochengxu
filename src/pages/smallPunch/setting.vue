@@ -330,26 +330,26 @@ import { generateRandomSeq } from '@/utils/common';
 const mqttClient = getApp().globalData.mqttService;
 import { getProductModelDetails } from '@/api/mqttCommon';
 
-// 设备相关
+
 const status = ref('0');
 const statusName = ref('离线');
 const productModelDetails = ref({});
 const DEVICE_STATUS = ['离线', '在线', '故障'];
-// ==================== 工具函数 ====================
+
 const mqttUserInfo = uni.getStorageSync('mqttUserInfo');
 const clientId = mqttUserInfo?.clientId || '';
-// 提取字符串中的数字
+
 const extractNumber = (str) => {
   if (str == null) return '';
   const match = String(str).match(/\d+/);
   return match ? Number(match[0]) : '';
 };
 
-// 设备相关
+
 const device = ref('');
 const waterOn = ref(false);
 
-// ==================== 常量配置 ====================
+
 
 const DEVICE_CONFIG = {
   dst: '011025092402001D',
@@ -367,12 +367,12 @@ const DEFAULT_SETTINGS = {
   waterSegmentConfig: '1段冲',
 };
 
-// 自动冲洗时间:'14'
-// 一段冲洗时间:'17'
-// 二段冲洗时间:'18'
-// 清洁模式时间:'35'
-// 清洁模式:'53'
-// 冲水段数配置:'54'
+
+
+
+
+
+
 const PID_CONFIG = {
   AUTO_FLUSH: '14',
   SENSE_STAGE_ONE: '17',
@@ -383,7 +383,7 @@ const PID_CONFIG = {
   REPEATER: '63',
 };
 
-// PID 值处理映射
+
 const pidHandlers = {
   [PID_CONFIG.CLEANING_MODE]: (val) => {
     cleaningMode.value = Number(val) === 1;
@@ -409,7 +409,7 @@ const pidHandlers = {
   },
 };
 
-// ==================== 产品信息 ====================
+
 const loadProductModelDetails = async () => {
   try {
     const pointId = device.value.pointId;
@@ -424,7 +424,7 @@ const loadProductModelDetails = async () => {
 };
 
 
-// 根据返回的状态，红点提示'命令已下发，设备处于休眠状态。'
+
 const pidStatusMap = reactive({});
 const isPidWarn = (pid) => {
   const status = pidStatusMap[pid];
@@ -453,7 +453,7 @@ const handlePidTip = (type) => {
   uni.showToast({ title: message, icon: 'none' });
 };
 
-// 清洁模式
+
 const cleaningMode = ref(DEFAULT_SETTINGS.cleaningMode);
 const updateCleaningMode = async () => {
   const params = createControlParams({
@@ -466,27 +466,27 @@ const updateCleaningMode = async () => {
   feedbackResult(res);
 };
 
-// 清洁模式时间
-// const cleanMinutes = ref(DEFAULT_SETTINGS.cleanMinutes);
-// const tempCleanMinutes = ref(3); // 弹窗内临时调整的清洁模式时间
-// const cleanModeTime = computed(() => `${cleanMinutes.value}MIN`);
 
-// const showFlushPopup = ref(false);
-// const openCleanTimePopup = () => {
-//   // 打开弹窗时，用当前已生效的时间初始化临时值，避免列表跟随变化
-//   tempCleanMinutes.value = cleanMinutes.value;
-//   showFlushPopup.value = true;
-// };
-// const closePopup = () => {
-//   showFlushPopup.value = false;
-// };
-// const confirmCleanTime = () => {
-//   cleanMinutes.value = tempCleanMinutes.value;
-//   closePopup();
-//   writeDevicePidValue([{ pid: PID_CONFIG.CLEANING_MODE_TIME, val: cleanMinutes.value }]);
-// };
 
-// 自动冲洗时间
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const autoFlushOptions = ['0H', '12H', '24H', '48H', '72H'];
 const autoFlushTime = ref(DEFAULT_SETTINGS.autoFlushTime);
 const showAutoFlushPicker = ref(false);
@@ -502,11 +502,11 @@ const confirmAutoFlush = ({ value }) => {
   if (value && value.length) {
     autoFlushTime.value = value[0];
   }
-  writeDevicePidValue([{ pid: PID_CONFIG.AUTO_FLUSH, val: extractNumber(autoFlushTime.value) }]); // 写入设备PID值
+  writeDevicePidValue([{ pid: PID_CONFIG.AUTO_FLUSH, val: extractNumber(autoFlushTime.value) }]);
   showAutoFlushPicker.value = false;
 };
 
-// 冲水段数配置
+
 const waterSegmentConfigOptions = ['1段冲', '2段冲'];
 const waterSegmentConfig = ref(DEFAULT_SETTINGS.waterSegmentConfig);
 const waterSegmentConfigColumns = ref([waterSegmentConfigOptions]);
@@ -525,7 +525,7 @@ const confirmWaterSegmentConfig = ({ value }) => {
   }
   const val = waterSegmentConfig.value === '1段冲' ? 0 : 1;
 
-  writeDevicePidValue([{ pid: PID_CONFIG.WATER_SEGMENT_CONFIG, val: val }]); // 写入设备PID值
+  writeDevicePidValue([{ pid: PID_CONFIG.WATER_SEGMENT_CONFIG, val: val }]);
 
   if (waterSegmentConfig.value === '2段冲') {
     writeDevicePidValue([
@@ -538,22 +538,22 @@ const confirmWaterSegmentConfig = ({ value }) => {
   showWaterSegmentConfigPicker.value = false;
 };
 const isTwoSegmentConfig = computed(() => waterSegmentConfig.value === '2段冲');
-// 感应冲洗时间（第一段 0-5S，第二段 5-10S）
-const senseStageOne = ref(DEFAULT_SETTINGS.senseStageOne); // 实际已下发/生效的第一段冲洗时间
-const senseStageTwo = ref(DEFAULT_SETTINGS.senseStageTwo); // 实际已下发/生效的第二段冲洗时间
-// 弹窗内临时调整的感应冲洗时间（不影响列表展示）
+
+const senseStageOne = ref(DEFAULT_SETTINGS.senseStageOne);
+const senseStageTwo = ref(DEFAULT_SETTINGS.senseStageTwo);
+
 const tempSenseStageOne = ref(DEFAULT_SETTINGS.senseStageOne);
 const tempSenseStageTwo = ref(DEFAULT_SETTINGS.senseStageTwo);
 
-// 列表展示文案：根据当前是否为“2段冲”动态拼接
+
 const senseFlushText = computed(() => {
   return isTwoSegmentConfig.value ? `${senseStageOne.value}S / ${senseStageTwo.value}S` : `${senseStageTwo.value}S`;
 });
 
-// 感应冲洗时间弹窗
+
 const showSenseFlushPopup = ref(false);
 const openSenseFlushPopup = () => {
-  // 打开弹窗时，用当前已生效的值初始化临时值，避免列表跟随变化
+
   tempSenseStageOne.value = senseStageOne.value;
   tempSenseStageTwo.value = senseStageTwo.value;
   showSenseFlushPopup.value = true;
@@ -562,35 +562,35 @@ const closeSenseFlushPopup = () => {
   showSenseFlushPopup.value = false;
 };
 const confirmSenseFlushTime = () => {
-  // 点击确定时才将临时值写回实际值，并下发到设备
+
   senseStageOne.value = tempSenseStageOne.value;
   senseStageTwo.value = tempSenseStageTwo.value;
   showSenseFlushPopup.value = false;
-  // 如果为2段冲，则下发两段冲洗时间
+
   if (isTwoSegmentConfig.value) {
     writeDevicePidValue([
       { pid: PID_CONFIG.SENSE_STAGE_ONE, val: senseStageOne.value },
       { pid: PID_CONFIG.SENSE_STAGE_TWO, val: senseStageTwo.value },
     ]);
   } else {
-    // 如果是1段冲，则用2段冲Pid下发第一段冲洗时间
+
     writeDevicePidValue([{ pid: PID_CONFIG.SENSE_STAGE_TWO, val: senseStageOne.value }]);
   }
 };
-// 感应冲洗时间（第一段 ）
+
 const confirmSenseFlushTimeOne = () => {
-  // 点击确定时才将临时值写回实际值，并下发到设备
+
   senseStageOne.value = tempSenseStageOne.value;
   senseStageTwo.value = tempSenseStageTwo.value;
   showSenseFlushPopup.value = false;
 
-  // 如果是1段冲，则用2段冲Pid下发第一段冲洗时间
+
   writeDevicePidValue([{ pid: PID_CONFIG.SENSE_STAGE_TWO, val: senseStageTwo.value }]);
 };
 
-// ==================== 设备控制 ====================
 
-// 创建控制功能请求参数
+
+
 const createControlParams = (params) => ({
   dst: DEVICE_CONFIG.dst,
   seq: generateRandomSeq(),
@@ -632,7 +632,7 @@ const applyDefaultSettings = async () => {
   handleDevicePidResponse(res);
 };
 
-// 恢复默认配置（仅重置前端状态）
+
 const resetToDefaults = () => {
   uni.showModal({
     title: '提示',
@@ -647,7 +647,7 @@ const resetToDefaults = () => {
   });
 };
 
-// 页面级主题消息处理函数
+
 let handleReportTopicResponse = null;
 onLoad(async (options) => {
   const deviceData = options.device;
@@ -661,12 +661,12 @@ onLoad(async (options) => {
     statusName.value = DEVICE_STATUS[status.value];
   }
   reportTopic = `olt/report/pid/${DEVICE_CONFIG.did}`;
-  // 阶段2：订阅并仅监听一次设备报告主题
+
   mqttClient.registerPageTopicHandler(reportTopic, handleReportTopicResponse);
   await Promise.all([readDevicePidValues(), loadProductModelDetails()]);
 });
 
-// 创建设备请求参数
+
 const createDeviceParams = (params) => ({
   dst: DEVICE_CONFIG.dst,
   seq: generateRandomSeq(),
@@ -679,7 +679,7 @@ const createDeviceParams = (params) => ({
   },
 });
 
-// 处理设备PID响应
+
 const handleDevicePidResponse = (res) => {
   const { code, data = {} } = res || {};
   if (code === 0) {
@@ -691,7 +691,7 @@ const handleDevicePidResponse = (res) => {
   }
 };
 
-// 读取设备PID值
+
 const readDevicePidValues = async () => {
   try {
     const params = createDeviceParams({
@@ -719,7 +719,7 @@ const readDevicePidValues = async () => {
   }
 };
 
-// 写入设备PID值
+
 const writeDevicePidValue = async (pids) => {
   if (!Array.isArray(pids)) return;
   try {
@@ -735,7 +735,7 @@ const writeDevicePidValue = async (pids) => {
   }
 };
 
-// 反馈结果
+
 function feedbackResult(res) {
   if (res.code === 0) {
     uni.showToast({ icon: 'success', title: '操作成功', duration: 500 });
@@ -744,14 +744,14 @@ function feedbackResult(res) {
   }
 }
 
-// ========== 感应距离流程逻辑 ==========
-// 页面级主题消息处理变量
+
+
 const pageMessage = ref(null);
 handleReportTopicResponse = (messageData, topic) => {
   pageMessage.value = messageData;
 };
 
-// 感应距离流程状态：idle -> sending -> waiting -> success/failed
+
 const distanceState = ref('idle');
 let distanceTimer = null;
 const showDistance = ref(false);
@@ -764,7 +764,7 @@ const distancePrimaryText = computed(() => {
   return '进行中';
 });
 
-// 打开感应距离弹窗
+
 const openDistanceModal = () => {
   distanceState.value = 'idle';
   showDistance.value = true;
@@ -783,14 +783,14 @@ const onDistancePrimary = () => {
 const onDistanceClose = () => {
   if (closeDisabled.value) return;
   clearDistanceTimer();
-  cleanupWatchListeners(); // 关闭弹窗时清理 watch
+  cleanupWatchListeners();
   showDistance.value = false;
 };
 
-// —— 本次流程临时监听/定时器句柄 —— //
-let pidHandler = null; // 监听 olt/report/pid/${did}
-let globalWSatchStop = null; // globalTopicInfo 的 watch 停止函数
-let pageMessageWatchStop = null; // pageMessage 的 watch 停止函数
+
+let pidHandler = null;
+let globalWSatchStop = null;
+let pageMessageWatchStop = null;
 
 const cleanupPidListener = () => {
   if (pidHandler) {
@@ -800,12 +800,12 @@ const cleanupPidListener = () => {
 };
 
 const cleanupWatchListeners = () => {
-  // 清理 globalTopicInfo 的 watch
+
   if (globalWSatchStop) {
     globalWSatchStop();
     globalWSatchStop = null;
   }
-  // 清理 pageMessage 的 watch
+
   if (pageMessageWatchStop) {
     pageMessageWatchStop();
     pageMessageWatchStop = null;
@@ -821,9 +821,9 @@ onUnmounted(() => {
 const startDistanceCalibration = async () => {
   distanceState.value = 'sending';
 
-  // 发送开始校准指令
+
   try {
-    // 为本次流程生成唯一 seq，后续按此进行消息关联
+
     const seq = generateRandomSeq();
     const params = {
       src: clientId,
@@ -841,13 +841,13 @@ const startDistanceCalibration = async () => {
     if (res.code === 0) {
       const waitMs = res.waitTime || 5000;
 
-      // 防重入：清理残留监听
+
       cleanupPidListener();
-      cleanupWatchListeners(); // 清理之前的 watch 监听器
-      // 启动超时兜底，只在 waiting 期间有效
+      cleanupWatchListeners();
+
       startDistanceTimer(waitMs);
 
-      // 监听全局主题消息
+
       const { globalTopicInfo } = storeToRefs(useStore());
       globalWSatchStop = watch(
         globalTopicInfo,
@@ -859,7 +859,7 @@ const startDistanceCalibration = async () => {
             } else {
               distanceState.value = 'failed';
               clearDistanceTimer();
-              cleanupWatchListeners(); // 处理完成后清理 watch
+              cleanupWatchListeners();
             }
           }
         },
@@ -874,7 +874,7 @@ const startDistanceCalibration = async () => {
             if (Array.isArray(pids) && pids.some((item) => item.pid == 61)) {
               distanceState.value = 'success';
               clearDistanceTimer();
-              cleanupWatchListeners(); // 处理完成后清理 watch
+              cleanupWatchListeners();
             }
           }
         },
@@ -891,11 +891,11 @@ const startDistanceCalibration = async () => {
 
 const startDistanceTimer = (time) => {
   clearDistanceTimer();
-  // 例如 20s 超时失败
+
   distanceTimer = setTimeout(() => {
     if (['waiting', 'sending'].includes(distanceState.value)) {
       distanceState.value = 'failed';
-      cleanupWatchListeners(); // 超时失败时也清理 watch
+      cleanupWatchListeners();
     }
   }, time || 20000);
 };
@@ -913,7 +913,7 @@ onUnload(() => {
 
 
 
-// 监听全局主题消息反馈操作成功
+
 let globalWatchStop = null;
 let globalWatchStopTimer = null;
 function feedbackSuccess(res, seq) {
@@ -946,7 +946,7 @@ function feedbackSuccess(res, seq) {
   }
 }
 
-// 超时10秒后，隐藏loading
+
 function timeoutHideLoading() {
   clearTimeoutHideLoading();
   globalWatchStopTimer = setTimeout(() => {
@@ -963,13 +963,13 @@ function cleanWatchListeners() {
   }
 }
 
-// 清除超时定时器
+
 function clearTimeoutHideLoading() {
   clearTimeout(globalWatchStopTimer);
   globalWatchStopTimer = null;
 }
 
-// 中继级数配置
+
 const repeaterOptions = [
   {
     label: '0级',
@@ -1001,7 +1001,7 @@ const confirmRepeater = () => {
   writeDevicePidValue([{ pid: PID_CONFIG.REPEATER, val: repeaterValue.value }]);
 };
 
-// 清洁模式时间1-30MIN
+
 const cleanTimeOptions = Array.from({ length: 30 }, (_, index) => ({
   label: `${index + 1}MIN`,
   id: index + 1,

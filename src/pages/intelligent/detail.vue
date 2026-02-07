@@ -128,7 +128,7 @@ const dryTemp = ref(50);
 const nozzleHeight = ref(50);
 const switchValue = ref(true);
 
-// 使用对象存储每个按钮的激活状态
+
 const funcList = reactive([
   { name: '翻盖', active: true },
   { name: '清洗', active: false },
@@ -159,16 +159,16 @@ function changeTemp(type, delta) {
   }
 }
 
-// Settings state
+
 const warmWaterLevel = ref('五档');
 const cleaningFlow = ref('五档');
 const bluetoothStatus = ref('关闭');
 
-// Picker state
+
 const showPicker = ref(false);
 const pickerColumns = ref([]);
 const pickerTitle = ref('');
-const currentSetting = ref(''); // To track which setting is being edited
+const currentSetting = ref('');
 
 const settingOptions = {
   warmWater: [['一档', '二档', '三档', '四档', '五档']],

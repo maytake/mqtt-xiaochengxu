@@ -37,15 +37,15 @@ import { readDeviceInfo, getBindSubDeviceInfo, delDevice } from '@/api/gateway';
 import { generateRandomSeq } from '@/utils/common';
 import { useStore } from '@/stores/globalMqttInfo';
 import { storeToRefs } from 'pinia';
-// ==================== 工具函数 ====================
+
 const mqttUserInfo = uni.getStorageSync('mqttUserInfo');
 const clientId = mqttUserInfo?.clientId || '';
 const device = ref(null);
 let globalWatchStop = null;
-// 设备列表数据（假数据）
+
 const deviceList = ref([]);
 
-// 删除设备
+
 const handleDeleteDevice = async (item, index) => {
   const { did } = device.value;
   const params = {
@@ -68,7 +68,7 @@ const handleDeleteDevice = async (item, index) => {
   }
 };
 
-// 清理 globalTopicInfo 的 watch
+
 const cleanupWatchListeners = () => {
   if (globalWatchStop) {
     globalWatchStop();
@@ -76,7 +76,7 @@ const cleanupWatchListeners = () => {
   }
 };
 
-// 处理删除事件
+
 const handleDelete = (item, index) => {
   uni.showModal({
     title: '提示',
@@ -85,14 +85,14 @@ const handleDelete = (item, index) => {
     cancelText: '取消',
     success: (res) => {
       if (res.confirm) {
-        // 确认删除
+
         handleDeleteDevice(item, index);
       }
     },
   });
 };
 
-// 添加设备
+
 const handleAddDevice = () => {
   uni.navigateTo({
     url: '/pages/gateway/selectGateway?device=' + encodeURIComponent(JSON.stringify(device.value)),
@@ -103,15 +103,15 @@ onLoad(async (options) => {
   initDeviceData(options);
 });
 
-// mqtt全局返回的did
+
 function getDidFromMqtt(seq) {
-  // 监听全局主题消息
+
   const { globalTopicInfo } = storeToRefs(useStore());
   cleanupWatchListeners();
   globalWatchStop = watch(
     globalTopicInfo,
     (newVal) => {
-      // 先检查 seq 是否匹配，不匹配直接返回，避免执行任何逻辑
+
       if (!newVal || newVal?.seq !== seq) {
         return;
       }
@@ -119,20 +119,20 @@ function getDidFromMqtt(seq) {
       if (newVal?.result == 1) {
         const didArray = newVal?.params || [];
         getDeviceList(didArray);
-        cleanupWatchListeners(); // 处理完成后清理 watch
+        cleanupWatchListeners();
       } else {
         uni.showToast({
           title: '获取设备信息失败',
           icon: 'none',
         });
-        cleanupWatchListeners(); // 处理完成后清理 watch
+        cleanupWatchListeners();
       }
     },
     { deep: true, immediate: false }
   );
 }
 
-// 获取设备列表
+
 async function getDeviceList() {
   const { dirDid } = device.value;
   const res = await getBindSubDeviceInfo({ dirDid });
@@ -161,7 +161,7 @@ const initDeviceData = async (options) => {
     };
     const res = (await readDeviceInfo(params)) || {};
     if (res.code === 0) {
-      // getDidFromMqtt(seq);
+
       getDeviceList();
     }
   } catch (error) {
@@ -185,7 +185,7 @@ const initDeviceData = async (options) => {
   padding-bottom: calc(env(safe-area-inset-bottom) + 140rpx);
 }
 
-// 位置标题
+
 .location-title {
   font-size: 32rpx;
   font-weight: 600;
@@ -195,7 +195,7 @@ const initDeviceData = async (options) => {
   padding: 0 8rpx;
 }
 
-// 设备列表卡片
+
 .device-list-card {
   background: linear-gradient(-90deg, #efefef 0%, #fff 100%);
   border-radius: 28rpx;
@@ -204,7 +204,7 @@ const initDeviceData = async (options) => {
   box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.05);
 }
 
-// 设备列表项
+
 .device-item {
   display: flex;
   align-items: center;
@@ -278,7 +278,7 @@ const initDeviceData = async (options) => {
   font-weight: 300;
 }
 
-// 添加设备按钮
+
 .add-device-btn {
   position: fixed;
   bottom: calc(constant(safe-area-inset-bottom) + 30rpx);

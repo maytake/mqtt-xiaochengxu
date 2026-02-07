@@ -82,15 +82,15 @@ import cmdProgress from '@/components/cmd-progress/cmd-progress.vue';
 import { useStore } from '@/stores/index';
 const { projectItem } = storeToRefs(useStore());
 
-// 使用 computed 创建响应式的 projectId
+
 const projectId = computed(() => projectItem.value?.projectId);
 const { proxy } = getCurrentInstance();
 const activeTab = ref('pending');
-// 独立的加载状态
-const pendingLoadStatus = ref('more'); // more | loading | noMore
+
+const pendingLoadStatus = ref('more');
 const doneLoadStatus = ref('more');
 const percent = ref(80);
-// 列表与分页
+
 const pendingList = ref([]);
 const doneList = ref([]);
 const pendingPage = ref(0);
@@ -114,14 +114,14 @@ const normalCount = ref(0);
 const normalPercent = computed(() => {
   const getPercent = (normalCount.value / (normalCount.value + faultCount.value)) * 100 || 0;
   percent.value = Math.round(getPercent);
-  return Math.round(getPercent); // 保留2位小数
+  return Math.round(getPercent);
 });
 const faultPercent = computed(() => {
   const getPercent = (faultCount.value / (normalCount.value + faultCount.value)) * 100 || 0;
-  return Math.round(getPercent); // 保留2位小数
+  return Math.round(getPercent);
 });
 onLoad(() => {
-  getDeviceCountFn(); // 获取故障设备数量
+  getDeviceCountFn();
 });
 
 onShow(() => {
@@ -141,9 +141,9 @@ onReachBottom(() => {
   loadMore();
 });
 
-// 获取故障设备数量
+
 async function getDeviceCountFn() {
-  if (!projectId.value) return; // 如果 projectId 不存在，直接返回
+  if (!projectId.value) return;
   try {
     const res2 = await getDeviceCount({ projectId: projectId.value });
     if (res2.code === 0) {
@@ -157,12 +157,12 @@ async function getDeviceCountFn() {
 }
 
 async function getList(status = 0, page = 1) {
-  if (!projectId.value) return { list: [], hasMore: false }; // 如果 projectId 不存在，直接返回
+  if (!projectId.value) return { list: [], hasMore: false };
   const params = {
     current: page,
     size: pageSize,
-    projectId: projectId.value, // 项目id
-    dealStatus: status, // 处理情况,0未处理，1已处理
+    projectId: projectId.value,
+    dealStatus: status,
   };
   try {
     const res = await getProjectMessage(params);
@@ -182,25 +182,25 @@ async function getList(status = 0, page = 1) {
 }
 
 async function loadMore() {
-  // 如果正在加载或没有更多数据，则返回
+
   if (isLoading.value || !currentHasMore.value) return;
   const tab = activeTab.value;
-  // 设置加载状态为加载中
+
   if (tab === 'pending') pendingLoadStatus.value = 'loading';
   else doneLoadStatus.value = 'loading';
 
-  // 计算下一页
+
   const nextPage = tab === 'pending' ? pendingPage.value + 1 : donePage.value + 1;
-  // 调用 getList 获取数据，0未处理，1已处理
+
   const status = tab === 'pending' ? 0 : 1;
   const { list, hasMore } = await getList(status, nextPage);
-  // 更新列表
+
   if (tab === 'pending') {
     pendingList.value = pendingList.value.concat(list);
     pendingPage.value = nextPage;
-    // 更新是否有更多数据
+
     pendingHasMore.value = hasMore;
-    // 更新加载状态
+
     pendingLoadStatus.value = hasMore ? 'more' : 'noMore';
   } else {
     doneList.value = doneList.value.concat(list);
@@ -210,7 +210,7 @@ async function loadMore() {
   }
 }
 
-// Tab 切换首次加载
+
 watch(activeTab, (val) => {
   if (val === 'pending' && pendingList.value.length === 0) {
     loadMore();
@@ -219,15 +219,15 @@ watch(activeTab, (val) => {
   }
 });
 
-// 监听 projectId 变化，重新加载数据
+
 watch(
   projectId,
   (newProjectId, oldProjectId) => {
-    // 当 projectId 变化且新值存在时，重新加载数据
+
     if (newProjectId && newProjectId !== oldProjectId) {
-      // 重置列表和分页
+
       resetListAndPage()
-      // 重新获取数据
+
       getDeviceCountFn();
       loadMore();
     }
@@ -235,7 +235,7 @@ watch(
   { immediate: false }
 );
 
-// 查看详情
+
 const seeDetail = async (item) => {
   const res = await updateReadStatus(item.id);
   if (res.code === 0) {
@@ -248,13 +248,13 @@ const seeDetail = async (item) => {
     uni.setTabBarBadge({
       index: 1,
       text: String(res2.data),
-      success() {               // 角标设置成功后再跳转
+      success() {
         uni.navigateTo({
           url: '/pages/message/diagnosis?device=' +
             encodeURIComponent(JSON.stringify(item))
         });
       },
-      fail() {                  // 设置失败也要保证能跳转
+      fail() {
         uni.navigateTo({
           url: '/pages/message/diagnosis?device=' +
             encodeURIComponent(JSON.stringify(item))
@@ -275,14 +275,14 @@ const seeDetail = async (item) => {
 onPullDownRefresh(async () => {
   console.log('下拉刷新');
 
-  // 重置列表和分页
+
   resetListAndPage()
   getDeviceCountFn();
   loadMore();
   uni.stopPullDownRefresh();
 });
 
-// 重置列表和分页参数
+
 function resetListAndPage() {
   pendingList.value = [];
   doneList.value = [];

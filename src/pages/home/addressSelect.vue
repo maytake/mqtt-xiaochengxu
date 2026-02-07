@@ -48,7 +48,7 @@ import { projectList } from '@/api/home';
 const selectedAddress = ref({});
 const searchKeyword = ref('');
 const addressList = ref([]);
-// 页面加载时通过路由参数回显选中地址
+
 onLoad(async (options) => {
   const selected = options.selectedAddress;
   await getAddressList();
@@ -56,7 +56,7 @@ onLoad(async (options) => {
     selectedAddress.value = selected ? JSON.parse(decodeURIComponent(selected)) : addressList.value[0];
   }
 });
-// 获取地址列表
+
 async function getAddressList() {
   const res = await projectList();
   const data = res.data || [];
@@ -65,7 +65,7 @@ async function getAddressList() {
   return res;
 }
 
-// 计算属性：过滤后的地址列表
+
 function filterAddressList(keyword) {
   if (!keyword) return selectedAddress.value;
   addressList.value = addressList.value.filter(
@@ -77,13 +77,13 @@ function filterAddressList(keyword) {
   );
 }
 
-// 搜索处理
+
 const handleSearch = () => {
-  // 搜索逻辑已在计算属性中处理
+
   filterAddressList(searchKeyword.value);
 };
 
-// 选择地址
+
 const selectAddress = (item) => {
   selectedAddress.value = item;
   uni.$emit('selected-address', item);
@@ -217,7 +217,7 @@ const selectAddress = (item) => {
   }
 }
 
-// 添加一些动画效果
+
 .address-item {
   animation: slideInUp 0.3s ease-out;
 }

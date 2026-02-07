@@ -82,7 +82,7 @@ const defaultProps = ref({
   children: 'children',
   label: 'name',
 });
-// 设备列表数据（假数据，实际应从接口获取）
+
 const deviceList = ref([]);
 const selectedValue = ref('');
 onLoad(async (options) => {
@@ -96,19 +96,19 @@ onLoad(async (options) => {
     getDeviceList(parentCode, did);
   }
 
-  // 获取树的数据，默认选中的值
+
   treeData.value = buildingTreeStore.buildingTree;
   selectedValue.value = buildingTreeStore.selectedId;
   console.log(buildingTreeStore.value);
 });
 
-// 获取设备列表
+
 async function getDeviceList(parentCode, did) {
   const res = await getSubDeviceInfo({ parentCode });
   if (res.code === 0) {
     deviceList.value = res.data || [];
     console.log(did);
-    // 如果did存在，则默认选中该设备
+
     if (!did) return;
     const item = deviceList.value.find((item) => item.did === did);
     if (item) {
@@ -118,27 +118,27 @@ async function getDeviceList(parentCode, did) {
   }
 }
 
-// 选中的设备ID列表
-const selectedDevices = ref([]); // 默认选中第一个
-const selectedDevicesItem = ref([]); // 选中的设备对象列表
 
-// 是否全选
+const selectedDevices = ref([]);
+const selectedDevicesItem = ref([]);
+
+
 const isAllSelected = computed(() => {
   return deviceList.value.length > 0 && selectedDevices.value.length === deviceList.value.length;
 });
 
-// 处理页面点击事件，用于小程序环境下的点击外部检测
+
 const handlePageTap = (e) => {
   uni.$emit('page-tap', e);
 };
 
-// 处理节点点击
+
 const handleNodeClick = (node) => {
   console.log('node', node);
   getDeviceList(node.parentCode);
 };
 
-// 切换全选
+
 const toggleSelectAll = () => {
   if (isAllSelected.value) {
     selectedDevices.value = [];
@@ -150,7 +150,7 @@ const toggleSelectAll = () => {
   console.log(selectedDevicesItem.value);
 };
 
-// 切换单个设备选择
+
 const toggleDevice = (deviceId, item) => {
   const index = selectedDevices.value.indexOf(deviceId);
   if (index > -1) {
@@ -163,12 +163,12 @@ const toggleDevice = (deviceId, item) => {
   console.log(selectedDevicesItem.value);
 };
 
-// 取消
+
 const handleCancel = () => {
   uni.navigateBack();
 };
 
-// 确认添加组网
+
 const handleConfirm = async () => {
   if (selectedDevices.value.length === 0) {
     uni.showToast({
@@ -226,7 +226,7 @@ const handleConfirm = async () => {
   padding-bottom: calc(env(safe-area-inset-bottom) + 140rpx);
 }
 
-// 网关选择器
+
 .floor-selector {
   display: flex;
   align-items: center;
@@ -238,12 +238,12 @@ const handleConfirm = async () => {
   position: relative;
 }
 
-// 设备列表容器
+
 .device-list-container {
   flex: 1;
 }
 
-// 全选行
+
 .select-all-row {
   display: flex;
   align-items: center;
@@ -285,7 +285,7 @@ const handleConfirm = async () => {
   color: #333;
 }
 
-// 设备列表卡片
+
 .device-list-card {
   background: linear-gradient(-90deg, #efefef 0%, #fff 100%);
   border-radius: 28rpx;
@@ -294,7 +294,7 @@ const handleConfirm = async () => {
   box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.05);
 }
 
-// 设备列表项
+
 .device-item {
   display: flex;
   align-items: center;
@@ -340,7 +340,7 @@ const handleConfirm = async () => {
   align-items: center;
 }
 
-// 底部操作按钮
+
 .bottom-actions {
   position: fixed;
   bottom: calc(constant(safe-area-inset-bottom) + 30rpx);

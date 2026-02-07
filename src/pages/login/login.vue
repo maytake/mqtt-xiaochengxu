@@ -67,18 +67,18 @@ import { onLoad, onHide } from '@dcloudio/uni-app';
 import { encryptPassword, decryptPassword, generateUnique15DigitNumber } from '@/utils/common';
 import { getCode as getCodeApi, loginIn, getMqttUserInfo } from '@/api/auth';
 
-// 表单数据
+
 const form = reactive({
   username: '',
   password: '',
   code: '',
 });
 
-// 基本状态
+
 const checked = ref(false);
 const loading = ref(false);
 
-// 校验相关状态
+
 const usernameError = ref('');
 const passwordError = ref('');
 const codeError = ref('');
@@ -86,31 +86,31 @@ const usernameTouched = ref(false);
 const passwordTouched = ref(false);
 const codeTouched = ref(false);
 
-// 重定向参数
-const redirect = ref(''); // 新增：用于存储重定向参数
 
-// 验证码
+const redirect = ref('');
+
+
 const codeUrl = ref('');
 const randomStr = ref(generateUnique15DigitNumber());
 
-// 背景图懒加载相关状态
-const backgroundUrl = ref('https://smart.tck.com.cn/itemDevice-api/images_xiaochengxu/login_bg.jpg');
-const showBackground = ref(false); // 控制是否显示背景图
-const backgroundLoaded = ref(false); // 背景图是否加载完成
-let backgroundLoadTimer = null; // 延迟加载定时器
 
-// 协议弹窗
+const backgroundUrl = ref('https://smart.tck.com.cn/itemDevice-api/images_xiaochengxu/login_bg.jpg');
+const showBackground = ref(false);
+const backgroundLoaded = ref(false);
+let backgroundLoadTimer = null;
+
+
 const showAgreementModal = ref(false);
 
-// 刷新 token 定时器
+
 let refreshTokenTimer = null;
 
-// 计算属性：用户名是否通过验证
+
 const isUsernameValid = computed(() => {
   return /^[a-zA-Z0-9_]{3,16}$/.test(form.username);
 });
 
-// 计算属性：是否可以登录
+
 const canLogin = computed(() => {
   return (
     /^[a-zA-Z0-9_]{3,16}$/.test(form.username) &&
@@ -119,7 +119,7 @@ const canLogin = computed(() => {
   );
 });
 
-// 获取验证码
+
 const getCode = async () => {
   randomStr.value = generateUnique15DigitNumber();
   try {
@@ -163,7 +163,7 @@ const validateCode = () => {
   }
 };
 
-// 输入与失焦事件
+
 const onUsernameInput = (e) => {
   console.log('onUsernameInput value:', e.detail.value, 'form.username:', form.username);
   form.username = e.detail.value;
@@ -199,12 +199,12 @@ const onCodeBlur = () => {
   validateCode();
 };
 
-// 勾选协议
+
 const toggleCheck = () => {
   checked.value = !checked.value;
 };
 
-// 获取MQTT用户信息
+
 const getMqttUserInfofn = async (mqtt_id) => {
   const params = {
     manufacturer: '01',
@@ -222,32 +222,32 @@ const getMqttUserInfofn = async (mqtt_id) => {
     };
     console.log(newMqttUserInfo);
     uni.setStorageSync('mqttUserInfo', newMqttUserInfo);
-    // 登录后连接mqtt
+
     const mqttService = getApp().globalData.mqttService;
     mqttService.connect(newMqttUserInfo);
   }
 };
 
-// 刷新token
+
 const refreshToken = async (expires_in) => {
-  // 登录成功后启动token刷新机制
+
   const app = getApp();
   const appVm = app && (app.refreshToken ? app : app.$vm);
   if (appVm && appVm.refreshToken) {
-    // 计算下次刷新时间：expires_in减去5分钟
-    let nextRefreshTime = (expires_in - 30) * 1000; // 减去5分钟（300秒）
 
-    // 防止nextRefreshTime为负数，最小设置为1分钟
+    let nextRefreshTime = (expires_in - 30) * 1000;
+
+
     if (nextRefreshTime <= 0) {
-      nextRefreshTime = 60 * 1000; // 1分钟
+      nextRefreshTime = 60 * 1000;
     }
 
-    // 清除之前的定时器
+
     if (refreshTokenTimer) {
       clearTimeout(refreshTokenTimer);
     }
 
-    // 设置下次刷新定时器;
+
     refreshTokenTimer = setTimeout(() => {
       console.log('refreshToken');
       appVm.refreshToken();
@@ -255,9 +255,9 @@ const refreshToken = async (expires_in) => {
   }
 };
 
-// 登录
+
 const onLogin = async (e) => {
-  // 防止表单默认提交
+
   if (e && e.preventDefault) e.preventDefault();
 
   usernameTouched.value = true;
@@ -268,7 +268,7 @@ const onLogin = async (e) => {
   if (usernameError.value || passwordError.value) return;
 
   if (!checked.value) {
-    // 打开协议弹窗
+
     showAgreementModal.value = true;
     return;
   }
@@ -290,13 +290,13 @@ const onLogin = async (e) => {
       uni.setStorageSync('token', access_token);
       uni.setStorageSync('refresh_token', refresh_token_new);
 
-      // 获取MQTT用户信息
+
       getMqttUserInfofn(mqtt_id);
-      // 登录成功后启动 token 刷新
+
       if (expires_in) {
         refreshToken(expires_in);
       }
-      // 登录成功后立即跳转，避免页面销毁后再跳转
+
       if (redirect.value) {
         if (redirect.value.includes('tabBar')) {
           uni.switchTab({ url: redirect.value });
@@ -319,35 +319,35 @@ const onLogin = async (e) => {
   }
 };
 
-// 协议弹窗交互
+
 const onAgreeAndLogin = () => {
-  // 关闭弹窗并勾选，同步走登录逻辑
+
   showAgreementModal.value = false;
   checked.value = true;
-  // 继续执行登录流程
+
   onLogin();
 };
 
 const onDisagree = () => {
-  // 仅关闭弹窗，不继续
+
   showAgreementModal.value = false;
 };
 
-// 背景图懒加载相关方法
+
 const startBackgroundLazyLoad = () => {
-  // 延迟500ms开始加载背景图，让页面主要内容先显示
+
   backgroundLoadTimer = setTimeout(() => {
     showBackground.value = true;
   }, 100);
 };
 
 const onBackgroundLoad = () => {
-  // 背景图加载完成
+
   backgroundLoaded.value = true;
 };
 
 const onBackgroundError = () => {
-  // 背景图加载失败，显示占位背景
+
   backgroundLoaded.value = false;
 };
 
@@ -363,24 +363,24 @@ const openPrivacyPolicy = () => {
   });
 };
 
-// 生命周期
+
 onLoad((options) => {
   getCode();
-  // 读取 redirect 参数
+
   if (options && options.redirect) {
     redirect.value = decodeURIComponent(options.redirect);
   }
-  // 启动背景图懒加载
+
   startBackgroundLazyLoad();
 });
 
 onHide(() => {
-  // 清除定时器
+
   if (refreshTokenTimer) {
     clearTimeout(refreshTokenTimer);
     refreshTokenTimer = null;
   }
-  // 清除背景图加载定时器
+
   if (backgroundLoadTimer) {
     clearTimeout(backgroundLoadTimer);
     backgroundLoadTimer = null;
@@ -388,7 +388,7 @@ onHide(() => {
 });
 
 onUnmounted(() => {
-  // 组件卸载时也清理一次，防止内存泄漏
+
   if (refreshTokenTimer) {
     clearTimeout(refreshTokenTimer);
     refreshTokenTimer = null;
@@ -560,7 +560,7 @@ button[disabled][type='default'] {
   margin: 0 4rpx;
 }
 
-// 1. 隐藏原生checkbox
+
 .protocol-checkbox .custom-checkbox-label {
   display: flex;
   align-items: center;

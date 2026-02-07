@@ -80,19 +80,19 @@ import ChartsBar from '@/components/charts-bar/index.vue';
 
 const mqttClient = getApp().globalData.mqttService;
 import { formatDate } from '@/utils/common';
-// 创建设备请求参数
+
 const mqttUserInfo = uni.getStorageSync('mqttUserInfo');
 const clientId = mqttUserInfo?.clientId || '';
 
 
-// 设备相关
+
 const device = ref('');
 const status = ref('0');
 const statusName = ref('离线');
 const productModelDetails = ref({});
 const statisticalData = ref({});
 const statisticalReady = ref(false);
-// ==================== 常量配置 ====================
+
 const DEVICE_STATUS = ['离线', '在线', '故障'];
 
 const DEVICE_CONFIG = {
@@ -101,23 +101,23 @@ const DEVICE_CONFIG = {
   dirDid: '011025092402001D',
 };
 let reportTopic = '';
-let todayCount = ref(0); // 今日统计次数
-// 当前已展示的按天区间
+let todayCount = ref(0);
+
 const currentDayRange = ref({
   statrDate: '',
   endDate: '',
 });
-// 当前已展示的按小时区间
+
 const currentHourRange = ref({
   statDateHour: '',
   endDateHour: '',
 });
-// ==================== 设备控制 ====================
-// 公用：构造“按天，往前推6天”的统计参数
+
+
 const buildLastDayParams = () => {
   const now = new Date();
   const endDate = formatDate(now, 'yyyy-MM-dd');
-  // 往前推6天
+
   const startDateObj = new Date(now);
   startDateObj.setDate(now.getDate() - 6);
   const statrDate = formatDate(startDateObj, 'yyyy-MM-dd');
@@ -132,7 +132,7 @@ const buildLastDayParams = () => {
 const buildLastHoursParams = () => {
   const now = new Date();
   const endDate = formatDate(now, 'yyyy-MM-dd HH') + ':00:00';
-  // 往前推7小时
+
   const startDateObj = new Date(now);
   startDateObj.setHours(now.getHours() - 6);
   const statrDate = formatDate(startDateObj, 'yyyy-MM-dd HH') + ':00:00';
@@ -143,10 +143,10 @@ const buildLastHoursParams = () => {
   };
 };
 
-// 公用：构造“按天，整体往前/往后推7天”的统计参数（基于当前已展示区间）
+
 const buildMove7DayParams = (type, currentRange) => {
   const { statrDate, endDate } = currentRange || {};
-  // 如果当前没有区间，就退回到默认最近区间
+
   if (!statrDate || !endDate) {
     return buildLastDayParams();
   }
@@ -171,10 +171,10 @@ const buildMove7DayParams = (type, currentRange) => {
   };
 };
 
-// 公用：构造“按小时，整体往前/往后推7小时”的统计参数（基于当前已展示区间）
+
 const buildMove7HourParams = (type, currentRange) => {
   const { statDateHour, endDateHour } = currentRange || {};
-  // 如果当前没有区间，就退回到默认最近区间
+
   if (!statDateHour || !endDateHour) {
     return buildLastHoursParams();
   }
@@ -199,7 +199,7 @@ const buildMove7HourParams = (type, currentRange) => {
   };
 };
 
-// 触发设备信号强度
+
 const createDeviceParams = (params) => ({
   dst: DEVICE_CONFIG.dst,
   seq: generateRandomSeq(),
@@ -218,9 +218,9 @@ const triggerPidReportFn = async () => {
   const res = await triggerPidReport(params);
 };
 
-let signalTopic = ''// 设备信号强度主题
-let handleSignalTopicResponse = null;// 设备信号强度主题处理函数
-// 页面级主题消息处理函数
+let signalTopic = ''
+let handleSignalTopicResponse = null;
+
 let handleReportTopicResponse = null;
 onLoad(async (options) => {
   const deviceData = options.device;
@@ -234,9 +234,9 @@ onLoad(async (options) => {
     DEVICE_CONFIG.dirDid = data.dirDid;
   }
   reportTopic = `olt/report/eid/${DEVICE_CONFIG.did}/8212`;
-  // 阶段2：订阅并仅监听一次设备报告主题
+
   mqttClient.registerPageTopicHandler(reportTopic, handleReportTopicResponse);
-  // 订阅设备信号强度主题
+
   signalTopic = `olt/report/pid/${DEVICE_CONFIG.did}`;
   mqttClient.registerPageTopicHandler(signalTopic, handleSignalTopicResponse);
 
@@ -246,7 +246,7 @@ onLoad(async (options) => {
   triggerPidReportFn()
 });
 
-// 页面级主题消息处理变量
+
 handleReportTopicResponse = (messageData, topic) => {
   console.log('pageMessage', messageData);
   if (messageData?.topic === reportTopic) {
@@ -259,7 +259,7 @@ handleReportTopicResponse = (messageData, topic) => {
 
 handleReportTopicResponse();
 
-// 设备信号强度主题处理函数
+
 const signalStrength = ref('弱');
 const signalRedColor = ref('status-offline');
 handleSignalTopicResponse = (messageData, topic) => {
@@ -269,15 +269,15 @@ handleSignalTopicResponse = (messageData, topic) => {
     if (Array.isArray(pids) && pids.some((item) => item.pid == 2)) {
       const signalVal = pids.find((item) => item.pid == 2)?.val || 0;
       const signal = signalVal - 65536;
-      // 强：-30～-50dBm
+
       if (signal > -50) {
         signalStrength.value = '强';
         signalRedColor.value = 'status-online';
-        // 中：-50～-80dBm
+
       } else if (signal <= -50 && signal >= -80) {
         signalStrength.value = '中';
         signalRedColor.value = 'status-online';
-        // 弱：小于-80
+
       } else if (signal < -80) {
         signalStrength.value = '弱';
         signalRedColor.value = 'status-offline';
@@ -287,7 +287,7 @@ handleSignalTopicResponse = (messageData, topic) => {
 };
 
 
-// ==================== 产品信息 ====================
+
 const loadProductModelDetails = async () => {
   try {
     const pointId = device.value.pointId;
@@ -332,12 +332,12 @@ const handleChangeDate = (type, range = 'month') => {
   let params = {};
   if (range === 'day') {
     if (type === 'prev') {
-      // 往前推7天
+
       params = buildMove7DayParams('prev', currentDayRange.value);
     } else {
-      // 往后推7天
+
       params = buildMove7DayParams('next', currentDayRange.value);
-      // 校验：开始时间必须小于当前时间
+
       const now = new Date();
       const today = formatDate(now, 'yyyy-MM-dd');
       if (params.statrDate >= today) {
@@ -355,12 +355,12 @@ const handleChangeDate = (type, range = 'month') => {
     };
   } else {
     if (type === 'prev') {
-      // 往前推7小时
+
       params = buildMove7HourParams('prev', currentHourRange.value);
     } else {
-      // 往后推7小时
+
       params = buildMove7HourParams('next', currentHourRange.value);
-      // 校验：开始时间必须小于当前时间
+
       const now = new Date();
       const today = formatDate(now, 'yyyy-MM-dd HH');
       if (params.statDateHour >= today) {

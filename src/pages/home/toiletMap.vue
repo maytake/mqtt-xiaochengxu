@@ -49,12 +49,12 @@ import { onLoad, onUnload } from '@dcloudio/uni-app';
 import { ref, computed } from 'vue';
 import { updateDid } from '@/api/home';
 
-// 状态管理 - 确保所有响应式变量在使用前已定义
+
 const isFullscreen = ref(false);
 const selectedDevice = ref(null);
 const imageUrl = ref('');
 const locationToilet = ref('');
-// 设备数据
+
 const devices = ref([
   {
     pointId: 'shower',
@@ -65,7 +65,7 @@ const devices = ref([
     actions: ['开关', '冲洗'],
   },
 ]);
-// 目标页 onLoad 方法
+
 onLoad((options) => {
   if (options.data) {
     const data = JSON.parse(decodeURIComponent(options.data));
@@ -76,21 +76,21 @@ onLoad((options) => {
     locationToilet.value = locationToiletValue;
   }
 });
-// 图片相关状态
+
 const imageRatio = ref(1);
-const originalImageSize = ref({ width: 750, height: 750 }); // 标准化为750rpx宽度
+const originalImageSize = ref({ width: 750, height: 750 });
 const scaledImageSize = ref({ width: 750, height: 750 });
 
-// 图片样式计算
+
 const imageStyle = computed(() => {
-  // 横屏模式下，图片高度100%，宽度等比缩放
-  // 算出的实际宽度px要转成rpx：rpx / px = 750/screenHeight
+
+
   if (isFullscreen.value) {
-    //  oriheight / oriwidth = height / width 图片缩放后的比例是相等的
-    //  oriwidth  = oriheight / (height / width)
+
+
     const scaledWidth = Math.floor(750 / imageRatio.value);
 
-    // 更新缩放尺寸
+
     scaledImageSize.value = {
       width: scaledWidth,
       height: 750,
@@ -105,21 +105,21 @@ const imageStyle = computed(() => {
   return { width: '100%', height: `${originalImageSize.value.height}rpx` };
 });
 
-// 图片加载处理
+
 const onImageLoad = (e) => {
   const { width, height } = e.detail;
   imageRatio.value = height / width;
-  //  oriheight / oriwidth = height / width 图片缩放后的比例是相等的
-  //  oriheight  = oriwidth * (height / width)
-  //  oriwidth  = oriheight / (height / width)
 
-  // 更新原始尺寸
+
+
+
+
   originalImageSize.value = {
     width: 750,
     height: Math.floor(750 * imageRatio.value),
   };
 
-  // 横屏模式下
+
   if (isFullscreen.value) {
     scaledImageSize.value = {
       width: Math.floor(750 / imageRatio.value),
@@ -128,17 +128,17 @@ const onImageLoad = (e) => {
   }
 };
 
-// 设备位置计算
+
 const getDeviceStyle = (device) => {
   let left = device.coordinateJson.left;
   let top = device.coordinateJson.top;
 
   if (isFullscreen.value) {
-    // 横屏模式下，缩放图片与原始图片的比率
+
     const scaleX = scaledImageSize.value.width / originalImageSize.value.width;
     const scaleY = scaledImageSize.value.height / originalImageSize.value.height;
 
-    // 横屏模式下，应用缩放比例
+
     left = device.coordinateJson.left * scaleX;
     top = device.coordinateJson.top * scaleY;
   }
@@ -149,13 +149,13 @@ const getDeviceStyle = (device) => {
   };
 };
 
-// WG0001 网关
-// 1LT0151-000-001 感应龙头
-// 1GZ0042-000-001 感应给皂器
-// 1BM0095-000-001 感应小冲器
-// 1BQ0033-000-001 感应大便器
-// GS0001 干手器
-// ZN2201 智能马桶
+
+
+
+
+
+
+
 
 const productModelRouteMap = {
   '1LT0151-000-001': '/pages/faucet/index',
@@ -169,9 +169,9 @@ const productModelRouteMap = {
 };
 
 const selectDevice = (device) => {
-  // 如果设备不是网关，则进行扫码
+
   if (device.productModel !== 'WG0001') {
-    // 如果没有did，则进行扫码
+
     if (!device.did) {
       uni.showModal({
         title: '提示',
@@ -185,16 +185,16 @@ const selectDevice = (device) => {
 
       return;
     }
-    // 如果没有dirDid，则弹窗确认
+
     if (!device.dirDid) {
       uni.showModal({
         title: '提示',
         content: '设备未组网，请从网关进入进行组网',
         success: (res) => {
           if (res.confirm) {
-            // uni.navigateTo({
-            //   url: '/pages/gateway/selectGateway?device=' + encodeURIComponent(JSON.stringify(device)),
-            // });
+
+
+
           }
         },
       });
@@ -216,7 +216,7 @@ const selectDevice = (device) => {
   }
 };
 
-// 切换横竖屏显示
+
 const toggleFullScreen = () => {
   isFullscreen.value = !isFullscreen.value;
 };
@@ -237,17 +237,17 @@ const scan = (pointId) => {
           icon: 'success',
           duration: 2000,
         });
-        // 刷新首页厕所地图
+
         uni.$emit('refresh-map');
       }
     },
     fail: (err) => {
-      // 需要注意的是小程序扫码不需要申请相机权限
+
     },
   });
 };
 
-// 根据点位返回的位置信息修改样式
+
 const getDeviceStyleByPosition = (device) => {
   const { placement } = device;
   return {

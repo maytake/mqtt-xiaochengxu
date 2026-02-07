@@ -19,13 +19,13 @@ import { formatDate } from '@/utils/common';
 
 const chartData = ref({});
 const chartReady = ref(false);
-const selectedValue = ref(355); // 默认选中的项目ID，可以根据实际需求修改
+const selectedValue = ref(355);
 
-// 公用：构造"按月，往前推12个月"的统计参数
+
 const buildLast12MonthParams = () => {
   const now = new Date();
   const endDate = formatDate(now, 'yyyy-MM');
-  // 往前推12个月
+
   const startDateObj = new Date(now);
   startDateObj.setMonth(now.getMonth() - 5);
   const statrDate = formatDate(startDateObj, 'yyyy-MM');
@@ -37,18 +37,18 @@ const buildLast12MonthParams = () => {
   };
 };
 
-// 切换时间维度
+
 const handleChangeRange = (range) => {
   let params = {};
   if (range === 'month') {
-    // 按月endDate为当前月，statrDate为往前推12个月：yyyy-MM
+
     params = buildLast12MonthParams();
   } else {
-    // 按天endDate为当前天，statrDate为往前15天：yyyy-MM-dd
+
     const now = new Date();
-    now.setDate(now.getDate() - 1); // 减去一天
+    now.setDate(now.getDate() - 1);
     const endDate = formatDate(now, 'yyyy-MM-dd');
-    // 往前推15天
+
     const startDateObj = new Date(now);
     startDateObj.setDate(now.getDate() - 6);
     const statrDate = formatDate(startDateObj, 'yyyy-MM-dd');
@@ -63,7 +63,7 @@ const handleChangeRange = (range) => {
   getChartData(params);
 };
 
-// 获取图表数据
+
 async function getChartData(objParams) {
   const { dataType, statrDate, endDate } = objParams || {};
   const params = {
@@ -81,7 +81,7 @@ async function getChartData(objParams) {
     chartData.value = data || {};
     console.log('设置图表数据:', chartData.value);
   } else {
-    // 接口失败时也置空，避免子组件卡 loading
+
     chartData.value = {};
     console.warn('图表数据接口失败，code:', code);
   }
@@ -89,7 +89,7 @@ async function getChartData(objParams) {
   console.log('图表数据就绪状态:', chartReady.value);
 }
 
-// 初始化：默认加载"按月"数据
+
 onMounted(() => {
   const params = buildLast12MonthParams();
   getChartData(params);

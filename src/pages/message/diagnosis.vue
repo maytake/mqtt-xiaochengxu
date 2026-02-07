@@ -77,11 +77,11 @@ import { updateDiagnose, getMessageDetail, reportMaintain } from '@/api/message'
 import { generateRandomSeq } from '@/utils/common';
 const mqttUserInfo = uni.getStorageSync('mqttUserInfo');
 const clientId = mqttUserInfo?.clientId || '';
-// 厕所施工图
+
 const imageUrl = ref('https://smart.tck.com.cn/itemDevice-api/images_project/20251118_103501_a972ada3.png'); // 厕所施工图图片
-const devicesList = ref([]); // 厕所施工图设备列表
+const devicesList = ref([]);
 const device = ref({});
-// 初始状态（根据截图）
+
 
 const faultDeviceList = ref([]);
 
@@ -127,7 +127,7 @@ const handleRepair = async () => {
   const { dirDid, did } = device.value;
   const userInfo = uni.getStorageSync('userInfo');
   const { username } = userInfo || {};
-  // 在faultDeviceList找出所有的isFault为true的item.faultCode，用逗号拼接
+
   const faultCode = faultDeviceList.value.filter((item) => item.isFault).map((item) => item.faultCode).join(',');
   const params = {
     "dirDid": dirDid,

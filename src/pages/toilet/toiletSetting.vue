@@ -213,12 +213,12 @@ import { useStore } from '@/stores/globalMqttInfo';
 import { ctrlDevice, resetDevicePid, readDevicePidVal, writeDevicePid, setSensingDistance } from '@/api/mqttCommon';
 import { generateRandomSeq } from '@/utils/common';
 const mqttClient = getApp().globalData.mqttService;
-// ==================== 工具函数 ====================
+
 const mqttUserInfo = uni.getStorageSync('mqttUserInfo');
 const clientId = mqttUserInfo?.clientId || '';
 
 const device = ref({});
-// 页面级主题消息处理函数
+
 let handleReportTopicResponse = null;
 onLoad(async (options) => {
   const deviceData = options.device;
@@ -230,12 +230,12 @@ onLoad(async (options) => {
     DEVICE_CONFIG.dirDid = data.dirDid;
   }
   reportTopic = `olt/report/pid/${DEVICE_CONFIG.did}`;
-  // 阶段2：订阅并仅监听一次设备报告主题
+
   mqttClient.registerPageTopicHandler(reportTopic, handleReportTopicResponse);
   readDevicePidValues();
 });
 
-// ==================== 常量配置 ====================
+
 const DEVICE_CONFIG = {
   dst: '011025092402001D',
   did: '0111250924030004',
@@ -243,7 +243,7 @@ const DEVICE_CONFIG = {
 };
 let reportTopic = '';
 
-// 基本设置
+
 const cleaningMode = ref(false);
 const energySaving = ref(false);
 const seasonMode = ref(false);
@@ -255,26 +255,26 @@ const autoMaleFlush = ref(false);
 const tempUnit = ref('℃');
 const flushVolumeValue = ref(0);
 const autoLid = ref(false);
-const laserLevel = ref(0); // '开盖' : '开关盖' 在弹窗内的临时选择值，取消时不落盘
+const laserLevel = ref(0);
 const microwaveValue = ref(0);
 const footLid = ref(false);
 
-// 清洁模式 53
-// 节能模式 23
-// 四季温感模式 24
-// 静音 25
-// 除臭
-// 过流UVC杀菌
-// 预湿润 29
-// 离座自动冲水 30
-// 自动男士小便冲 31
-// 温度单位 36
-// 冲水量 37
-// 自动翻盖 32
-// 激光模式档位 39
-// 激光模式 40
-// 微波模式 38
-// 脚感翻盖 33
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const PID_CONFIG = {
   CLEANING_MODE: '53',
   CLEANING_MODE_TIME: '35',
@@ -293,7 +293,7 @@ const PID_CONFIG = {
   FOOT_LID: '33',
   REPEATER: '63',
 };
-// PID 值处理映射
+
 const pidHandlers = {
   [PID_CONFIG.CLEANING_MODE]: (val) => {
     cleaningMode.value = Number(val) === 1;
@@ -344,7 +344,7 @@ const pidHandlers = {
   },
 };
 
-// 根据返回的状态，红点提示'命令已下发，设备处于休眠状态。'
+
 const pidStatusMap = reactive({});
 const isPidWarn = (pid) => {
   const status = pidStatusMap[pid];
@@ -392,7 +392,7 @@ const handlePidTip = (type) => {
   uni.showToast({ title: message, icon: 'none' });
 };
 
-// 创建控制功能请求参数
+
 const createControlParams = (params) => ({
   dst: DEVICE_CONFIG.dst,
   seq: generateRandomSeq(),
@@ -401,7 +401,7 @@ const createControlParams = (params) => ({
   params: params,
 });
 
-// 清洁模式
+
 const updateCleaningMode = async () => {
   const params = createControlParams({
     did: DEVICE_CONFIG.did,
@@ -413,47 +413,47 @@ const updateCleaningMode = async () => {
   feedbackResult(res);
 };
 
-// 节能模式
+
 const updateEnergySaving = async () => {
   const val = energySaving.value ? 1 : 0;
-  writeDevicePidValue([{ pid: PID_CONFIG.ENERGY_SAVING, val: val }]); // 写入设备PID值
+  writeDevicePidValue([{ pid: PID_CONFIG.ENERGY_SAVING, val: val }]);
 };
 
-// 四季温感模式
+
 const updateSeasonMode = async () => {
   const val = seasonMode.value ? 1 : 0;
-  writeDevicePidValue([{ pid: PID_CONFIG.SEASON_MODE, val: val }]); // 写入设备PID值
+  writeDevicePidValue([{ pid: PID_CONFIG.SEASON_MODE, val: val }]);
 };
-// 静音
+
 const updateSilentMode = async () => {
   const val = silentMode.value ? 1 : 0;
-  writeDevicePidValue([{ pid: PID_CONFIG.SILENT, val: val }]); // 写入设备PID值
+  writeDevicePidValue([{ pid: PID_CONFIG.SILENT, val: val }]);
 };
 
-// 预湿润
+
 const updatePreWet = async () => {
   const val = preWet.value ? 1 : 0;
-  writeDevicePidValue([{ pid: PID_CONFIG.PRE_WET, val: val }]); // 写入设备PID值
+  writeDevicePidValue([{ pid: PID_CONFIG.PRE_WET, val: val }]);
 };
-// 离座自动冲水
+
 const updateAutoFlushSeat = async () => {
   const val = autoFlushSeat.value ? 1 : 0;
-  writeDevicePidValue([{ pid: PID_CONFIG.AUTO_FLUSH_SEAT, val: val }]); // 写入设备PID值
+  writeDevicePidValue([{ pid: PID_CONFIG.AUTO_FLUSH_SEAT, val: val }]);
 };
 
-// 自动翻盖
+
 const updateAutoLid = async () => {
   const val = autoLid.value ? 1 : 0;
-  writeDevicePidValue([{ pid: PID_CONFIG.AUTO_LID, val: val }]); // 写入设备PID值
+  writeDevicePidValue([{ pid: PID_CONFIG.AUTO_LID, val: val }]);
 };
 
-// 脚感翻盖
+
 const updateFootLid = async () => {
   const val = footLid.value ? 1 : 0;
-  writeDevicePidValue([{ pid: PID_CONFIG.FOOT_LID, val: val }]); // 写入设备PID值
+  writeDevicePidValue([{ pid: PID_CONFIG.FOOT_LID, val: val }]);
 };
 
-// 创建设备请求参数
+
 const createDeviceParams = (params) => ({
   dst: DEVICE_CONFIG.dst,
   seq: generateRandomSeq(),
@@ -466,7 +466,7 @@ const createDeviceParams = (params) => ({
   },
 });
 
-// 处理设备PID响应
+
 const handleDevicePidResponse = (res) => {
   const { code, data = {} } = res || {};
   if (code === 0) {
@@ -478,7 +478,7 @@ const handleDevicePidResponse = (res) => {
   }
 };
 
-// 读取设备PID值
+
 const readDevicePidValues = async () => {
   try {
     const params = createDeviceParams({
@@ -515,7 +515,7 @@ const readDevicePidValues = async () => {
   }
 };
 
-// 写入设备PID值
+
 const writeDevicePidValue = async (pids) => {
   if (!Array.isArray(pids)) return;
   try {
@@ -531,7 +531,7 @@ const writeDevicePidValue = async (pids) => {
   }
 };
 
-// 反馈结果
+
 function feedbackResult(res) {
   if (res.code === 0) {
     uni.showToast({ icon: 'success', title: '操作成功', duration: 500 });
@@ -540,7 +540,7 @@ function feedbackResult(res) {
   }
 }
 
-// 风量模式
+
 const flushVolumeOptions = [
   {
     label: '一挡',
@@ -564,10 +564,10 @@ const flushVolumeOptions = [
   },
 ];
 const confirmFlushVolume = () => {
-  writeDevicePidValue([{ pid: PID_CONFIG.FLUSH_VOLUME, val: flushVolumeValue.value }]); // 写入设备PID值
+  writeDevicePidValue([{ pid: PID_CONFIG.FLUSH_VOLUME, val: flushVolumeValue.value }]);
 };
 
-// 微波模式
+
 const microwaveOptions = [
   {
     label: '一挡',
@@ -584,10 +584,10 @@ const microwaveOptions = [
 ];
 
 const confirmMicrowave = () => {
-  writeDevicePidValue([{ pid: PID_CONFIG.MICrowave_MODE, val: microwaveValue.value }]); // 写入设备PID值
+  writeDevicePidValue([{ pid: PID_CONFIG.MICrowave_MODE, val: microwaveValue.value }]);
 };
 
-// 温度单位弹窗
+
 const showTemp = ref(false);
 const tempDraft = ref('℃');
 const openTempPopup = () => {
@@ -596,24 +596,24 @@ const openTempPopup = () => {
 };
 const confirmTemp = () => {
   tempUnit.value = tempDraft.value;
-  writeDevicePidValue([{ pid: PID_CONFIG.TEMP_UNIT, val: tempUnit.value === '℃' ? 0 : 1 }]); // 写入设备PID值  0:'℃' 或 1:'℉'
+  writeDevicePidValue([{ pid: PID_CONFIG.TEMP_UNIT, val: tempUnit.value === '℃' ? 0 : 1 }]);
   showTemp.value = false;
 };
 
-// 激光模式
+
 const showLaser = ref(false);
-const laserType = ref(0); // 0:'开盖' 或 1:'开关盖'
-// 持久化的激光感应等级
+const laserType = ref(0);
+
 const laserTempLevel = ref('二挡');
-// 弹窗内的临时选择值，取消时不落盘
+
 const laserTempDraft = ref('二挡');
 const laserLevels = ['一挡', '二挡', '三挡'];
 
-// 激光模式：0:'开盖' 或 1:'开关盖'
+
 const openLaserPopup = () => {
-  // 打开弹窗时同步当前持久化的激光类型到临时值
+
   laserLevel.value = laserType.value === 0 || laserType.value === 1 ? laserType.value : 0;
-  // 打开弹窗时同步当前持久化等级到草稿
+
   laserTempDraft.value = laserTempLevel.value;
   showLaser.value = true;
 };
@@ -633,28 +633,28 @@ const increaseLaserLevel = () => {
 };
 
 const confirmLaser = () => {
-  // 将临时选择的激光类型同步到持久化值
+
   laserType.value = laserLevel.value;
-  // 保存当前选择的等级
+
   laserTempLevel.value = laserTempDraft.value;
-  writeDevicePidValue([{ pid: PID_CONFIG.LASER_MODE_LEVEL, val: laserLevels.indexOf(laserTempLevel.value) }]); // 写入设备PID值
-  writeDevicePidValue([{ pid: PID_CONFIG.LASER_MODE, val: laserType.value }]); // 写入设备PID值  0:'开盖' 或 1:'开关盖'
+  writeDevicePidValue([{ pid: PID_CONFIG.LASER_MODE_LEVEL, val: laserLevels.indexOf(laserTempLevel.value) }]);
+  writeDevicePidValue([{ pid: PID_CONFIG.LASER_MODE, val: laserType.value }]);
   showLaser.value = false;
 };
 
-// 关闭/取消弹窗，恢复草稿为已保存值（laserLevel 不需要恢复，因为下次打开时会重新同步）
+
 const cancelLaser = () => {
   laserTempDraft.value = laserTempLevel.value;
   showLaser.value = false;
 };
 
-// 获取激光类型显示文本
+
 const getLaserTypeText = () => {
-  // 根据 laserType 的值返回对应的文本（laserType 已从设备读取并转换）
+
   return laserType.value === 1 ? '开关盖' : '开盖';
 };
 
-// 恢复默认设置（与 faucet.vue 一致的交互）
+
 const resetToDefaults = () => {
   uni.showModal({
     title: '提示',
@@ -696,7 +696,7 @@ onUnload(() => {
   mqttClient.unregisterPageTopicHandler(reportTopic, handleReportTopicResponse);
 });
 
-// 中继级数配置
+
 const repeaterOptions = [
   {
     label: '0级',
@@ -728,7 +728,7 @@ const confirmRepeater = () => {
   writeDevicePidValue([{ pid: PID_CONFIG.REPEATER, val: repeaterValue.value }]);
 };
 
-// 清洁模式时间1-30MIN
+
 const cleanTimeOptions = Array.from({ length: 30 }, (_, index) => ({
   label: `${index + 1}MIN`,
   id: index + 1,

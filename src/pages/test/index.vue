@@ -38,7 +38,7 @@ export default {
   },
   data() {
     return {
-      selectedValue: 8, // 默认选中研发部门
+      selectedValue: 8,
       defaultProps: {
         children: 'children',
         label: 'label',
@@ -81,9 +81,9 @@ export default {
     },
   },
   methods: {
-    // 处理页面点击事件，用于小程序环境下的点击外部检测
+
     handlePageTap(e) {
-      // 触发全局事件，通知所有 lk-tree 组件
+
       uni.$emit('page-tap', e);
     },
     handleNodeClick(node) {
@@ -103,8 +103,8 @@ export default {
     },
     testExpand() {
       console.log('测试展开功能');
-      // 设置一个深层节点
-      this.selectedValue = 10; // 石家庄市场部门
+
+      this.selectedValue = 10;
       uni.showToast({
         title: '已选中石家庄市场部门，请关闭并重新打开下拉框',
         icon: 'none',

@@ -2,14 +2,7 @@
   <view class="wrapper-page">
     <view class="title">{{ chartTitle }}</view>
     <view class="sub-title">{{ subTitle }}</view>
-    <!-- <view class="date-range">
-      <view class="date-btn date-prev" @click="handleClickDate('prev')">
-        <text class="font_family icon-arrow">&#xe60e;</text>
-      </view>
-      <view class="date-btn date-next" @click="handleClickDate('next')">
-        <text class="font_family icon-arrow">&#xe60d;</text>
-      </view>
-    </view> -->
+
     <view v-if="!ready" class="charts-placeholder">数据加载中/失败，请稍后重试</view>
     <view class="charts-container" v-else>
       <!-- 动态生成图表实例，使用 v-if 确保图表在显示时才初始化 -->
@@ -288,10 +281,6 @@ const switchRange = (range) => {
   currentRange.value = range;
   // 使用 Vue 标准事件机制触发父组件事件
   emit('changeRange', range);
-};
-
-const handleClickDate = (type) => {
-  emit('changeDate', type, currentRange.value);
 };
 
 </script>

@@ -149,7 +149,7 @@ function getBluetoothAdapterState() {
   });
 }
 
-// ArrayBuffer 转 16进制字符串工具函数
+
 function ab2hex(buffer) {
   const hexArr = Array.prototype.map.call(
     new Uint8Array(buffer),
@@ -169,12 +169,12 @@ function startBluetoothDevicesDiscovery() {
         getBluetoothDevices();
         res.devices.forEach(device => {
           console.log('发现设备:', device);
-          // 将广播数据ArrayBuffer转为16进制字符串
+
           const hex = ab2hex(device.advertisData);
           console.log('广播数据(Hex):', hex);
-          // 在此处，你需要根据设备协议从hex字符串中查找并提取MAC地址
-          // 例如，协议规定MAC在hex字符串的第10-21位
-          // const macFromAdData = hex.substr(18, 12).match(/.{1,2}/g).join(':');
+
+
+
         });
       });
     },
@@ -189,7 +189,7 @@ function getBluetoothDevices() {
   uni.getBluetoothDevices({
     success: res => {
       console.log(res.devices);
-      // 遍历出不在list中的设备
+
       unList.value = res.devices.filter(i => !list.value.some(j => j.deviceId === i.deviceId));
     },
     fail: e => {
@@ -247,13 +247,13 @@ function createBLEConnection(item) {
 
 
   uni.createBLEConnection({
-    // 这里的 deviceId 需要已经通过 createBLEConnection 与对应设备建立链接
+
     deviceId,
     mtu: 512,
     success: res => {
       console.log('连接蓝牙成功:');
       console.log(res);
-      // 连接设备后断开搜索 并且不能搜索设备
+
       stopBluetoothDevicesDiscovery();
       uni.hideToast();
       uni.showToast({
@@ -298,12 +298,12 @@ async function handleModalConfirm() {
   show.value = false;
 }
 
-// 全局用于记录写/读特征值，及轮询定时器
+
 let targetWriteCharacteristicId = '';
 let targetReadCharacteristicId = '';
 let readTimer = null;
 let waitNetRetryCount = 0;
-const maxNetRetries = 20; // 约 60s 超时（配合 3s 间隔）
+const maxNetRetries = 20;
 
 function arrayBufferToString(buffer) {
   const view = new Uint8Array(buffer);
@@ -314,7 +314,7 @@ function arrayBufferToString(buffer) {
   return str;
 }
 
-// 轮询设备联网状态
+
 function startPolling(serviceId) {
   wifi_status.value = '联网中...';
   stopPolling();
@@ -353,7 +353,7 @@ function stopPolling() {
   }
 }
 
-// 读取回包解析联网状态（需根据实际协议调整字段）
+
 uni.onBLECharacteristicValueChange((res) => {
   const str = arrayBufferToString(res.value);
   console.log('读取到设备返回数据:', str);
@@ -380,7 +380,7 @@ uni.onBLECharacteristicValueChange((res) => {
   }
 });
 
-// 获取设备服务service.uuid
+
 function getBLEDeviceServices(deviceId) {
   uni.getBLEDeviceServices({
     deviceId,
@@ -406,7 +406,7 @@ function getBLEDeviceServices(deviceId) {
 
 }
 
-// 获取设备的特征值characteristic.uuid
+
 function getBLEDeviceCharacteristics(deviceId, targetServiceId) {
   uni.getBLEDeviceCharacteristics({
     deviceId: deviceId,
@@ -444,7 +444,7 @@ function getBLEDeviceCharacteristics(deviceId, targetServiceId) {
   });
 }
 
-// 发送配网指令
+
 function sendDataToDevice(uuid, targetCharacteristicId) {
   const wifi_ssid = model1.value.wifi_ssid
   const wifi_pwd = model1.value.wifi_pwd
@@ -461,9 +461,9 @@ function sendDataToDevice(uuid, targetCharacteristicId) {
       }
     ]
   };
-  // 1. 准备要发送的JSON数据
+
   const jsonString = JSON.stringify(netConfig);
-  // 2. 将JSON字符串转换为ArrayBuffer（这是蓝牙设备能理解的格式）
+
   function stringToArrayBuffer(str) {
     const buffer = new ArrayBuffer(str.length);
     const view = new Uint8Array(buffer);
@@ -474,12 +474,12 @@ function sendDataToDevice(uuid, targetCharacteristicId) {
   }
   const arrayBuffer = stringToArrayBuffer(jsonString);
 
-  // 3. 确认特征值支持“写”操作后，发送数据
+
   uni.writeBLECharacteristicValue({
-    deviceId: equipment.value.deviceId,      // 你的设备ID，从连接时获得
-    serviceId: uuid,    // 目标服务UUID，需从设备获取
-    characteristicId: targetCharacteristicId, // 支持“写”的特征值UUID，需从设备获取
-    value: arrayBuffer,           // 转换后的二进制数据
+    deviceId: equipment.value.deviceId,
+    serviceId: uuid,
+    characteristicId: targetCharacteristicId,
+    value: arrayBuffer,
     success(res) {
       console.log('配网指令发送成功', res);
       startPolling(uuid);
@@ -497,9 +497,9 @@ function sendDataToDevice(uuid, targetCharacteristicId) {
 
 function tapQuery(item) {
   console.log(item);
-  // 重置表单报错
+
   form1.value.clearValidate();
-  // 重置表单
+
   form1.value.resetFields();
   show.value = true;
 }

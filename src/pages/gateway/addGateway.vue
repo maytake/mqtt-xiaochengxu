@@ -56,7 +56,7 @@ let globalWatchStop = null;
 let seq = null;
 let waitTime = null;
 let stopTimer = null;
-// 设备列表数据（假数据）
+
 const deviceList = ref([]);
 onLoad(async (options) => {
   const deviceData = options.device;
@@ -66,7 +66,7 @@ onLoad(async (options) => {
     device.value = JSON.parse(decodeURIComponent(deviceData));
   }
 
-  // 从 URL 参数中获取选中的设备列表
+
   if (options.selectedDevices) {
     try {
       const selectedDevices = JSON.parse(decodeURIComponent(options.selectedDevices));
@@ -79,7 +79,7 @@ onLoad(async (options) => {
   }
 });
 
-// 清理 globalTopicInfo 的 watch
+
 const cleanupWatchListeners = () => {
   if (globalWatchStop) {
     globalWatchStop();
@@ -87,14 +87,14 @@ const cleanupWatchListeners = () => {
   }
 };
 
-// 清理stopTimer
+
 const cleanupStopTimer = () => {
   if (stopTimer) {
     clearTimeout(stopTimer);
     stopTimer = null;
   }
 };
-// 定时waitTime,遍历deviceList.value列表,停止所有状态为loading的设备
+
 function stopLoadingDevices() {
   cleanupStopTimer();
   stopTimer = setTimeout(() => {
@@ -107,16 +107,16 @@ function stopLoadingDevices() {
   }, waitTime);
 }
 
-// mqtt全局返回的did
+
 function getDidFromMqtt(seq) {
-  // 监听全局主题消息
+
   const { globalTopicInfo } = storeToRefs(useStore());
   cleanupWatchListeners();
 
   globalWatchStop = watch(
     globalTopicInfo,
     (newVal) => {
-      // 先检查 seq 是否匹配，不匹配直接返回，避免执行任何逻辑
+
       if (!newVal || newVal?.seq !== seq) {
         return;
       }
@@ -131,11 +131,11 @@ function getDidFromMqtt(seq) {
             title: '获取设备信息失败',
             icon: 'none',
           });
-          cleanupWatchListeners(); // 处理完成后清理 watch
+          cleanupWatchListeners();
         }
         return;
       }
-      // 逐个上报设备成功或失败
+
       if (method === 'Dev.ReportDevices') {
         if (result == 1) {
           const didArray = newVal?.params?.devices || [];
@@ -154,9 +154,9 @@ function getDidFromMqtt(seq) {
   );
 }
 
-// 停止：将所有loading状态改为failed
+
 const handleStop = async () => {
-  // 排除已经success的设备，其他改为failed
+
   const failedDevices = deviceList.value.filter((item) => item.status === 'loading');
   if (failedDevices.length > 0) {
     try {
@@ -187,9 +187,9 @@ const handleStop = async () => {
   }
 };
 
-// 继续：继续添加未完成部分
+
 const handleContinue = async () => {
-  // 找到所有failed状态的设备，并把状态改成失败
+
   const failedDevices = deviceList.value.filter((item) => item.status !== 'success');
 
   if (failedDevices.length === 0) {
@@ -225,16 +225,16 @@ const handleContinue = async () => {
   }
 };
 
-// 统一返回设备详情页面（/pages/gateway/index）
+
 const returnToGatewayDetail = () => {
   const pages = getCurrentPages();
 
-  // 在当前栈中查找设备详情页
+
   const targetIndex = pages.findIndex((p) => {
-    // p.route 形如 'pages/gateway/gatewayList'
+
     if (p.route === 'pages/gateway/gatewayList') return true;
-    // 某些运行环境下可能通过 $page 或其他字段携带完整路径，这里做一次兼容判断
-    // @ts-ignore
+
+
     if (p.$page && p.$page.fullPath && p.$page.fullPath.indexOf('pages/gateway/gatewayList') !== -1) {
       return true;
     }
@@ -242,22 +242,22 @@ const returnToGatewayDetail = () => {
   });
 
   if (targetIndex !== -1) {
-    // 计算需要回退的层级
+
     const delta = pages.length - 1 - targetIndex;
     if (delta > 0) {
       uni.navigateBack({ delta });
-      // 刷新首页厕所地图
+
       uni.$emit('refresh-map');
     }
     return;
   }
 
   uni.navigateBack();
-  // 刷新首页厕所地图
+
   uni.$emit('refresh-map');
 };
 
-// 完成返回设备列表页面，跳转不留历史记录
+
 const handleComplete = async () => {
   try {
     const params = {
@@ -277,7 +277,7 @@ const handleComplete = async () => {
   } catch (e) {}
 };
 
-// 兜底：防止某些特殊返回路径未触发 onBackPress
+
 onUnload(() => {
   cleanupStopTimer();
   cleanupWatchListeners();
@@ -301,7 +301,7 @@ onUnload(() => {
   flex-direction: column;
 }
 
-// 设备列表卡片
+
 .device-list-card {
   background: linear-gradient(-90deg, #efefef 0%, #fff 100%);
   border-radius: 28rpx;
@@ -311,7 +311,7 @@ onUnload(() => {
   box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.05);
 }
 
-// 设备列表项
+
 .device-item {
   display: flex;
   align-items: center;
@@ -356,7 +356,7 @@ onUnload(() => {
   justify-content: center;
 }
 
-// 底部操作按钮
+
 .bottom-actions {
   position: fixed;
   bottom: calc(constant(safe-area-inset-bottom) + 30rpx);

@@ -67,12 +67,12 @@ onLoad(async () => {
   const url = proxy.$getCurrentRoute();
   const isLogin = proxy.$checkLogin(url);
   if (isLogin) {
-    // 优先尝试从本地缓存恢复上次选择的地址与楼层
+
     const cacheAddress = uni.getStorageSync('HOME_SELECTED_ADDRESS');
     if (cacheAddress && cacheAddress.parentCode) {
       uni.$emit('selected-address', cacheAddress, 'mine');
     } else {
-      // 加载数据
+
       initData();
     }
   }
@@ -84,7 +84,7 @@ onShow(() => {
     app.getFaultMessageCountFn();
   }
 });
-// 处理菜单点击
+
 function handleMenuClick(type) {
   switch (type) {
     case 'account':
@@ -114,7 +114,7 @@ function handleMenuClick(type) {
   }
 }
 
-// 退出登录
+
 function loginOut() {
   uni.showModal({
     title: '提示',
@@ -142,21 +142,21 @@ function loginOut() {
 }
 
 async function initData() {
-  // 获取第一个默认地址
+
   const res = await projectList();
   if (res.code === 0) {
     const data = res.data || [];
     const itemAddress = data[0];
-    selectedAddress.value = itemAddress; // 选中项目地址
-    mainStore.setProjectItem(itemAddress); // 设置项目地址
+    selectedAddress.value = itemAddress;
+    mainStore.setProjectItem(itemAddress);
     uni.setStorageSync('HOME_SELECTED_ADDRESS', itemAddress);
 
   }
 }
 
 uni.$on('selected-address', (itemAddress) => {
-  selectedAddress.value = itemAddress; // 选中项目地址
-  mainStore.setProjectItem(itemAddress); // 设置项目地址
+  selectedAddress.value = itemAddress;
+  mainStore.setProjectItem(itemAddress);
 
 });
 
@@ -168,7 +168,7 @@ const selectAddress = () => {
 };
 
 onUnload(() => {
-  // 页面卸载时再移除监听，防止重复注册
+
   uni.$off('selected-address');
 });
 
@@ -299,7 +299,7 @@ wx-button:after {
   .location-selector {
     display: inline-flex;
     align-items: center;
-    // padding: 24rpx 0;
+
     border-radius: 16rpx;
 
     .location-icon {

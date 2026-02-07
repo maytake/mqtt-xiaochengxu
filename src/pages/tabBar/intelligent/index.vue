@@ -22,23 +22,13 @@
         <view class="location-row bottom-line">
           <text class="font_family m-icon">&#xe60c;</text>
           <view class="location-text" @click="open">{{ region || '请选择省市区' }}</view>
-          <cityPicker
-            :column="column"
-            :default-value="defaultValue"
-            :mask-close-able="maskCloseAble"
-            @confirm="confirm"
-            @cancel="handleCancel"
-            :visible="visible" />
+          <cityPicker :column="column" :default-value="defaultValue" :mask-close-able="maskCloseAble" @confirm="confirm"
+            @cancel="handleCancel" :visible="visible" />
         </view>
         <view class="location-row">
           <text class="font_family m-icon">&#xe607;</text>
           <view class="location-text" @click="pickerClick">{{ projectPlace }}</view>
-          <up-picker
-            :show="show"
-            ref="uPickerRef"
-            :columns="columns"
-            @confirm="pickConfirm"
-            @change="changeHandler"
+          <up-picker :show="show" ref="uPickerRef" :columns="columns" @confirm="pickConfirm" @change="changeHandler"
             class="m-picker"></up-picker>
         </view>
       </view>
@@ -59,10 +49,7 @@
             </view>
           </view>
           <view class="device-actions" v-if="item.actions && item.actions.length">
-            <button
-              v-for="(btn, bidx) in item.actions"
-              :key="bidx"
-              :class="['action-btn', btn.active ? 'active' : '']"
+            <button v-for="(btn, bidx) in item.actions" :key="bidx" :class="['action-btn', btn.active ? 'active' : '']"
               @click="toggleButtonActive(item.id, bidx)">
               {{ btn.label }}
             </button>
@@ -81,10 +68,7 @@
             </view>
           </view>
           <view class="device-actions" v-if="item.actions && item.actions.length">
-            <button
-              v-for="(btn, bidx) in item.actions"
-              :key="bidx"
-              :class="['action-btn', btn.active ? 'active' : '']"
+            <button v-for="(btn, bidx) in item.actions" :key="bidx" :class="['action-btn', btn.active ? 'active' : '']"
               @click="toggleButtonActive(item.id, bidx)">
               {{ btn.label }}
             </button>
@@ -140,7 +124,7 @@ const pickConfirm = (e) => {
   show.value = false;
 };
 
-// 具体项目位置
+
 function open() {
   visible.value = true;
 }
@@ -154,7 +138,7 @@ function handleCancel() {
   visible.value = false;
 }
 
-// 示例设备数据
+
 const list = [
   {
     id: 1,
@@ -209,15 +193,15 @@ const list = [
 ];
 const flowList = ref(list);
 
-// 计算左右两列数据
+
 const leftList = computed(() => flowList.value.filter((_, idx) => idx % 2 === 0));
 const rightList = computed(() => flowList.value.filter((_, idx) => idx % 2 === 1));
 
 onShow(() => {
   const url = proxy.$getCurrentRoute();
-  const isLogin =  proxy.$checkLogin(url);
+  const isLogin = proxy.$checkLogin(url);
   if (isLogin) {
-   // 加载数据
+
   }
 });
 
@@ -235,12 +219,12 @@ onReachBottom(() => {
 
 async function handleScan() {
   showMenu.value = false;
-  // #ifdef APP-PLUS
+
   let status = await checkPermission();
   if (status !== 1) {
     return;
   }
-  // #endif
+
   uni.scanCode({
     success: (res) => {
       uni.showToast({ title: '扫码成功' });
@@ -250,7 +234,7 @@ async function handleScan() {
     },
   });
 }
-// #ifdef APP-PLUS
+
 async function checkPermission(code) {
   let status;
   onCloseMenu();
@@ -275,7 +259,7 @@ async function checkPermission(code) {
   }
   return status;
 }
-// #endif
+
 
 function onCloseMenu() {
   showMenu.value = false;
@@ -283,7 +267,7 @@ function onCloseMenu() {
 
 const loadStatus = ref('more');
 
-// 生成随机设备数据
+
 function generateRandomDevice(id) {
   const deviceTypes = [
     { name: '马桶', actions: ['翻盖', '清洗', '烘干', '加热'] },
@@ -297,10 +281,10 @@ function generateRandomDevice(id) {
   const randomType = deviceTypes[Math.floor(Math.random() * deviceTypes.length)];
   const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
 
-  // 生成随机操作按钮
+
   const actions = randomType.actions.map((action) => ({
     label: action,
-    active: Math.random() > 0.7, // 30% 概率为激活状态
+    active: Math.random() > 0.7,
   }));
 
   return {
@@ -312,7 +296,7 @@ function generateRandomDevice(id) {
   };
 }
 
-// 在 setup 顶部定义
+
 let nextDeviceId = flowList.value.length + 1;
 
 function addRandomData() {
@@ -332,7 +316,7 @@ function addRandomData() {
   }, 1000);
 }
 
-// 切换按钮激活状态
+
 function toggleButtonActive(deviceId, buttonIndex) {
   uni.showToast({
     icon: 'loading',
@@ -340,12 +324,12 @@ function toggleButtonActive(deviceId, buttonIndex) {
     duration: 200,
   });
 
-  // 用 id 查找 flowList 中的设备
+
   const device = flowList.value.find((d) => d.id === deviceId);
   if (device && device.actions && device.actions[buttonIndex]) {
-    // 切换按钮的 active 状态
+
     device.actions[buttonIndex].active = !device.actions[buttonIndex].active;
-    // 关键：强制刷新 flowList 的引用，触发 up-waterfall 重新渲染
+
     flowList.value = cloneDeep(flowList.value);
   }
 }

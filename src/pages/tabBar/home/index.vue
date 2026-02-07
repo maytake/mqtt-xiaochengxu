@@ -84,30 +84,30 @@ const defaultProps = ref({
 const chartsBarRef = ref(null);
 const statisticalData = ref({});
 const statisticalReady = ref(false);
-// 当前选中的统计范围（month/day）
+
 const currentRange = ref('month');
-// 当前已展示的按月区间
+
 const currentMonthRange = ref({
   statDateMonth: '',
   endDateMonth: '',
 });
-// 当前已展示的按天区间
+
 const currentDayRange = ref({
   statrDate: '',
   endDate: '',
 });
 
-// 首页地址与楼层本地缓存 key
+
 const STORAGE_KEYS = {
   address: 'HOME_SELECTED_ADDRESS',
   floor: 'HOME_SELECTED_FLOOR',
 };
 
-// 公用：构造“按月，往前推12个月”的统计参数
+
 const buildLastMonthParams = () => {
   const now = new Date();
   const endDate = formatDate(now, 'yyyy-MM');
-  // 往前推12个月
+
   const startDateObj = new Date(now);
   startDateObj.setMonth(now.getMonth() - 6);
   const statrDate = formatDate(startDateObj, 'yyyy-MM');
@@ -119,7 +119,7 @@ const buildLastMonthParams = () => {
   };
 };
 
-// 公用：构造“按天，往前推6天”的统计参数
+
 const buildLastDayParams = () => {
   const now = new Date();
   now.setDate(now.getDate() - 1);
@@ -134,10 +134,10 @@ const buildLastDayParams = () => {
   };
 };
 
-// 公用：构造“按月，整体往前/往后推6个月”的统计参数（基于当前已展示区间）
+
 const buildMove6MonthParams = (type, currentRange) => {
   const { statDateMonth, endDateMonth } = currentRange || {};
-  // 如果当前没有区间，就退回到默认最近区间
+
   if (!statDateMonth || !endDateMonth) {
     return buildLastMonthParams();
   }
@@ -166,10 +166,10 @@ const buildMove6MonthParams = (type, currentRange) => {
   };
 };
 
-// 公用：构造“按天，整体往前/往后推7天”的统计参数（基于当前已展示区间）
+
 const buildMove7DayParams = (type, currentRange) => {
   const { statrDate, endDate } = currentRange || {};
-  // 如果当前没有区间，就退回到默认最近区间
+
   if (!statrDate || !endDate) {
     return buildLastDayParams();
   }
@@ -198,13 +198,13 @@ onShow(() => {
   const url = proxy.$getCurrentRoute();
   const isLogin = proxy.$checkLogin(url);
   if (isLogin) {
-    // 优先尝试从本地缓存恢复上次选择的地址与楼层
+
     const cacheAddress = uni.getStorageSync(STORAGE_KEYS.address);
     const cacheFloor = uni.getStorageSync(STORAGE_KEYS.floor);
     if (cacheAddress && cacheAddress.parentCode) {
       restoreFromCache(cacheAddress, cacheFloor);
     } else {
-      // 加载数据
+
       initData();
     }
   }
@@ -214,42 +214,29 @@ onShow(() => {
 
 
 onLoad(async () => {
-  // const url = proxy.$getCurrentRoute();
-  // const isLogin = proxy.$checkLogin(url);
-  // if (isLogin) {
-  //   // 优先尝试从本地缓存恢复上次选择的地址与楼层
-  //   const cacheAddress = uni.getStorageSync(STORAGE_KEYS.address);
-  //   const cacheFloor = uni.getStorageSync(STORAGE_KEYS.floor);
-  //   if (cacheAddress && cacheAddress.parentCode) {
-  //     restoreFromCache(cacheAddress, cacheFloor);
-  //   } else {
-  //     // 加载数据
-  //     initData();
-  //   }
-  // }
 
   uni.$on('selected-address', (data, type) => {
-    // 地址切换时，清空已缓存的楼层选择，等待用户重新选择
+
     if (type !== 'mine') {
       uni.removeStorageSync(STORAGE_KEYS.floor);
       getFloorTreeByProjectId(data);
     }
 
   });
-  // 刷新首页厕所地图
+
   uni.$on('refresh-map', () => {
     getToiletFn(selectedValue.value);
   });
 });
 
 onUnload(() => {
-  // 页面卸载时再移除监听，防止重复注册
+
   uni.$off('selected-address');
   uni.$off('refresh-map');
 });
 
-// 下拉刷新首页厕所地图
-// 下拉刷新后请求完成主动收起下拉动画
+
+
 onPullDownRefresh(async () => {
   try {
     getToiletFn(selectedValue.value);
@@ -265,37 +252,37 @@ onPullDownRefresh(async () => {
   }
 });
 
-// 根据本地缓存恢复首页地址与楼层选择
+
 const restoreFromCache = async (cacheAddress, cacheFloor) => {
-  // 获取地址列表，检查缓存的地址是否在列表中
+
   const res = await projectList();
   if (res.code === 0) {
     const addressList = res.data || [];
-    // 检查缓存的地址是否在地址列表中（通过 projectId 判断）
+
     const isAddressInList = addressList.some((item) => item.projectId === cacheAddress.projectId);
 
     if (!isAddressInList) {
-      // 如果缓存的地址不在列表中，获取第一个默认地址
+
       initData();
       return;
     }
   } else {
-    // 如果获取地址列表失败，也使用默认地址
+
     initData();
     return;
   }
 
-  // 缓存的地址在列表中，继续使用缓存的地址
+
   selectedAddress.value = cacheAddress;
   mainStore.setProjectItem(cacheAddress);
 
   updateFaultMessageCountOnce();
-  // 先根据地址加载楼层树，待树加载完成后再根据 projectId 选中对应楼层
+
   getTreeProject(cacheFloor);
 };
 
 async function initData() {
-  // 获取第一个默认地址
+
   const res = await projectList();
   if (res.code === 0) {
     const data = res.data || [];
@@ -304,22 +291,22 @@ async function initData() {
   }
 }
 
-// 根据选中的选项，重新获取楼栋楼层树
+
 function getFloorTreeByProjectId(itemAddress) {
-  selectedAddress.value = itemAddress; // 选中项目地址
-  mainStore.setProjectItem(itemAddress); // 设置项目地址
+  selectedAddress.value = itemAddress;
+  mainStore.setProjectItem(itemAddress);
 
   updateFaultMessageCountOnce();
-  // 记录选中的项目地址到本地缓存
-  uni.setStorageSync(STORAGE_KEYS.address, itemAddress);
-  selectedValue.value = ''; // 清空楼层选择
 
-  getTreeProject(); // 重新获取楼层树
+  uni.setStorageSync(STORAGE_KEYS.address, itemAddress);
+  selectedValue.value = '';
+
+  getTreeProject();
 }
 
-// 处理页面点击事件，用于小程序环境下的点击外部检测
+
 const handlePageTap = (e) => {
-  // 触发全局事件，通知所有 lk-tree 组件
+
   uni.$emit('page-tap', e);
 };
 
@@ -338,9 +325,9 @@ const handleNodeClick = (node) => {
   buildingTreeStore.setSelectedId(node.projectId);
   clearToiletData();
   if (node.level == 3) {
-    // 记录选中的楼层到本地缓存
+
     uni.setStorageSync(STORAGE_KEYS.floor, node.projectId);
-    // 如果当前选中的是'按天'，重置为默认的'按月'
+
     currentRange.value = 'month';
 
     getToiletFn(node.projectId);
@@ -352,7 +339,7 @@ const handleNodeClick = (node) => {
     getStatisticalData(params);
   }
 };
-// 遍历树节点，找出第一个级最底层的节点并获取projectId的值
+
 const getFirstLeafNode = (node) => {
   for (let i = 0; i < node.length; i++) {
     if (node[i].children && node[i].children.length > 0) {
@@ -362,7 +349,7 @@ const getFirstLeafNode = (node) => {
   }
 };
 
-// 根据 projectId 在树结构中查找对应节点
+
 const findNodeByProjectId = (nodes, projectId) => {
   if (!Array.isArray(nodes) || !projectId) return null;
   for (let i = 0; i < nodes.length; i++) {
@@ -389,13 +376,13 @@ const getTreeProject = async (preSelectedProjectId) => {
     treeData.value = data;
     buildingTreeStore.setTreeData(data);
     clearToiletData();
-    // 优先根据传入的 projectId 在树中查找对应节点；找不到时退回第一个最底层节点
+
     let targetNode = null;
     if (preSelectedProjectId) {
       targetNode = findNodeByProjectId(data, preSelectedProjectId);
     }
     if (!targetNode) {
-      // 获取第一个级最底层的节点并获取projectId的值，请求厕所施工图
+
       targetNode = getFirstLeafNode(data);
     }
     const { projectId, level, nameSr } = targetNode || {};
@@ -443,7 +430,7 @@ const handldeGo = () => {
 };
 
 const handleChangeRange = (range) => {
-  // 更新当前选中的范围
+
   currentRange.value = range;
   let params = {};
   if (range === 'month') {
@@ -467,12 +454,12 @@ const handleChangeDate = (type, range = 'month') => {
   let params = {};
   if (range === 'month') {
     if (type === 'prev') {
-      // 往前推6个月
+
       params = buildMove6MonthParams('prev', currentMonthRange.value);
     } else {
-      // 往后推6个月
+
       params = buildMove6MonthParams('next', currentMonthRange.value);
-      // 校验：开始时间必须小于当前时间
+
       const now = new Date();
       const currentMonth = formatDate(now, 'yyyy-MM');
       if (params.statDateMonth >= currentMonth) {
@@ -490,12 +477,12 @@ const handleChangeDate = (type, range = 'month') => {
     };
   } else {
     if (type === 'prev') {
-      // 往前推7天
+
       params = buildMove7DayParams('prev', currentDayRange.value);
     } else {
-      // 往后推7天
+
       params = buildMove7DayParams('next', currentDayRange.value);
-      // 校验：开始时间必须小于当前时间
+
       const now = new Date();
       const today = formatDate(now, 'yyyy-MM-dd');
       if (params.statrDate >= today) {
@@ -535,18 +522,18 @@ async function getStatisticalData(objParams) {
 
 
 
-// 防止同一页面多次调用角标刷新
+
 const hasUpdatedMessageCount = ref(false);
 function updateFaultMessageCountOnce() {
   if (hasUpdatedMessageCount.value) return;
   const app = getApp();
-  app?.getFaultMessageCountFn?.(); // 更新角标数
+  app?.getFaultMessageCountFn?.();
   console.log('home页面的故障消息数量', app.messageCount);
   hasUpdatedMessageCount.value = true;
 }
 
 onUnload(() => {
-  // 页面卸载时重置，下一次进入页面再允许刷新
+
   hasUpdatedMessageCount.value = false;
 });
 
@@ -636,7 +623,7 @@ onUnload(() => {
   position: relative;
 }
 
-// 厕所地图
+
 .toilet-map {
   margin: 42rpx 0;
 }
